@@ -24,7 +24,7 @@ import com.mycollab.db.query.Param;
 import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.module.crm.CrmTypeConstants;
 import com.mycollab.module.crm.domain.criteria.LeadSearchCriteria;
-import com.mycollab.module.crm.events.LeadEvent;
+import com.mycollab.module.crm.event.LeadEvent;
 import com.mycollab.module.crm.i18n.LeadI18nEnum;
 import com.mycollab.module.crm.ui.components.ComponentUtils;
 import com.mycollab.module.user.ui.components.ActiveUserListSelect;
@@ -32,9 +32,7 @@ import com.mycollab.security.RolePermissionCollections;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.HeaderWithFontAwesome;
-import com.mycollab.vaadin.web.ui.DefaultGenericSearchPanel;
-import com.mycollab.vaadin.web.ui.DynamicQueryParamLayout;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.*;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.*;
@@ -50,6 +48,8 @@ import org.vaadin.viritin.layouts.MHorizontalLayout;
 public class LeadSearchPanel extends DefaultGenericSearchPanel<LeadSearchCriteria> {
     private static final long serialVersionUID = 1L;
 
+    private boolean canCreateLead;
+
     private static Param[] paramFields = new Param[]{
             LeadSearchCriteria.p_leadContactName,
             LeadSearchCriteria.p_accountName, LeadSearchCriteria.p_website,
@@ -60,6 +60,10 @@ public class LeadSearchPanel extends DefaultGenericSearchPanel<LeadSearchCriteri
             LeadSearchCriteria.p_statuses, LeadSearchCriteria.p_sources,
             LeadSearchCriteria.p_assignee};
 
+    public LeadSearchPanel(boolean canCreateLead) {
+        this.canCreateLead = canCreateLead;
+    }
+
     @Override
     protected HeaderWithFontAwesome buildSearchTitle() {
         return ComponentUtils.header(CrmTypeConstants.LEAD, UserUIContext.getMessage(LeadI18nEnum.LIST));
@@ -67,11 +71,10 @@ public class LeadSearchPanel extends DefaultGenericSearchPanel<LeadSearchCriteri
 
     @Override
     protected Component buildExtraControls() {
-        MButton newBtn = new MButton(UserUIContext.getMessage(LeadI18nEnum.NEW),
+        return (canCreateLead) ? new MButton(UserUIContext.getMessage(LeadI18nEnum.NEW),
                 clickEvent -> EventBusFactory.getInstance().post(new LeadEvent.GotoAdd(this, null)))
-                .withIcon(FontAwesome.PLUS).withStyleName(WebUIConstants.BUTTON_ACTION)
-                .withVisible(UserUIContext.canWrite(RolePermissionCollections.CRM_LEAD));
-        return newBtn;
+                .withIcon(FontAwesome.PLUS).withStyleName(WebThemes.BUTTON_ACTION)
+                .withVisible(UserUIContext.canWrite(RolePermissionCollections.CRM_LEAD)) : null;
     }
 
     @Override
@@ -88,13 +91,8 @@ public class LeadSearchPanel extends DefaultGenericSearchPanel<LeadSearchCriteri
         private TextField nameField;
         private CheckBox myItemCheckbox;
 
-        public LeadBasicSearchLayout() {
+        LeadBasicSearchLayout() {
             super(LeadSearchPanel.this);
-        }
-
-        @Override
-        public ComponentContainer constructHeader() {
-            return LeadSearchPanel.this.constructHeader();
         }
 
         @Override
@@ -109,17 +107,17 @@ public class LeadSearchPanel extends DefaultGenericSearchPanel<LeadSearchCriteri
             layout.with(myItemCheckbox).withAlign(myItemCheckbox, Alignment.MIDDLE_CENTER);
 
             MButton searchBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_SEARCH), clickEvent -> callSearchAction())
-                    .withIcon(FontAwesome.SEARCH).withStyleName(WebUIConstants.BUTTON_ACTION)
+                    .withIcon(FontAwesome.SEARCH).withStyleName(WebThemes.BUTTON_ACTION)
                     .withClickShortcut(ShortcutAction.KeyCode.ENTER);
             layout.with(searchBtn).withAlign(searchBtn, Alignment.MIDDLE_LEFT);
 
             MButton cancelBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CLEAR), clickEvent -> nameField.setValue(""))
-                    .withStyleName(WebUIConstants.BUTTON_OPTION);
+                    .withStyleName(WebThemes.BUTTON_OPTION);
 
             layout.with(cancelBtn).withAlign(cancelBtn, Alignment.MIDDLE_CENTER);
 
             MButton advancedSearchBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_ADVANCED_SEARCH),
-                    clickEvent -> moveToAdvancedSearchLayout()).withStyleName(WebUIConstants.BUTTON_LINK);
+                    clickEvent -> moveToAdvancedSearchLayout()).withStyleName(WebThemes.BUTTON_LINK);
 
             layout.with(advancedSearchBtn).withAlign(advancedSearchBtn, Alignment.MIDDLE_CENTER);
             return layout;
@@ -145,13 +143,8 @@ public class LeadSearchPanel extends DefaultGenericSearchPanel<LeadSearchCriteri
 
     private class LeadAdvancedSearchLayout extends DynamicQueryParamLayout<LeadSearchCriteria> {
 
-        public LeadAdvancedSearchLayout() {
+        LeadAdvancedSearchLayout() {
             super(LeadSearchPanel.this, CrmTypeConstants.LEAD);
-        }
-
-        @Override
-        public ComponentContainer constructHeader() {
-            return LeadSearchPanel.this.constructHeader();
         }
 
         @Override

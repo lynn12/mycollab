@@ -40,28 +40,109 @@ understanding in a matter of minutes.
 Last changelog
 ==============
 
+Version 5.4.7
+-------------
+
+**Improvements & New Features**
+
+* Export CSV file without header
+* Update Bulgarian language
+
+**Bug Fixes**
+
+* Always export to CSV even if user select PDF or Excel type in some cases
+* Can not send the email notification for edit CRM entities
+
+Version 5.4.6
+-------------
+
+**Library Upgrades**
+
+* Jackrabbit 2.15.0
+* DynamicReports 5.0.0
+* Guava 21.0
+* Other libraries
+
+**Improvements & New Features**
+
+* Easy to navigate project tickets
+* Drag & drop support in ticket dashboard
+* Update language files
+* Other minor improvements
+
+**Bug Fixes**
+
+* Can not install two different MyCollab instances on the same server
+* UI issues on IE and Edge.
+
+
+Version 5.4.5
+-------------
+
+**Library Upgrades**
+
+* Guava 20.0
+* Other libraries
+
+**Improvements & New Features**
+
+* [Premium] Replace the own customer logo in front pages
+* [Premium] Replace the own customer logo in emails
+* [Premium] Check ticket satisfy the current query criteria to display or hide
+* Display order of show more tickets
+* Display color of milestone and task in associated views
+* Remove redundant javascript libraries in mobile browser
+* Other minor improvements
+
+**Bug Fixes**
+
+* Go to previous entry of task, bug go to the first entry
+* Unresolved tickets display wrong entries
+* Throw error when user enter the empty page view without having the write permission
+
+Version 5.4.4
+-------------
+
+**Improvements & New Features**
+
+* Revise the menu navigator
+* The project UI is more intuitive
+* Update Spanish language
+* Other minor improvements
+
 Version 5.4.3
 -------------
 
 **Library Upgrades**
 
-* Hiraki CP 4.5.0
-* Vaadin 7.7.1
-* Jackrabbit 2.13.3
+* Hiraki CP 4.5.1
+* Jackson 2.8.4
+* Vaadin 7.7.3
+* Jackrabbit 2.13.4
+* MySQL 5.1.40
+* Jetty 9.3.12.v20160915
 * Other libraries
 
 **Improvements & New Features**
 
-* [Premium] Project admin can customise the project dashboard page
 * [Premium] Kanban board for phases/sprint
 * [Premium] Close phase, assignments have option to close the sub-assignments
-* More stable the upgrade process
+* Fix UI issues on Firefox, Safari
+* Simplify the views of tasks, bugs, and risks
+* More stable of mobile web application
+* Support Indonesian language (Contributor: farizichwan), Update other languages
 * Other minor improvements
 
 **Bug Fixes**
 
 * [Premium] Can not mass update project risks
 * [Community] Can not preview bug, task on mobile web page because of lacking time service
+* Update the localization updates of Crm module
+* Lead source chart throws error
+* Can not display the opportunity when user click chart legend
+* Can not send the opportunity in several special cases
+* Minor issues are fixed on Crm module
+* Update the mail settings is not effect immediately
 
 Version 5.4.2
 -------------

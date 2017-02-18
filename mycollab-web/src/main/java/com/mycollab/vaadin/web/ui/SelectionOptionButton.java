@@ -44,8 +44,8 @@ public class SelectionOptionButton extends SplitButton implements HasSelectionOp
 
     public SelectionOptionButton(final HasSelectableItemHandlers selectableItemHandlers) {
         super();
-        addStyleName(WebUIConstants.BUTTON_ACTION);
-        addStyleName(WebUIConstants.BUTTON_SMALL_PADDING);
+        addStyleName(WebThemes.BUTTON_ACTION);
+        addStyleName(WebThemes.BUTTON_SMALL_PADDING);
         setIcon(FontAwesome.SQUARE_O);
 
         addClickListener(clickEvent -> toggleChangeOption());
@@ -107,14 +107,11 @@ public class SelectionOptionButton extends SplitButton implements HasSelectionOp
                 handler.onSelectAll();
             }
         }
-
     }
 
     private void fireSelectCurrentPage() {
         if (handlers != null) {
-            for (SelectionOptionHandler handler : handlers) {
-                handler.onSelectCurrentPage();
-            }
+            handlers.forEach(SelectionOptionHandler::onSelectCurrentPage);
         }
     }
 

@@ -28,13 +28,13 @@ import com.mycollab.reporting.SimpleReportTemplateExecutor;
 import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.events.HasSearchHandlers;
-import com.mycollab.vaadin.mvp.AbstractPageView;
+import com.mycollab.vaadin.mvp.AbstractVerticalPageView;
 import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.resources.LazyStreamSource;
 import com.mycollab.vaadin.ui.ELabel;
 import com.mycollab.vaadin.web.ui.OptionPopupContent;
 import com.mycollab.vaadin.web.ui.SplitButton;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.mycollab.vaadin.web.ui.table.AbstractPagedBeanTable;
 import com.vaadin.server.FileDownloader;
 import com.vaadin.server.FontAwesome;
@@ -50,7 +50,7 @@ import org.vaadin.viritin.layouts.MHorizontalLayout;
  * @since 1.0
  */
 @ViewComponent
-public class FollowingTicketViewImpl extends AbstractPageView implements FollowingTicketView {
+public class FollowingTicketViewImpl extends AbstractVerticalPageView implements FollowingTicketView {
     private static final long serialVersionUID = 1L;
 
     private SplitButton exportButtonControl;
@@ -71,7 +71,7 @@ public class FollowingTicketViewImpl extends AbstractPageView implements Followi
 
         Button exportBtn = new Button(UserUIContext.getMessage(GenericI18Enum.ACTION_EXPORT), clickEvent -> exportButtonControl.setPopupVisible(true));
         exportButtonControl = new SplitButton(exportBtn);
-        exportButtonControl.addStyleName(WebUIConstants.BUTTON_OPTION);
+        exportButtonControl.addStyleName(WebThemes.BUTTON_OPTION);
         exportButtonControl.setIcon(FontAwesome.EXTERNAL_LINK);
 
         OptionPopupContent popupButtonsControl = new OptionPopupContent();

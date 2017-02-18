@@ -20,6 +20,7 @@ import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.db.arguments.SetSearchField;
 import com.mycollab.db.arguments.StringSearchField;
 import com.mycollab.module.project.ProjectTypeConstants;
+import com.mycollab.module.project.domain.Project;
 import com.mycollab.module.project.domain.SimpleProject;
 import com.mycollab.module.project.domain.criteria.FollowingTicketSearchCriteria;
 import com.mycollab.module.project.i18n.BugI18nEnum;
@@ -31,8 +32,7 @@ import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.HeaderWithFontAwesome;
-import com.mycollab.vaadin.web.ui.DefaultGenericSearchPanel;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.*;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.*;
@@ -44,6 +44,7 @@ import org.vaadin.viritin.layouts.MHorizontalLayout;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author MyCollab Ltd.
@@ -85,11 +86,6 @@ public class FollowingTicketSearchPanel extends DefaultGenericSearchPanel<Follow
 
         public FollowingTicketBasicSearchLayout() {
             super(FollowingTicketSearchPanel.this);
-        }
-
-        @Override
-        public ComponentContainer constructHeader() {
-            return null;
         }
 
         @Override
@@ -143,7 +139,7 @@ public class FollowingTicketSearchPanel extends DefaultGenericSearchPanel<Follow
             selectionLayout.addComponent(projectField, 3, 0, 3, 1);
 
             MButton queryBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_SUBMIT), clickEvent -> doSearch())
-                    .withStyleName(WebUIConstants.BUTTON_ACTION);
+                    .withStyleName(WebThemes.BUTTON_ACTION);
             selectionLayout.addComponent(queryBtn, 4, 0);
 
             return basicSearchBody;
@@ -172,16 +168,13 @@ public class FollowingTicketSearchPanel extends DefaultGenericSearchPanel<Follow
             }
 
             String summary = summaryField.getValue().trim();
-            searchCriteria.setSummary(StringSearchField.and(StringUtils.isEmpty(summary) ? "" : summary));
+            searchCriteria.setName(StringSearchField.and(StringUtils.isEmpty(summary) ? "" : summary));
 
             Collection<Integer> selectedProjects = (Collection<Integer>) projectField.getValue();
             if (CollectionUtils.isNotEmpty(selectedProjects)) {
                 searchCriteria.setExtraTypeIds(new SetSearchField<>(selectedProjects.toArray(new Integer[selectedProjects.size()])));
             } else {
-                List<Integer> keys = new ArrayList<>();
-                for (SimpleProject project : projects) {
-                    keys.add(project.getId());
-                }
+                List<Integer> keys = projects.stream().map(Project::getId).collect(Collectors.toList());
                 if (keys.size() > 0) {
                     searchCriteria.setExtraTypeIds(new SetSearchField<>(keys.toArray(new Integer[keys.size()])));
                 }

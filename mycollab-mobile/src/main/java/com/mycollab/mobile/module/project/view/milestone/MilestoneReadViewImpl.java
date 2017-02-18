@@ -16,33 +16,41 @@
  */
 package com.mycollab.mobile.module.project.view.milestone;
 
+import com.hp.gagawa.java.elements.Span;
+import com.mycollab.eventmanager.EventBusFactory;
+import com.mycollab.mobile.form.view.DynaFormLayout;
+import com.mycollab.mobile.module.project.events.MilestoneEvent;
 import com.mycollab.mobile.module.project.ui.CommentNavigationButton;
 import com.mycollab.mobile.module.project.ui.ProjectPreviewFormControlsGenerator;
-import com.mycollab.mobile.module.project.view.issue.IssueNavigatorButton;
+import com.mycollab.mobile.module.project.view.ticket.TicketNavigatorButton;
 import com.mycollab.mobile.ui.AbstractPreviewItemComp;
 import com.mycollab.mobile.ui.AdvancedPreviewBeanForm;
 import com.mycollab.mobile.ui.FormSectionBuilder;
+import com.mycollab.mobile.ui.MobileUIConstants;
 import com.mycollab.module.project.CurrentProjectVariables;
 import com.mycollab.module.project.ProjectLinkBuilder;
 import com.mycollab.module.project.ProjectRolePermissionCollections;
 import com.mycollab.module.project.ProjectTypeConstants;
+import com.mycollab.module.project.domain.Milestone;
 import com.mycollab.module.project.domain.SimpleMilestone;
 import com.mycollab.module.project.i18n.OptionI18nEnum.MilestoneStatus;
-import com.mycollab.vaadin.UserUIContext;
+import com.mycollab.module.project.ui.ProjectAssetsManager;
 import com.mycollab.vaadin.events.HasPreviewFormHandlers;
 import com.mycollab.vaadin.mvp.ViewComponent;
+import com.mycollab.vaadin.touchkit.NavigationBarQuickMenu;
 import com.mycollab.vaadin.ui.AbstractBeanFieldGroupViewFieldFactory;
 import com.mycollab.vaadin.ui.GenericBeanForm;
 import com.mycollab.vaadin.ui.IFormLayoutFactory;
+import com.mycollab.vaadin.ui.UIConstants;
 import com.mycollab.vaadin.ui.field.DateViewField;
 import com.mycollab.vaadin.ui.field.DefaultViewField;
+import com.mycollab.vaadin.ui.field.I18nFormViewField;
 import com.mycollab.vaadin.ui.field.RichTextViewField;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentContainer;
-import com.vaadin.ui.Field;
+import com.vaadin.ui.*;
+import org.vaadin.viritin.button.MButton;
+import org.vaadin.viritin.layouts.MHorizontalLayout;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 
 /**
@@ -54,7 +62,7 @@ public class MilestoneReadViewImpl extends AbstractPreviewItemComp<SimpleMilesto
     private static final long serialVersionUID = -2466318105833801922L;
 
     private CommentNavigationButton relatedComments;
-    private IssueNavigatorButton issueNavigatorButton;
+    private TicketNavigatorButton ticketNavigatorButton;
 
     @Override
     public HasPreviewFormHandlers<SimpleMilestone> getPreviewFormHandlers() {
@@ -64,12 +72,18 @@ public class MilestoneReadViewImpl extends AbstractPreviewItemComp<SimpleMilesto
     @Override
     protected void afterPreviewItem() {
         relatedComments.displayTotalComments(beanItem.getId() + "");
-        issueNavigatorButton.displayTotalIssues(beanItem.getId());
+        ticketNavigatorButton.displayTotalIssues(beanItem.getId());
     }
 
     @Override
-    protected String initFormTitle() {
-        return this.beanItem.getName();
+    protected String initFormHeader() {
+        Span beanTitle = new Span().appendText(beanItem.getName());
+        if (beanItem.isCompleted()) {
+            beanTitle.setCSSClass(MobileUIConstants.LINK_COMPLETED);
+        } else if (beanItem.isOverdue()) {
+            beanTitle.setCSSClass(MobileUIConstants.LINK_OVERDUE);
+        }
+        return ProjectAssetsManager.getAsset(ProjectTypeConstants.MILESTONE).getHtml() + " " + beanTitle.write();
     }
 
     @Override
@@ -83,8 +97,14 @@ public class MilestoneReadViewImpl extends AbstractPreviewItemComp<SimpleMilesto
     }
 
     @Override
+    protected String getType() {
+        return ProjectTypeConstants.MILESTONE;
+    }
+
+    @Override
     protected IFormLayoutFactory initFormLayoutFactory() {
-        return new MilestoneFormLayoutFactory();
+        return new DynaFormLayout(ProjectTypeConstants.MILESTONE, MilestoneDefaultFormLayoutFactory.getForm(),
+                Milestone.Field.name.name());
     }
 
     @Override
@@ -94,15 +114,23 @@ public class MilestoneReadViewImpl extends AbstractPreviewItemComp<SimpleMilesto
 
     @Override
     protected ComponentContainer createButtonControls() {
-        return new ProjectPreviewFormControlsGenerator<>(previewForm).createButtonControls(ProjectRolePermissionCollections.MILESTONES);
+        ProjectPreviewFormControlsGenerator<SimpleMilestone> formControlsGenerator = new ProjectPreviewFormControlsGenerator<>(previewForm);
+        final VerticalLayout formControls = formControlsGenerator.createButtonControls(
+                ProjectPreviewFormControlsGenerator.CLONE_BTN_PRESENTED
+                        | ProjectPreviewFormControlsGenerator.DELETE_BTN_PRESENTED,
+                ProjectRolePermissionCollections.MILESTONES);
+        MButton editBtn = new MButton("", clickEvent -> EventBusFactory.getInstance().post(new MilestoneEvent.GotoEdit(this, beanItem)))
+                .withIcon(FontAwesome.EDIT).withStyleName(UIConstants.CIRCLE_BOX)
+                .withVisible(CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.MILESTONES));
+        return new MHorizontalLayout(editBtn, new NavigationBarQuickMenu(formControls));
     }
 
     @Override
     protected ComponentContainer createBottomPanel() {
         MVerticalLayout toolbarLayout = new MVerticalLayout().withSpacing(false).withMargin(false);
         toolbarLayout.setDefaultComponentAlignment(Alignment.TOP_LEFT);
-        issueNavigatorButton = new IssueNavigatorButton();
-        Component issueSection = FormSectionBuilder.build(FontAwesome.TICKET, issueNavigatorButton);
+        ticketNavigatorButton = new TicketNavigatorButton();
+        Component issueSection = FormSectionBuilder.build(FontAwesome.TICKET, ticketNavigatorButton);
         toolbarLayout.addComponent(issueSection);
         relatedComments = new CommentNavigationButton(ProjectTypeConstants.MILESTONE, beanItem.getId() + "");
         Component commentSection = FormSectionBuilder.build(FontAwesome.COMMENT, relatedComments);
@@ -113,23 +141,23 @@ public class MilestoneReadViewImpl extends AbstractPreviewItemComp<SimpleMilesto
     private class MilestoneFormFieldFactory extends AbstractBeanFieldGroupViewFieldFactory<SimpleMilestone> {
         private static final long serialVersionUID = 1L;
 
-        public MilestoneFormFieldFactory(GenericBeanForm<SimpleMilestone> form) {
+        MilestoneFormFieldFactory(GenericBeanForm<SimpleMilestone> form) {
             super(form);
         }
 
         @Override
         protected Field<?> onCreateField(final Object propertyId) {
-            if (propertyId.equals("startdate")) {
+            if (Milestone.Field.startdate.equalTo(propertyId)) {
                 return new DateViewField(beanItem.getStartdate());
-            } else if (propertyId.equals("enddate")) {
+            } else if (Milestone.Field.enddate.equalTo(propertyId)) {
                 return new DateViewField(beanItem.getEnddate());
-            } else if (propertyId.equals("owner")) {
-                return new DefaultViewField(ProjectLinkBuilder.generateProjectMemberHtmlLink(CurrentProjectVariables
-                        .getProjectId(), beanItem.getOwner(), beanItem.getOwnerFullName(), beanItem.getOwnerAvatarId(), false), ContentMode.HTML);
-            } else if (propertyId.equals("description")) {
+            } else if (Milestone.Field.assignuser.equalTo(propertyId)) {
+                return new DefaultViewField(ProjectLinkBuilder.generateProjectMemberHtmlLink(CurrentProjectVariables.getProjectId(),
+                        beanItem.getAssignuser(), beanItem.getOwnerFullName(), beanItem.getOwnerAvatarId(), false), ContentMode.HTML);
+            } else if (Milestone.Field.description.equalTo(propertyId)) {
                 return new RichTextViewField(beanItem.getDescription());
-            } else if (propertyId.equals("status")) {
-                return new DefaultViewField(UserUIContext.getMessage(MilestoneStatus.class, beanItem.getStatus()));
+            } else if (Milestone.Field.status.equalTo(propertyId)) {
+                return new I18nFormViewField(beanItem.getStatus(), MilestoneStatus.class).withStyleName(UIConstants.FIELD_NOTE);
             }
             return null;
         }

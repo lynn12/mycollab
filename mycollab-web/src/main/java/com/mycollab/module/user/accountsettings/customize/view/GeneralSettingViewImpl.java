@@ -18,6 +18,8 @@ package com.mycollab.module.user.accountsettings.customize.view;
 
 import com.mycollab.common.i18n.FileI18nEnum;
 import com.mycollab.common.i18n.GenericI18Enum;
+import com.mycollab.common.i18n.ShellI18nEnum;
+import com.mycollab.configuration.SiteConfiguration;
 import com.mycollab.configuration.StorageFactory;
 import com.mycollab.core.MyCollabException;
 import com.mycollab.core.UserInvalidInputException;
@@ -33,16 +35,19 @@ import com.mycollab.security.RolePermissionCollections;
 import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
-import com.mycollab.vaadin.mvp.AbstractPageView;
+import com.mycollab.vaadin.mvp.AbstractVerticalPageView;
 import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.ui.AccountAssetsResolver;
 import com.mycollab.vaadin.ui.ELabel;
 import com.mycollab.vaadin.ui.FormContainer;
+import com.mycollab.vaadin.ui.UIConstants;
 import com.mycollab.vaadin.web.ui.ServiceMenu;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.mycollab.vaadin.web.ui.grid.GridFormLayoutHelper;
 import com.mycollab.web.CustomLayoutExt;
+import com.vaadin.server.BrowserWindowOpener;
 import com.vaadin.server.ExternalResource;
+import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
@@ -65,7 +70,7 @@ import java.util.GregorianCalendar;
  * @since 5.1.0
  */
 @ViewComponent
-public class GeneralSettingViewImpl extends AbstractPageView implements GeneralSettingView {
+public class GeneralSettingViewImpl extends AbstractVerticalPageView implements GeneralSettingView {
     private SimpleBillingAccount billingAccount;
 
     public GeneralSettingViewImpl() {
@@ -84,7 +89,7 @@ public class GeneralSettingViewImpl extends AbstractPageView implements GeneralS
         Label headerLbl = new Label(UserUIContext.getMessage(AdminI18nEnum.OPT_GENERAL_SETTINGS));
 
         MButton editBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_EDIT), clickEvent -> UI.getCurrent().addWindow(new AccountInfoChangeWindow()))
-                .withStyleName(WebUIConstants.BUTTON_LINK);
+                .withStyleName(WebThemes.BUTTON_LINK);
 
         generalSettingHeader.with(headerLbl, editBtn).alignAll(Alignment.MIDDLE_LEFT);
 
@@ -131,6 +136,10 @@ public class GeneralSettingViewImpl extends AbstractPageView implements GeneralS
 
         buildLogoPanel();
         buildShortcutIconPanel();
+
+        if (!SiteConfiguration.isDemandEdition()) {
+            buildLanguageUpdatePanel();
+        }
     }
 
     private void buildLogoPanel() {
@@ -208,10 +217,10 @@ public class GeneralSettingViewImpl extends AbstractPageView implements GeneralS
             billingAccount.setLogopath(null);
             billingAccountService.updateWithSession(billingAccount, UserUIContext.getUsername());
             Page.getCurrent().getJavaScript().execute("window.location.reload();");
-        }).withStyleName(WebUIConstants.BUTTON_OPTION);
+        }).withStyleName(WebThemes.BUTTON_OPTION);
         resetButton.setVisible(UserUIContext.canBeYes(RolePermissionCollections.ACCOUNT_THEME));
 
-        buttonControls.with(logoUploadField, resetButton);
+        buttonControls.with(resetButton, logoUploadField);
         rightPanel.with(previewLayout, buttonControls);
         layout.with(leftPanel, rightPanel).expand(rightPanel);
         formContainer.addSection("Logo", layout);
@@ -274,13 +283,31 @@ public class GeneralSettingViewImpl extends AbstractPageView implements GeneralS
             billingAccount.setFaviconpath(null);
             billingAccountService.updateWithSession(billingAccount, UserUIContext.getUsername());
             Page.getCurrent().getJavaScript().execute("window.location.reload();");
-        }).withStyleName(WebUIConstants.BUTTON_OPTION);
+        }).withStyleName(WebThemes.BUTTON_OPTION);
         resetButton.setVisible(UserUIContext.canBeYes(RolePermissionCollections.ACCOUNT_THEME));
 
-        buttonControls.with(favIconUploadField, resetButton);
+        buttonControls.with(resetButton, favIconUploadField);
         rightPanel.with(favIconRes, buttonControls);
         layout.with(leftPanel, rightPanel).expand(rightPanel);
         formContainer.addSection("Favicon", layout);
+        this.with(formContainer);
+    }
+
+    private void buildLanguageUpdatePanel() {
+        FormContainer formContainer = new FormContainer();
+        MHorizontalLayout layout = new MHorizontalLayout().withFullWidth().withMargin(new MarginInfo(true));
+        MVerticalLayout leftPanel = new MVerticalLayout().withMargin(false);
+        Label logoDesc = new Label(UserUIContext.getMessage(ShellI18nEnum.OPT_LANGUAGE_DOWNLOAD));
+        leftPanel.with(logoDesc).withWidth("250px");
+        MVerticalLayout rightPanel = new MVerticalLayout().withMargin(false);
+        MButton downloadBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_DOWNLOAD))
+                .withStyleName(WebThemes.BUTTON_ACTION).withIcon(FontAwesome.DOWNLOAD);
+        BrowserWindowOpener opener = new BrowserWindowOpener(SiteConfiguration.getApiUrl("localization/translations"));
+        opener.extend(downloadBtn);
+        rightPanel.with(downloadBtn, new ELabel(UserUIContext.getMessage(ShellI18nEnum
+                .OPT_UPDATE_LANGUAGE_INSTRUCTION)).withStyleName(UIConstants.META_INFO));
+        layout.with(leftPanel, rightPanel).expand(rightPanel);
+        formContainer.addSection("Languages", layout);
         this.with(formContainer);
     }
 }

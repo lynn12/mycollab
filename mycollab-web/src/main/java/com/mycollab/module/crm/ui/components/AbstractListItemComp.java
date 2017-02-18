@@ -19,16 +19,13 @@ package com.mycollab.module.crm.ui.components;
 import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.db.arguments.SearchCriteria;
 import com.mycollab.vaadin.UserUIContext;
-import com.mycollab.vaadin.web.ui.IListView;
+import com.mycollab.vaadin.web.ui.*;
 import com.mycollab.vaadin.events.HasMassItemActionHandler;
 import com.mycollab.vaadin.events.HasSearchHandlers;
 import com.mycollab.vaadin.events.HasSelectableItemHandlers;
 import com.mycollab.vaadin.events.HasSelectionOptionHandlers;
-import com.mycollab.vaadin.mvp.AbstractPageView;
-import com.mycollab.vaadin.web.ui.DefaultGenericSearchPanel;
+import com.mycollab.vaadin.mvp.AbstractVerticalPageView;
 import com.mycollab.vaadin.ui.DefaultMassItemActionHandlerContainer;
-import com.mycollab.vaadin.web.ui.SelectionOptionButton;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
 import com.mycollab.vaadin.web.ui.table.AbstractPagedBeanTable;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
@@ -43,7 +40,7 @@ import org.vaadin.viritin.layouts.MVerticalLayout;
  * @author MyCollab Ltd.
  * @since 3.0
  */
-public abstract class AbstractListItemComp<S extends SearchCriteria, B> extends AbstractPageView implements IListView<S, B> {
+public abstract class AbstractListItemComp<S extends SearchCriteria, B> extends AbstractVerticalPageView implements IListView<S, B> {
     private static final long serialVersionUID = 1L;
 
     protected MVerticalLayout contentLayout;
@@ -71,8 +68,7 @@ public abstract class AbstractListItemComp<S extends SearchCriteria, B> extends 
     }
 
     private ComponentContainer buildControlsLayout() {
-        MHorizontalLayout viewControlsLayout = new MHorizontalLayout().withFullWidth();
-        viewControlsLayout.addStyleName(WebUIConstants.TABLE_ACTION_CONTROLS);
+        MHorizontalLayout viewControlsLayout = new MHorizontalLayout().withStyleName(WebThemes.TABLE_ACTION_CONTROLS).withFullWidth();
 
         selectOptionButton = new SelectionOptionButton(tableItem);
         selectOptionButton.setSizeUndefined();

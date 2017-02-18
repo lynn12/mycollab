@@ -44,21 +44,8 @@ public class ThemeManager {
 
         StringBuilder extraStyles = new StringBuilder();
 
-        extraStyles.append(".v-touchkit-navbar-caption { width: " + (UIUtils.getBrowserWidth() - 144) + "px " +
-                "!important; }");
-        extraStyles.append(".v-touchkit-navbar-caption span { width: " + (UIUtils.getBrowserWidth() - 144) + "px " +
-                "!important; }");
-        if (accountTheme.getTopmenubg() != null) {
-            extraStyles.append(".v-touchkit-navbar { background-color: #" + accountTheme.getTopmenubg() + "; }");
-        }
-
-        if (accountTheme.getTopmenutext() != null) {
-            extraStyles.append(".v-touchkit-navbar { color: #" + accountTheme.getTopmenutext() + "; }");
-            extraStyles.append(".v-touchkit-navbar .v-button { color: #" + accountTheme.getTopmenutext() + "; }");
-            extraStyles.append(".v-touchkit-navbar .v-touchkit-navbutton { color: #" + accountTheme.getTopmenutext() + "; }");
-            extraStyles.append(".v-touchkit-navbar .v-touchkit-navbutton:after { color: #" + accountTheme.getTopmenutext() + "; }");
-            extraStyles.append(".v-touchkit-navbar .v-navbar-quickmenu-button { color: #" + accountTheme.getTopmenutext() + "; }");
-        }
+        extraStyles.append(".v-touchkit-navbar-caption { width: " + (UIUtils.getBrowserWidth() - 144) + "px !important; }");
+        extraStyles.append(".v-touchkit-navbar-caption span { width: " + (UIUtils.getBrowserWidth() - 144) + "px !important; }");
 
         if (accountTheme.getVtabsheetbg() != null) {
             extraStyles.append(".section { background-color: #" + accountTheme.getVtabsheetbg() + "; }");
@@ -68,9 +55,16 @@ public class ThemeManager {
         }
 
         if (accountTheme.getVtabsheettext() != null) {
+            extraStyles.append(".project-dashboard .project-info-layout .v-icon { color: #" + accountTheme.getVtabsheettext() + "; }");
+            extraStyles.append(".project-dashboard .project-info-layout .project-name { color: #" + accountTheme.getVtabsheettext() + "; }");
+            extraStyles.append(".project-dashboard .project-info-layout .meta-info { color: " + ColorUtils
+                    .darkerColor("#" + accountTheme.getVtabsheettext()) + "; }");
             extraStyles.append(".v-navbar-quickmenu-content .v-button { color: #" + accountTheme.getVtabsheettext() + "; }");
             extraStyles.append(".slidemenu .v-window-contents .v-button { color: #" + accountTheme.getVtabsheettext() + " !important; }");
             extraStyles.append(".section { color: #" + accountTheme.getVtabsheettext() + "; }");
+            extraStyles.append(".section .v-touchkit-navbutton { color: #" + accountTheme.getVtabsheettext() + " !important; }");
+            extraStyles.append(".section .v-touchkit-navbutton::after { color: #" + accountTheme.getVtabsheettext() + " !important; }");
+            extraStyles.append(".slidemenu .v-window-contents .menulabel { color: " + ColorUtils.brighterColor("#" + accountTheme.getVtabsheettext()) + "; }");
         }
 
         /* Action Buttons */
@@ -80,12 +74,6 @@ public class ThemeManager {
                     + accountTheme.getActionbtn() + " !important; }");
 
             extraStyles.append(".v-button.v-button-action-btn, .v-button-action-btn:focus { background-color: #" +
-                    accountTheme.getActionbtn() + "; }");
-
-            extraStyles.append(".section .v-touchkit-navbutton:after { color: #" +
-                    accountTheme.getActionbtn() + "; }");
-
-            extraStyles.append(".v-touchkit-verticalcomponentgroup .v-touchkit-navbutton:after { color: #" +
                     accountTheme.getActionbtn() + "; }");
         }
 
@@ -146,55 +134,57 @@ public class ThemeManager {
         if (accountTheme.getTopmenubg() != null) {
             extraStyles.append(".topNavigation { background-color: #" + accountTheme.getTopmenubg() + "; }");
             extraStyles.append("#login-header { background-color: #" + accountTheme.getTopmenubg() + "; }");
-            extraStyles.append(".topNavigation #mainLogo { background-color: " + ColorUtils.darkerColor("#" + accountTheme.getTopmenubg()) + "; }");
+            extraStyles.append(".topNavigation #mainLogo { background-color: #" + accountTheme.getTopmenubg() + "; }");
         }
 
         if (accountTheme.getTopmenubgselected() != null) {
-            extraStyles.append(".topNavigation .serviceMenuContainer .service-menu.v-buttongroup .v-button.selected { background-color: #"
-                    + accountTheme.getTopmenubgselected() + "; }");
+            extraStyles.append(".topNavigation .serviceMenuContainer .service-menu .v-button.selected {" +
+                    " background-color: #" + accountTheme.getTopmenubgselected() + "; }");
 
-            extraStyles.append(".topNavigation .serviceMenuContainer .service-menu.v-buttongroup .v-button:hover { background-color: #"
+            extraStyles.append(".topNavigation .serviceMenuContainer .service-menu .v-button:hover { background-color: #"
                     + accountTheme.getTopmenubgselected() + "; }");
 
             extraStyles.append(".v-button.add-btn-popup:hover { background-color: #" + accountTheme.getTopmenubgselected() + "; }");
+
+            extraStyles.append(".topNavigation .v-button.ad { background-color: #" + accountTheme.getTopmenubgselected() + "; }");
         }
 
         if (accountTheme.getTopmenutext() != null) {
             extraStyles.append(".topNavigation .v-button { color: #" + accountTheme.getTopmenutext() + "; }");
+            extraStyles.append(".subDomain { color: #" + accountTheme.getTopmenutext() + "; }");
+            extraStyles.append(".accountMenuContainer .v-popup-indicator::before { color: #" + accountTheme.getTopmenutext() + "; }");
         }
 
         if (accountTheme.getTopmenutextselected() != null) {
-            extraStyles.append(".topNavigation .serviceMenuContainer .service-menu.v-buttongroup .v-button.selected { color: #"
+            extraStyles.append(".topNavigation .serviceMenuContainer .service-menu .v-button.selected { color: #"
                     + accountTheme.getTopmenutextselected() + "; }");
 
-            extraStyles.append(".topNavigation .serviceMenuContainer .service-menu.v-buttongroup .v-button:hover { color: #" + accountTheme.getTopmenutextselected() + "; }");
+            extraStyles.append(".topNavigation .serviceMenuContainer .service-menu .v-button:hover { color: #" + accountTheme.getTopmenutextselected() + "; }");
 
             extraStyles.append(".v-button.add-btn-popup:hover { color: #" + accountTheme.getTopmenutextselected() + "; }");
+
+            extraStyles.append(".topNavigation .v-button.ad { color: #" + accountTheme.getTopmenutextselected() + "; }");
+
+            extraStyles.append(".topNavigation .v-button.ad .v-icon { color: #" + accountTheme.getTopmenutextselected() + "; }");
         }
 
 		/* Vertical Tabsheet */
 
         if (accountTheme.getVtabsheetbg() != null) {
             extraStyles.append(".vertical-tabsheet .navigator-wrap { background-color: #" + accountTheme.getVtabsheetbg() + "; }");
-
-            extraStyles.append(".projectfeed-hdr-wrapper { background-color: #" + accountTheme.getVtabsheetbg() + "; }");
-
-            extraStyles.append(".project-info { background-color: #" + accountTheme.getVtabsheetbg() + "; }");
-
-            extraStyles.append("div.v-csslayout.rightsidebar-layout .sidebar-wrap { background-color: " + ColorUtils
-                    .brighterColor("#" + accountTheme.getVtabsheetbg()) + ";}");
-
-            extraStyles.append(".v-sliderpanel-content, .v-sliderpanel-tab { background-color: " + ColorUtils
-                    .darkerColor("#" + accountTheme.getVtabsheetbg()) + "; }");
         }
 
         if (accountTheme.getVtabsheettext() != null) {
             extraStyles.append(".vertical-tabsheet .v-button-tab > .v-button-wrap { color: #"
                     + accountTheme.getVtabsheettext() + "; }");
 
-            extraStyles.append(".project-info .header { color: #" + accountTheme.getVtabsheettext() + "; }");
+            extraStyles.append(".closed-button .v-button-wrap .v-icon { color: #"
+                    + accountTheme.getVtabsheettext() + "; }");
 
-            extraStyles.append("div.v-csslayout.rightsidebar-layout .sidebar-wrap { color: #" + accountTheme.getVtabsheettext() + "; }");
+            extraStyles.append(".expand-button .v-button-wrap .v-icon { color: #"
+                    + accountTheme.getVtabsheettext() + "; }");
+
+            extraStyles.append(".project-info .header { color: #" + accountTheme.getVtabsheettext() + "; }");
 
             extraStyles.append(".crmContainer .navigator-wrap .basic-info { color: #" + accountTheme.getVtabsheettext() + "; }");
 
@@ -255,15 +245,15 @@ public class ThemeManager {
             extraStyles.append(".v-label.year-lbl { box-shadow: 0 0 0 5px #" + accountTheme.getActionbtn() + ";}");
 
             //Date label of activity stream
-            extraStyles.append(".feed-block-wrap .date-lbl { background-color:#" + accountTheme.getActionbtn() + ";}");
+            extraStyles.append(".activity-list .feed-block-wrap .date-lbl { background-color:#" + accountTheme.getActionbtn() + ";}");
 
-            extraStyles.append(".feed-block-wrap .date-lbl::after{ border-left-color:#" + accountTheme.getActionbtn() + ";}");
+            extraStyles.append(".activity-list .feed-block-wrap .date-lbl::after{ border-left-color:#" + accountTheme.getActionbtn() + ";}");
 
-            extraStyles.append(".feed-block-wrap:hover .date-lbl { background-color:" + ColorUtils.darkerColor("#" +
+            extraStyles.append(".activity-list .feed-block-wrap:hover .date-lbl { background-color:" + ColorUtils.darkerColor("#" +
                     accountTheme.getActionbtn()) + ";}");
 
-            extraStyles.append(".feed-block-wrap:hover .date-lbl::after{ border-left-color:" + ColorUtils.darkerColor
-                    ("#" + accountTheme.getActionbtn()) + ";}");
+            extraStyles.append(".activity-list .feed-block-wrap:hover .date-lbl::after{ border-left-color:" +
+                    ColorUtils.darkerColor("#" + accountTheme.getActionbtn()) + ";}");
 
             // Button group default button
             extraStyles.append(".v-buttongroup.toggle-btn-group .v-button.btn-group-default {background-color:#" + accountTheme
@@ -271,11 +261,6 @@ public class ThemeManager {
 
             extraStyles.append(".v-buttongroup.toggle-btn-group .v-button.btn-group-default:hover {background-color:"
                     + ColorUtils.darkerColor("#" + accountTheme.getActionbtn()) + ";}");
-
-            extraStyles.append("div.v-button.token-field { background-color: " + ColorUtils.brighterColor("#" + accountTheme.getActionbtn()) + "; }");
-
-//            extraStyles.append(".block {background-color: #" + accountTheme.getActionbtn() + ";}");
-//            extraStyles.append(".block:hover {background-color: " + ColorUtils.darkerColor("#" + accountTheme.getActionbtn()) + ";}");
 
             extraStyles.append(".v-context-menu-container .v-context-menu .v-context-submenu:hover " +
                     "{background-color:#" + accountTheme.getActionbtn() + ";}");
@@ -300,13 +285,9 @@ public class ThemeManager {
                     accountTheme.getActionbtntext() + "; }");
 
             //Date label of activity stream
-            extraStyles.append(".feed-block-wrap .date-lbl { color:#" + accountTheme.getActionbtntext() + ";}");
+            extraStyles.append(".activity-list .feed-block-wrap .date-lbl { color:#" + accountTheme.getActionbtntext() + ";}");
 
             extraStyles.append(".v-button.v-button-block {color:#" + accountTheme.getActionbtntext() + ";}");
-
-            extraStyles.append("div.v-button.token-field { color: #" + accountTheme.getActionbtntext() + "; }");
-
-            extraStyles.append(".block {color:#" + accountTheme.getActionbtntext() + ";}");
 
             extraStyles.append(".v-context-menu-container .v-context-menu .v-context-submenu:hover " +
                     "{color:#" + accountTheme.getActionbtntext() + ";}");
@@ -327,10 +308,6 @@ public class ThemeManager {
 
             extraStyles.append(".v-buttongroup.toggle-btn-group .v-button:hover { background-color: " +
                     ColorUtils.darkerColor("#" + accountTheme.getOptionbtn()) + ";}");
-
-            extraStyles.append(".block-popupedit { background-color: " + ColorUtils.brighterColor("#" + accountTheme
-                    .getOptionbtn(), 0.2) + ";}");
-            extraStyles.append(".block-popupedit:hover { background-color: #" + accountTheme.getOptionbtn() + ";}");
         }
 
         if (accountTheme.getOptionbtntext() != null) {

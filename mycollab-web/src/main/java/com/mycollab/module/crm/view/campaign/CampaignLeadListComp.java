@@ -27,6 +27,7 @@ import com.mycollab.module.crm.domain.CampaignWithBLOBs;
 import com.mycollab.module.crm.domain.SimpleLead;
 import com.mycollab.module.crm.domain.criteria.LeadSearchCriteria;
 import com.mycollab.module.crm.i18n.LeadI18nEnum;
+import com.mycollab.module.crm.i18n.OptionI18nEnum.LeadStatus;
 import com.mycollab.module.crm.service.CampaignService;
 import com.mycollab.module.crm.service.LeadService;
 import com.mycollab.module.crm.ui.CrmAssetsManager;
@@ -36,10 +37,7 @@ import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.ELabel;
-import com.mycollab.vaadin.web.ui.ConfirmDialogExt;
-import com.mycollab.vaadin.web.ui.OptionPopupContent;
-import com.mycollab.vaadin.web.ui.SplitButton;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.*;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.*;
 import org.vaadin.viritin.button.MButton;
@@ -56,6 +54,7 @@ public class CampaignLeadListComp extends RelatedListComp2<LeadService, LeadSear
 
     public CampaignLeadListComp() {
         super(AppContextUtil.getSpringBean(LeadService.class), 20);
+        setMargin(true);
         this.setBlockDisplayHandler(new CampaignLeadBlockDisplay());
     }
 
@@ -66,7 +65,7 @@ public class CampaignLeadListComp extends RelatedListComp2<LeadService, LeadSear
 
         if (UserUIContext.canWrite(RolePermissionCollections.CRM_LEAD)) {
             final SplitButton controlsBtn = new SplitButton();
-            controlsBtn.addStyleName(WebUIConstants.BUTTON_ACTION);
+            controlsBtn.addStyleName(WebThemes.BUTTON_ACTION);
             controlsBtn.setCaption(UserUIContext.getMessage(LeadI18nEnum.NEW));
             controlsBtn.setIcon(FontAwesome.PLUS);
             controlsBtn.addClickListener(event -> fireNewRelatedItem(""));
@@ -90,7 +89,7 @@ public class CampaignLeadListComp extends RelatedListComp2<LeadService, LeadSear
         return controlsBtnWrap;
     }
 
-    public void displayLeads(final CampaignWithBLOBs campaign) {
+    void displayLeads(final CampaignWithBLOBs campaign) {
         this.campaign = campaign;
         loadLeads();
     }
@@ -116,7 +115,7 @@ public class CampaignLeadListComp extends RelatedListComp2<LeadService, LeadSear
             beanBlock.setWidth("350px");
 
             VerticalLayout blockContent = new VerticalLayout();
-            MHorizontalLayout blockTop = new MHorizontalLayout();
+            MHorizontalLayout blockTop = new MHorizontalLayout().withFullWidth();
             CssLayout iconWrap = new CssLayout();
             iconWrap.setStyleName("icon-wrap");
             ELabel leadAvatar = ELabel.fontIcon(CrmAssetsManager.getAsset(CrmTypeConstants.LEAD));
@@ -135,15 +134,15 @@ public class CampaignLeadListComp extends RelatedListComp2<LeadService, LeadSear
                         UserUIContext.getMessage(GenericI18Enum.BUTTON_NO),
                         confirmDialog -> {
                             if (confirmDialog.isConfirmed()) {
-                                final CampaignService accountService = AppContextUtil.getSpringBean(CampaignService.class);
-                                final CampaignLead associateLead = new CampaignLead();
+                                CampaignService accountService = AppContextUtil.getSpringBean(CampaignService.class);
+                                CampaignLead associateLead = new CampaignLead();
                                 associateLead.setCampaignid(campaign.getId());
                                 associateLead.setLeadid(lead.getId());
                                 accountService.removeCampaignLeadRelationship(associateLead, MyCollabUI.getAccountId());
                                 CampaignLeadListComp.this.refresh();
                             }
                         });
-            }).withIcon(FontAwesome.TRASH_O).withStyleName(WebUIConstants.BUTTON_ICON_ONLY);
+            }).withIcon(FontAwesome.TRASH_O).withStyleName(WebThemes.BUTTON_ICON_ONLY);
 
             blockContent.addComponent(btnDelete);
             blockContent.setComponentAlignment(btnDelete, Alignment.TOP_RIGHT);
@@ -153,7 +152,8 @@ public class CampaignLeadListComp extends RelatedListComp2<LeadService, LeadSear
 
             leadInfo.addComponent(leadName);
 
-            Label leadStatus = new Label(UserUIContext.getMessage(GenericI18Enum.FORM_STATUS) + ": " + MoreObjects.firstNonNull(lead.getStatus(), ""));
+            Label leadStatus = new Label(UserUIContext.getMessage(GenericI18Enum.FORM_STATUS) + ": " +
+                    UserUIContext.getMessage(LeadStatus.class, lead.getStatus()));
             leadInfo.addComponent(leadStatus);
 
             String email = MoreObjects.firstNonNull(lead.getEmail(), "");
@@ -163,9 +163,7 @@ public class CampaignLeadListComp extends RelatedListComp2<LeadService, LeadSear
             Label leadOfficePhone = new Label(UserUIContext.getMessage(LeadI18nEnum.FORM_OFFICE_PHONE) + ": " + MoreObjects.firstNonNull(lead.getOfficephone(), ""));
             leadInfo.addComponent(leadOfficePhone);
 
-            blockTop.addComponent(leadInfo);
-            blockTop.setExpandRatio(leadInfo, 1.0f);
-            blockTop.setWidth("100%");
+            blockTop.with(leadInfo).expand(leadInfo);
             blockContent.addComponent(blockTop);
 
             blockContent.setWidth("100%");

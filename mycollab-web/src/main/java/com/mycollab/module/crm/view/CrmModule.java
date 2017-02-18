@@ -16,14 +16,18 @@
  */
 package com.mycollab.module.crm.view;
 
+import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.module.crm.CrmTypeConstants;
-import com.mycollab.module.crm.events.*;
+import com.mycollab.module.crm.event.*;
 import com.mycollab.module.crm.i18n.*;
 import com.mycollab.module.crm.ui.CrmAssetsManager;
 import com.mycollab.security.RolePermissionCollections;
 import com.mycollab.vaadin.UserUIContext;
-import com.mycollab.vaadin.mvp.*;
+import com.mycollab.vaadin.mvp.AbstractSingleContainerPageView;
+import com.mycollab.vaadin.mvp.ControllerRegistry;
+import com.mycollab.vaadin.mvp.IModule;
+import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.web.ui.ModuleHelper;
 import com.mycollab.vaadin.web.ui.OptionPopupContent;
 import com.mycollab.vaadin.web.ui.ServiceMenu;
@@ -40,7 +44,7 @@ import org.vaadin.viritin.layouts.MHorizontalLayout;
  * @since 1.0
  */
 @ViewComponent
-public class CrmModule extends AbstractPageView implements IDesktopModule {
+public class CrmModule extends AbstractSingleContainerPageView implements IDesktopModule {
     private static final long serialVersionUID = 1L;
 
     private PopupButton addPopupMenu;
@@ -48,18 +52,12 @@ public class CrmModule extends AbstractPageView implements IDesktopModule {
     private ServiceMenu serviceMenu;
 
     public CrmModule() {
-        this.setStyleName("crm-module");
-        this.addStyleName("crmContainer");
+        addStyleName("module");
         ControllerRegistry.addController(new CrmController(this));
     }
 
     public void gotoCrmDashboard() {
         EventBusFactory.getInstance().post(new CrmEvent.GotoHome(this, null));
-    }
-
-    public void addView(PageView view) {
-        this.removeAllComponents();
-        this.with(view).expand(view);
     }
 
     @Override
@@ -92,62 +90,62 @@ public class CrmModule extends AbstractPageView implements IDesktopModule {
 
             Button.ClickListener listener = new CreateItemListener();
 
-            addPopupMenu = new PopupButton(UserUIContext.getMessage(CrmCommonI18nEnum.ACTION_QUICK_ADD));
+            addPopupMenu = new PopupButton(UserUIContext.getMessage(GenericI18Enum.ACTION_NEW));
             addPopupMenu.setIcon(FontAwesome.PLUS_CIRCLE);
             addPopupMenu.addStyleName("add-btn-popup");
             addPopupMenu.setDirection(Alignment.BOTTOM_LEFT);
             OptionPopupContent popupButtonsControl = new OptionPopupContent();
 
             if (UserUIContext.canWrite(RolePermissionCollections.CRM_ACCOUNT)) {
-                Button newAccountBtn = new Button(UserUIContext.getMessage(AccountI18nEnum.NEW), listener);
+                Button newAccountBtn = new Button(UserUIContext.getMessage(AccountI18nEnum.SINGLE), listener);
                 newAccountBtn.setIcon(CrmAssetsManager.getAsset(CrmTypeConstants.ACCOUNT));
                 popupButtonsControl.addOption(newAccountBtn);
             }
 
             if (UserUIContext.canWrite(RolePermissionCollections.CRM_CONTACT)) {
-                Button newContactBtn = new Button(UserUIContext.getMessage(ContactI18nEnum.NEW), listener);
+                Button newContactBtn = new Button(UserUIContext.getMessage(ContactI18nEnum.SINGLE), listener);
                 newContactBtn.setIcon(CrmAssetsManager.getAsset(CrmTypeConstants.CONTACT));
                 popupButtonsControl.addOption(newContactBtn);
             }
 
             if (UserUIContext.canWrite(RolePermissionCollections.CRM_CAMPAIGN)) {
-                Button newCampaignBtn = new Button(UserUIContext.getMessage(CampaignI18nEnum.NEW), listener);
+                Button newCampaignBtn = new Button(UserUIContext.getMessage(CampaignI18nEnum.SINGLE), listener);
                 newCampaignBtn.setIcon(CrmAssetsManager.getAsset(CrmTypeConstants.CAMPAIGN));
                 popupButtonsControl.addOption(newCampaignBtn);
             }
 
             if (UserUIContext.canWrite(RolePermissionCollections.CRM_OPPORTUNITY)) {
-                Button newOpportunityBtn = new Button(UserUIContext.getMessage(OpportunityI18nEnum.NEW), listener);
+                Button newOpportunityBtn = new Button(UserUIContext.getMessage(OpportunityI18nEnum.SINGLE), listener);
                 newOpportunityBtn.setIcon(CrmAssetsManager.getAsset(CrmTypeConstants.OPPORTUNITY));
                 popupButtonsControl.addOption(newOpportunityBtn);
             }
 
             if (UserUIContext.canWrite(RolePermissionCollections.CRM_LEAD)) {
-                Button newLeadBtn = new Button(UserUIContext.getMessage(LeadI18nEnum.NEW), listener);
+                Button newLeadBtn = new Button(UserUIContext.getMessage(LeadI18nEnum.SINGLE), listener);
                 newLeadBtn.setIcon(CrmAssetsManager.getAsset(CrmTypeConstants.LEAD));
                 popupButtonsControl.addOption(newLeadBtn);
             }
 
             if (UserUIContext.canWrite(RolePermissionCollections.CRM_CASE)) {
-                Button newCaseBtn = new Button(UserUIContext.getMessage(CaseI18nEnum.NEW), listener);
+                Button newCaseBtn = new Button(UserUIContext.getMessage(CaseI18nEnum.SINGLE), listener);
                 newCaseBtn.setIcon(CrmAssetsManager.getAsset(CrmTypeConstants.CASE));
                 popupButtonsControl.addOption(newCaseBtn);
             }
 
             if (UserUIContext.canWrite(RolePermissionCollections.CRM_TASK)) {
-                Button newTaskBtn = new Button(UserUIContext.getMessage(TaskI18nEnum.NEW), listener);
+                Button newTaskBtn = new Button(UserUIContext.getMessage(TaskI18nEnum.SINGLE), listener);
                 newTaskBtn.setIcon(CrmAssetsManager.getAsset(CrmTypeConstants.TASK));
                 popupButtonsControl.addOption(newTaskBtn);
             }
 
             if (UserUIContext.canWrite(RolePermissionCollections.CRM_CALL)) {
-                Button newCallBtn = new Button(UserUIContext.getMessage(CallI18nEnum.NEW), listener);
+                Button newCallBtn = new Button(UserUIContext.getMessage(CallI18nEnum.SINGLE), listener);
                 newCallBtn.setIcon(CrmAssetsManager.getAsset(CrmTypeConstants.CALL));
                 popupButtonsControl.addOption(newCallBtn);
             }
 
             if (UserUIContext.canWrite(RolePermissionCollections.CRM_MEETING)) {
-                Button newMeetingBtn = new Button(UserUIContext.getMessage(MeetingI18nEnum.NEW), listener);
+                Button newMeetingBtn = new Button(UserUIContext.getMessage(MeetingI18nEnum.SINGLE), listener);
                 newMeetingBtn.setIcon(CrmAssetsManager.getAsset(CrmTypeConstants.MEETING));
                 popupButtonsControl.addOption(newMeetingBtn);
             }

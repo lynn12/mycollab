@@ -16,6 +16,9 @@
  */
 package com.mycollab.mobile.module.project.view;
 
+import com.hp.gagawa.java.elements.A;
+import com.hp.gagawa.java.elements.Img;
+import com.hp.gagawa.java.elements.Text;
 import com.mycollab.common.ActivityStreamConstants;
 import com.mycollab.common.domain.criteria.ActivityStreamSearchCriteria;
 import com.mycollab.configuration.StorageFactory;
@@ -24,6 +27,7 @@ import com.mycollab.html.DivLessFormatter;
 import com.mycollab.mobile.ui.AbstractPagedBeanList;
 import com.mycollab.mobile.ui.FormSectionBuilder;
 import com.mycollab.module.project.ProjectLinkBuilder;
+import com.mycollab.module.project.ProjectLinkGenerator;
 import com.mycollab.module.project.ProjectTypeConstants;
 import com.mycollab.module.project.domain.ProjectActivityStream;
 import com.mycollab.module.project.i18n.ProjectCommonI18nEnum;
@@ -32,10 +36,9 @@ import com.mycollab.module.project.ui.ProjectAssetsManager;
 import com.mycollab.module.project.view.ProjectLocalizationTypeMap;
 import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.UserUIContext;
+import com.mycollab.vaadin.ui.IBeanList;
+import com.mycollab.vaadin.ui.UIConstants;
 import com.mycollab.vaadin.ui.registry.AuditLogRegistry;
-import com.hp.gagawa.java.elements.A;
-import com.hp.gagawa.java.elements.Img;
-import com.hp.gagawa.java.elements.Text;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
@@ -50,12 +53,12 @@ import java.util.List;
  * @author MyCollab Ltd.
  * @since 4.5.2
  */
-public class ProjectActivityStreamListDisplay extends AbstractPagedBeanList<ActivityStreamSearchCriteria, ProjectActivityStream> {
+class ProjectActivityStreamListDisplay extends AbstractPagedBeanList<ActivityStreamSearchCriteria, ProjectActivityStream> {
     private static final long serialVersionUID = 9189667863722393067L;
 
-    protected final ProjectActivityStreamService projectActivityStreamService;
+    private final ProjectActivityStreamService projectActivityStreamService;
 
-    public ProjectActivityStreamListDisplay() {
+    ProjectActivityStreamListDisplay() {
         super(new ActivityStreamRowHandler(), 20);
         projectActivityStreamService = AppContextUtil.getSpringBean(ProjectActivityStreamService.class);
     }
@@ -79,7 +82,7 @@ public class ProjectActivityStreamListDisplay extends AbstractPagedBeanList<Acti
                 listContainer.addComponent(FormSectionBuilder.build(UserUIContext.formatDate(item.getCreatedtime())));
                 currentDate = item.getCreatedtime();
             }
-            final Component row = getRowDisplayHandler().generateRow(item, i);
+            final Component row = getRowDisplayHandler().generateRow(this, item, i);
             if (row != null) {
                 listContainer.addComponent(row);
             }
@@ -87,10 +90,10 @@ public class ProjectActivityStreamListDisplay extends AbstractPagedBeanList<Acti
         }
     }
 
-    private static class ActivityStreamRowHandler implements RowDisplayHandler<ProjectActivityStream> {
+    private static class ActivityStreamRowHandler implements IBeanList.RowDisplayHandler<ProjectActivityStream> {
 
         @Override
-        public Component generateRow(final ProjectActivityStream activityStream, int rowIndex) {
+        public Component generateRow(IBeanList<ProjectActivityStream> host, final ProjectActivityStream activityStream, int rowIndex) {
             AuditLogRegistry auditLogRegistry = AppContextUtil.getSpringBean(AuditLogRegistry.class);
             CssLayout layout = new CssLayout();
             layout.addStyleName("activity-cell");
@@ -125,7 +128,8 @@ public class ProjectActivityStreamListDisplay extends AbstractPagedBeanList<Acti
     }
 
     private static String buildAssigneeValue(ProjectActivityStream activity) {
-        Img userAvatar = new Img("", StorageFactory.getAvatarPath(activity.getCreatedUserAvatarId(), 16));
+        Img userAvatar = new Img("", StorageFactory.getAvatarPath(activity.getCreatedUserAvatarId(), 16)).setCSSClass
+                (UIConstants.CIRCLE_BOX);
         A userLink = new A(ProjectLinkBuilder.generateProjectMemberFullLink(activity.getExtratypeid(), activity
                 .getCreateduser())).appendText(StringUtils.trim(activity.getCreatedUserFullName(), 30, true));
         return new DivLessFormatter().appendChild(userAvatar, DivLessFormatter.EMPTY_SPACE(), userLink).write();
@@ -135,11 +139,11 @@ public class ProjectActivityStreamListDisplay extends AbstractPagedBeanList<Acti
         Text image = new Text(ProjectAssetsManager.getAsset(activity.getType()).getHtml());
         A itemLink = new A();
         if (ProjectTypeConstants.TASK.equals(activity.getType()) || ProjectTypeConstants.BUG.equals(activity.getType())) {
-            itemLink.setHref(ProjectLinkBuilder.generateProjectItemLink(
+            itemLink.setHref(ProjectLinkGenerator.generateProjectItemLink(
                     activity.getProjectShortName(), activity.getExtratypeid(),
                     activity.getType(), activity.getItemKey() + ""));
         } else {
-            itemLink.setHref(ProjectLinkBuilder.generateProjectItemLink(
+            itemLink.setHref(ProjectLinkGenerator.generateProjectItemLink(
                     activity.getProjectShortName(), activity.getExtratypeid(),
                     activity.getType(), activity.getTypeid()));
         }

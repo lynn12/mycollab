@@ -20,11 +20,7 @@ import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.common.i18n.ShellI18nEnum;
 import com.mycollab.configuration.EnDecryptHelper;
 import com.mycollab.configuration.SiteConfiguration;
-import com.mycollab.core.IgnoreException;
-import com.mycollab.core.MyCollabVersion;
-import com.mycollab.core.SessionExpireException;
-import com.mycollab.core.UserInvalidInputException;
-import com.mycollab.core.utils.BeanUtility;
+import com.mycollab.core.*;
 import com.mycollab.core.utils.StringUtils;
 import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.i18n.LocalizationHelper;
@@ -42,8 +38,8 @@ import com.mycollab.module.user.domain.UserAccountExample;
 import com.mycollab.module.user.service.BillingAccountService;
 import com.mycollab.module.user.service.UserService;
 import com.mycollab.spring.AppContextUtil;
-import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.MyCollabUI;
+import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.mvp.ControllerRegistry;
 import com.mycollab.vaadin.mvp.PresenterResolver;
 import com.mycollab.vaadin.ui.NotificationUtil;
@@ -73,7 +69,7 @@ import java.util.GregorianCalendar;
  * @author MyCollab Ltd.
  * @since 3.0
  */
-@Theme(MyCollabVersion.THEME_MOBILE_VERSION)
+@Theme(Version.THEME_MOBILE_VERSION)
 @Viewport("width=device-width, initial-scale=1")
 @Widgetset("com.mycollab.widgetset.MyCollabMobileWidgetSet")
 public class MobileApplication extends MyCollabUI {
@@ -128,8 +124,8 @@ public class MobileApplication extends MyCollabUI {
                                     UserUIContext.getMessage(GenericI18Enum.BUTTON_NO),
                                     dialog -> {
                                         if (dialog.isConfirmed()) {
-                                            Collection<Window> windowsList = UI.getCurrent().getWindows();
-                                            for (Window window : windowsList) {
+                                            Collection<Window> windows = UI.getCurrent().getWindows();
+                                            for (Window window : windows) {
                                                 window.close();
                                             }
                                             EventBusFactory.getInstance().post(new ShellEvent.GotoUserAccountModule(this, new String[]{"billing"}));
@@ -151,10 +147,6 @@ public class MobileApplication extends MyCollabUI {
         setCurrentFragmentUrl(this.getPage().getUriFragment());
         currentContext = new UserUIContext();
         postSetupApp(request);
-
-        this.getLoadingIndicatorConfiguration().setFirstDelay(0);
-        this.getLoadingIndicatorConfiguration().setSecondDelay(300);
-        this.getLoadingIndicatorConfiguration().setThirdDelay(500);
 
         final NavigationManager manager = new NavigationManager();
         setContent(manager);
@@ -217,7 +209,6 @@ public class MobileApplication extends MyCollabUI {
             BillingAccountService billingAccountService = AppContextUtil.getSpringBean(BillingAccountService.class);
 
             SimpleBillingAccount billingAccount = billingAccountService.getBillingAccountById(MyCollabUI.getAccountId());
-            LOG.debug(String.format("Get billing account successfully: %s", BeanUtility.printBeanObj(billingAccount)));
             UserUIContext.getInstance().setSessionVariables(user, billingAccount);
 
             UserAccountMapper userAccountMapper = AppContextUtil.getSpringBean(UserAccountMapper.class);
@@ -228,7 +219,15 @@ public class MobileApplication extends MyCollabUI {
             userAccountMapper.updateByExampleSelective(userAccount, ex);
             EventBusFactory.getInstance().post(new ShellEvent.GotoMainPage(this, null));
         } catch (Exception e) {
-            EventBusFactory.getInstance().post(new ShellEvent.GotoLoginView(this));
+            UserInvalidInputException userInvalidInputException = (UserInvalidInputException) getExceptionType(e,
+                    UserInvalidInputException.class);
+            if (userInvalidInputException != null) {
+                NotificationUtil.showWarningNotification(UserUIContext.getMessage(GenericI18Enum.ERROR_USER_INPUT_MESSAGE,
+                        userInvalidInputException.getMessage()));
+                EventBusFactory.getInstance().post(new ShellEvent.GotoLoginView(this));
+            } else {
+                throw e;
+            }
         }
     }
 

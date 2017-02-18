@@ -25,10 +25,10 @@ import com.mycollab.module.crm.CrmLinkGenerator;
 import com.mycollab.module.crm.CrmTypeConstants;
 import com.mycollab.module.crm.domain.*;
 import com.mycollab.module.crm.domain.criteria.OpportunitySearchCriteria;
-import com.mycollab.module.crm.events.ActivityEvent;
-import com.mycollab.module.crm.events.ContactEvent;
-import com.mycollab.module.crm.events.LeadEvent;
-import com.mycollab.module.crm.events.OpportunityEvent;
+import com.mycollab.module.crm.event.ActivityEvent;
+import com.mycollab.module.crm.event.ContactEvent;
+import com.mycollab.module.crm.event.LeadEvent;
+import com.mycollab.module.crm.event.OpportunityEvent;
 import com.mycollab.module.crm.i18n.OpportunityI18nEnum;
 import com.mycollab.module.crm.service.ContactService;
 import com.mycollab.module.crm.service.OpportunityService;
@@ -45,7 +45,7 @@ import com.mycollab.vaadin.mvp.ScreenData;
 import com.mycollab.vaadin.ui.AbstractRelatedListHandler;
 import com.mycollab.vaadin.ui.NotificationUtil;
 import com.mycollab.vaadin.web.ui.ConfirmDialogExt;
-import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.UI;
 
 import java.util.ArrayList;
@@ -146,7 +146,7 @@ public class OpportunityReadPresenter extends CrmGenericPresenter<OpportunityRea
             @Override
             public void createNewRelatedItem(String itemId) {
                 if (itemId.equals("task")) {
-                    SimpleTask task = new SimpleTask();
+                    SimpleCrmTask task = new SimpleCrmTask();
                     task.setType(CrmTypeConstants.OPPORTUNITY);
                     task.setTypeid(view.getItem().getId());
                     EventBusFactory.getInstance().post(new ActivityEvent.TaskEdit(OpportunityReadPresenter.this, task));
@@ -220,7 +220,7 @@ public class OpportunityReadPresenter extends CrmGenericPresenter<OpportunityRea
     }
 
     @Override
-    protected void onGo(ComponentContainer container, ScreenData<?> data) {
+    protected void onGo(HasComponents container, ScreenData<?> data) {
         CrmModule.navigateItem(CrmTypeConstants.OPPORTUNITY);
         if (UserUIContext.canRead(RolePermissionCollections.CRM_OPPORTUNITY)) {
             if (data.getParams() instanceof Integer) {

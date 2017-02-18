@@ -35,7 +35,7 @@ public class SimpleItemTimeLogging extends ItemTimeLogging {
 
     private String projectShortName;
 
-    private String summary;
+    private String name;
 
     private Double percentageComplete;
 
@@ -67,14 +67,6 @@ public class SimpleItemTimeLogging extends ItemTimeLogging {
 
     public void setProjectShortName(String projectShortName) {
         this.projectShortName = projectShortName;
-    }
-
-    public String getSummary() {
-        return summary == null ? "" : summary;
-    }
-
-    public void setSummary(String summary) {
-        this.summary = summary;
     }
 
     public Double getPercentageComplete() {
@@ -123,6 +115,14 @@ public class SimpleItemTimeLogging extends ItemTimeLogging {
 
     public void setLogUserOvertimeRate(Double logUserOvertimeRate) {
         this.logUserOvertimeRate = logUserOvertimeRate;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public boolean isOverdue() {

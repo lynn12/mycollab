@@ -21,7 +21,7 @@ import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.common.service.CommentService;
 import com.mycollab.core.utils.StringUtils;
 import com.mycollab.eventmanager.EventBusFactory;
-import com.mycollab.mobile.module.project.view.settings.ProjectMemberSelectionField;
+import com.mycollab.mobile.module.project.view.settings.ProjectMemberListSelect;
 import com.mycollab.mobile.shell.events.ShellEvent;
 import com.mycollab.mobile.ui.AbstractMobilePageView;
 import com.mycollab.mobile.ui.grid.GridFormLayoutHelper;
@@ -56,7 +56,7 @@ class ResolvedInputView extends AbstractMobilePageView {
     private final BugReadView callbackForm;
 
     ResolvedInputView(final BugReadView callbackForm, final SimpleBug bug) {
-        this.setCaption(UserUIContext.getMessage(BugI18nEnum.OPT_RESOLVE_BUG, bug.getSummary()));
+        this.setCaption(UserUIContext.getMessage(BugI18nEnum.OPT_RESOLVE_BUG, bug.getName()));
         this.bug = bug;
         this.callbackForm = callbackForm;
 
@@ -113,16 +113,16 @@ class ResolvedInputView extends AbstractMobilePageView {
             private GridFormLayoutHelper informationLayout;
 
             @Override
-            public ComponentContainer getLayout() {
+            public AbstractComponent getLayout() {
                 informationLayout = GridFormLayoutHelper.defaultFormLayoutHelper(1, 3);
                 return informationLayout.getLayout();
             }
 
             @Override
             public Component onAttachField(Object propertyId, final Field<?> field) {
-                if (propertyId.equals("resolution")) {
+                if (BugWithBLOBs.Field.resolution.equalTo(propertyId)) {
                     return informationLayout.addComponent(field, UserUIContext.getMessage(BugI18nEnum.FORM_RESOLUTION), 0, 0);
-                } else if (propertyId.equals("assignuser")) {
+                } else if (BugWithBLOBs.Field.assignuser.equalTo(propertyId)) {
                     return informationLayout.addComponent(field, UserUIContext.getMessage(GenericI18Enum.FORM_ASSIGNEE), 0, 1);
                 } else if (propertyId.equals("comment")) {
                     return informationLayout.addComponent(field, UserUIContext.getMessage(GenericI18Enum.OPT_COMMENT), 0, 2);
@@ -140,12 +140,12 @@ class ResolvedInputView extends AbstractMobilePageView {
 
             @Override
             protected Field<?> onCreateField(final Object propertyId) {
-                if (propertyId.equals("resolution")) {
+                if (BugWithBLOBs.Field.resolution.equalTo(propertyId)) {
                     bug.setResolution(BugResolution.Fixed.name());
-                    return BugResolutionComboBox.getInstanceForResolvedBugWindow();
-                } else if (propertyId.equals("assignuser")) {
-                    bug.setAssignuser(bug.getLogby());
-                    return new ProjectMemberSelectionField();
+                    return BugResolutionListSelect.getInstanceForResolvedBugWindow();
+                } else if (BugWithBLOBs.Field.assignuser.equalTo(propertyId)) {
+                    bug.setAssignuser(bug.getCreateduser());
+                    return new ProjectMemberListSelect();
                 } else if (propertyId.equals("comment")) {
                     commentArea = new TextArea();
                     commentArea.setNullRepresentation("");

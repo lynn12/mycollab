@@ -32,7 +32,7 @@ import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.ELabel;
 import com.mycollab.vaadin.ui.NotificationUtil;
 import com.mycollab.vaadin.web.ui.TimeZoneSelectionField;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.mycollab.vaadin.ui.field.DateFormatField;
 import com.mycollab.vaadin.web.ui.grid.GridFormLayoutHelper;
 import com.mycollab.web.DesktopApplication;
@@ -55,12 +55,16 @@ import java.util.TimeZone;
 class SetupNewInstanceView extends MVerticalLayout {
     SetupNewInstanceView() {
         this.setDefaultComponentAlignment(Alignment.TOP_CENTER);
-        MVerticalLayout content = new MVerticalLayout().withWidth("600px");
+        MHorizontalLayout content = new MHorizontalLayout().withFullHeight();
         this.with(content);
-        content.with(ELabel.h2("Last step, you are almost there!").withWidthUndefined());
-        content.with(ELabel.h3("All fields are required *").withStyleName("overdue").withWidthUndefined());
-        content.with(ELabel.html(UserUIContext.getMessage(ShellI18nEnum.OPT_SUPPORTED_LANGUAGES_INTRO))
-                .withStyleName(WebUIConstants.META_COLOR));
+        content.with(new MHorizontalLayout(ELabel.html(UserUIContext.getMessage(ShellI18nEnum.OPT_SUPPORTED_LANGUAGES_INTRO))
+                .withStyleName(WebThemes.META_COLOR)).withMargin(true).withWidth("400px").withStyleName
+                ("separator"));
+        MVerticalLayout formLayout = new MVerticalLayout().withWidth("600px");
+        content.with(formLayout).withAlign(formLayout, Alignment.TOP_LEFT);
+        formLayout.with(ELabel.h2("Last step, you are almost there!").withWidthUndefined());
+        formLayout.with(ELabel.h3("All fields are required *").withStyleName("overdue").withWidthUndefined());
+
         GridFormLayoutHelper formLayoutHelper = GridFormLayoutHelper.defaultFormLayoutHelper(2, 8, "200px");
         formLayoutHelper.getLayout().setWidth("600px");
         final TextField adminField = formLayoutHelper.addComponent(new TextField(), "Admin email", 0, 0);
@@ -84,7 +88,7 @@ class SetupNewInstanceView extends MVerticalLayout {
         final LanguageSelectionField languageBox = formLayoutHelper.addComponent(new LanguageSelectionField(),
                 UserUIContext.getMessage(AdminI18nEnum.FORM_DEFAULT_LANGUAGE), 0, 7);
         languageBox.setValue(Locale.US.toLanguageTag());
-        content.with(formLayoutHelper.getLayout());
+        formLayout.with(formLayoutHelper.getLayout());
 
         CheckBox createSampleDataSelection = new CheckBox("Create sample data", true);
 
@@ -128,10 +132,10 @@ class SetupNewInstanceView extends MVerticalLayout {
                     createSampleDataSelection.getValue(), MyCollabUI.getAccountId());
 
             ((DesktopApplication) UI.getCurrent()).doLogin(adminName, password, false);
-        }).withStyleName(WebUIConstants.BUTTON_ACTION);
+        }).withStyleName(WebThemes.BUTTON_ACTION);
 
         MHorizontalLayout buttonControls = new MHorizontalLayout(createSampleDataSelection, installBtn).alignAll(Alignment.MIDDLE_RIGHT);
-        content.with(buttonControls).withAlign(buttonControls, Alignment.MIDDLE_RIGHT);
+        formLayout.with(buttonControls).withAlign(buttonControls, Alignment.MIDDLE_RIGHT);
     }
 
     private boolean isValidDayPattern(String dateFormat) {

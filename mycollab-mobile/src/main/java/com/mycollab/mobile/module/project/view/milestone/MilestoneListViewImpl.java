@@ -16,30 +16,30 @@
  */
 package com.mycollab.mobile.module.project.view.milestone;
 
-import com.esofthead.vaadin.navigationbarquickmenu.NavigationBarQuickMenu;
 import com.hp.gagawa.java.elements.A;
 import com.hp.gagawa.java.elements.Div;
 import com.hp.gagawa.java.elements.Img;
 import com.hp.gagawa.java.elements.Span;
+import com.mycollab.common.GenericLinkUtils;
+import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.configuration.StorageFactory;
 import com.mycollab.core.utils.StringUtils;
 import com.mycollab.db.arguments.SetSearchField;
-import com.mycollab.db.arguments.StringSearchField;
 import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.mobile.module.project.events.MilestoneEvent;
 import com.mycollab.mobile.module.project.ui.AbstractListPageView;
+import com.mycollab.mobile.module.project.ui.SearchInputView;
+import com.mycollab.mobile.module.project.ui.SearchNavigationButton;
 import com.mycollab.mobile.ui.AbstractPagedBeanList;
 import com.mycollab.mobile.ui.DefaultPagedBeanList;
 import com.mycollab.mobile.ui.MobileUIConstants;
 import com.mycollab.mobile.ui.SearchInputField;
-import com.mycollab.module.project.CurrentProjectVariables;
-import com.mycollab.module.project.ProjectLinkBuilder;
-import com.mycollab.module.project.ProjectLinkGenerator;
-import com.mycollab.module.project.ProjectTypeConstants;
+import com.mycollab.module.project.*;
 import com.mycollab.module.project.domain.SimpleMilestone;
 import com.mycollab.module.project.domain.criteria.MilestoneSearchCriteria;
 import com.mycollab.module.project.i18n.MilestoneI18nEnum;
 import com.mycollab.module.project.i18n.OptionI18nEnum.MilestoneStatus;
+import com.mycollab.module.project.i18n.ProjectI18nEnum;
 import com.mycollab.module.project.service.MilestoneService;
 import com.mycollab.module.project.ui.ProjectAssetsManager;
 import com.mycollab.spring.AppContextUtil;
@@ -47,13 +47,14 @@ import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.ui.ELabel;
+import com.mycollab.vaadin.ui.IBeanList;
 import com.mycollab.vaadin.ui.UIConstants;
 import com.vaadin.addon.touchkit.ui.Toolbar;
 import com.vaadin.server.FontAwesome;
-import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.CssLayout;
+import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.layouts.MCssLayout;
 import org.vaadin.viritin.layouts.MHorizontalLayout;
 import org.vaadin.viritin.layouts.MVerticalLayout;
@@ -76,26 +77,21 @@ public class MilestoneListViewImpl extends AbstractListPageView<MilestoneSearchC
 
     @Override
     protected SearchInputField<MilestoneSearchCriteria> createSearchField() {
-        return new SearchInputField<MilestoneSearchCriteria>() {
-            @Override
-            protected MilestoneSearchCriteria fillUpSearchCriteria(String value) {
-                MilestoneSearchCriteria searchCriteria = new MilestoneSearchCriteria();
-                searchCriteria.setProjectIds(new SetSearchField<>(CurrentProjectVariables.getProjectId()));
-                searchCriteria.setMilestoneName(StringSearchField.and(value));
-                return searchCriteria;
-            }
-        };
+        return null;
     }
 
     @Override
     protected Component buildRightComponent() {
-        NavigationBarQuickMenu menu = new NavigationBarQuickMenu();
-        menu.setButtonCaption("...");
-        MVerticalLayout content = new MVerticalLayout();
-        content.with(new Button(UserUIContext.getMessage(MilestoneI18nEnum.NEW),
-                clickEvent -> EventBusFactory.getInstance().post(new MilestoneEvent.GotoAdd(MilestoneListViewImpl.this, null))));
-        menu.setContent(content);
-        return menu;
+        SearchNavigationButton searchBtn = new SearchNavigationButton() {
+            @Override
+            protected SearchInputView getSearchInputView() {
+                return new MilestoneSearchInputView();
+            }
+        };
+        MButton newMilestoneBtn = new MButton("", clickEvent -> EventBusFactory.getInstance().post(new MilestoneEvent.GotoAdd(MilestoneListViewImpl.this, null)))
+                .withIcon(FontAwesome.PLUS).withStyleName(UIConstants.CIRCLE_BOX)
+                .withVisible(CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.MILESTONES));
+        return new MHorizontalLayout(searchBtn, newMilestoneBtn).alignAll(Alignment.TOP_RIGHT);
     }
 
     @Override
@@ -111,22 +107,22 @@ public class MilestoneListViewImpl extends AbstractListPageView<MilestoneSearchC
     @Override
     public void onBecomingVisible() {
         super.onBecomingVisible();
+        setCaption(UserUIContext.getMessage(MilestoneI18nEnum.LIST));
         updateTabStatus();
+        MyCollabUI.addFragment("project/milestone/list/" + GenericLinkUtils.encodeParam(CurrentProjectVariables.getProjectId()),
+                UserUIContext.getMessage(MilestoneI18nEnum.LIST));
     }
 
     private void updateTabStatus() {
         if (status == MilestoneStatus.Closed) {
-            this.setCaption(UserUIContext.getMessage(MilestoneStatus.Closed));
             closedMilestoneBtn.setStyleName(MobileUIConstants.BUTTON_ACTION);
             inProgressMilestoneBtn.setStyleName(MobileUIConstants.BUTTON_OPTION);
             futureMilestoneBtn.setStyleName(MobileUIConstants.BUTTON_OPTION);
         } else if (status == MilestoneStatus.Future) {
-            this.setCaption(UserUIContext.getMessage(MilestoneStatus.Future));
             closedMilestoneBtn.setStyleName(MobileUIConstants.BUTTON_OPTION);
             inProgressMilestoneBtn.setStyleName(MobileUIConstants.BUTTON_OPTION);
             futureMilestoneBtn.setStyleName(MobileUIConstants.BUTTON_ACTION);
         } else {
-            this.setCaption(UserUIContext.getMessage(MilestoneStatus.InProgress));
             closedMilestoneBtn.setStyleName(MobileUIConstants.BUTTON_OPTION);
             inProgressMilestoneBtn.setStyleName(MobileUIConstants.BUTTON_ACTION);
             futureMilestoneBtn.setStyleName(MobileUIConstants.BUTTON_OPTION);
@@ -138,7 +134,7 @@ public class MilestoneListViewImpl extends AbstractListPageView<MilestoneSearchC
         Toolbar toolbar = new Toolbar();
         closedMilestoneBtn = new Button(UserUIContext.getMessage(MilestoneI18nEnum.WIDGET_CLOSED_PHASE_TITLE),
                 clickEvent -> displayStatus(MilestoneStatus.Closed));
-        closedMilestoneBtn.setIcon(FontAwesome.MINUS);
+        closedMilestoneBtn.setIcon(FontAwesome.MINUS_CIRCLE);
         toolbar.addComponent(closedMilestoneBtn);
 
         inProgressMilestoneBtn = new Button(UserUIContext.getMessage(MilestoneI18nEnum.WIDGET_INPROGRESS_PHASE_TITLE),
@@ -153,40 +149,63 @@ public class MilestoneListViewImpl extends AbstractListPageView<MilestoneSearchC
         return toolbar;
     }
 
-    private static class MilestoneRowDisplayHandler implements AbstractPagedBeanList.RowDisplayHandler<SimpleMilestone> {
+    private static class MilestoneRowDisplayHandler implements IBeanList.RowDisplayHandler<SimpleMilestone> {
 
         @Override
-        public Component generateRow(final SimpleMilestone milestone, int rowIndex) {
+        public Component generateRow(IBeanList<SimpleMilestone> host, final SimpleMilestone milestone, int rowIndex) {
             MVerticalLayout milestoneInfoLayout = new MVerticalLayout().withSpacing(false).withFullWidth();
 
             A milestoneLink = new A(ProjectLinkBuilder.generateMilestonePreviewFullLink(CurrentProjectVariables
                     .getProjectId(), milestone.getId())).appendChild(new Span().appendText(milestone.getName()));
-            MCssLayout milestoneWrap = new MCssLayout(new ELabel(milestoneLink.write(), ContentMode.HTML));
-            milestoneInfoLayout.addComponent(new MHorizontalLayout(new ELabel(ProjectAssetsManager.getAsset
-                    (ProjectTypeConstants.MILESTONE).getHtml(), ContentMode.HTML).withWidthUndefined(), milestoneWrap)
-                    .expand(milestoneWrap).withFullWidth());
+            if (milestone.isCompleted()) {
+                milestoneLink.setCSSClass(MobileUIConstants.LINK_COMPLETED);
+            } else if (milestone.isOverdue()) {
+                milestoneLink.setCSSClass(MobileUIConstants.LINK_OVERDUE);
+            }
+            MCssLayout milestoneWrap = new MCssLayout(ELabel.html(milestoneLink.write()));
+            milestoneInfoLayout.addComponent(new MHorizontalLayout(ELabel.fontIcon(ProjectAssetsManager.getAsset
+                    (ProjectTypeConstants.MILESTONE)), milestoneWrap).expand(milestoneWrap).withFullWidth());
 
-            CssLayout metaLayout = new CssLayout();
+            MCssLayout metaLayout = new MCssLayout();
             milestoneInfoLayout.addComponent(metaLayout);
 
-            ELabel milestoneDatesInfo = new ELabel().withWidthUndefined();
-            milestoneDatesInfo.setValue(UserUIContext.getMessage(MilestoneI18nEnum.M_LIST_DATE_INFO,
-                    UserUIContext.formatDate(milestone.getStartdate(), " N/A "),
-                    UserUIContext.formatDate(milestone.getEnddate(), " N/A ")));
-            milestoneDatesInfo.addStyleName(UIConstants.META_INFO);
-            metaLayout.addComponent(milestoneDatesInfo);
+            ELabel startDateInfo = new ELabel(UserUIContext.getMessage(GenericI18Enum.FORM_START_DATE) + ": " +
+                    UserUIContext.formatDate(milestone.getStartdate(), UserUIContext.getMessage(GenericI18Enum.OPT_UNDEFINED)))
+                    .withWidthUndefined().withStyleName(UIConstants.META_INFO);
+            metaLayout.addComponent(startDateInfo);
+            metaLayout.addComponent(ELabel.EMPTY_SPACE());
 
-            A assigneeLink = new A(ProjectLinkGenerator.generateProjectMemberFullLink(MyCollabUI.getSiteUrl(),
-                    CurrentProjectVariables.getProjectId(), milestone.getOwner()))
-                    .appendText(StringUtils.trim(milestone.getOwnerFullName(), 30, true));
+            ELabel endDateInfo = new ELabel(UserUIContext.getMessage(GenericI18Enum.FORM_END_DATE) + ": " +
+                    UserUIContext.formatDate(milestone.getEnddate(), UserUIContext.getMessage(GenericI18Enum.OPT_UNDEFINED)))
+                    .withWidthUndefined().withStyleName(UIConstants.META_INFO);
+            metaLayout.addComponent(endDateInfo);
+            metaLayout.addComponent(ELabel.EMPTY_SPACE());
+
+            A assigneeLink = new A(ProjectLinkGenerator.generateProjectMemberLink(CurrentProjectVariables.getProjectId(),
+                    milestone.getAssignuser())).appendText(StringUtils.trim(milestone.getOwnerFullName(), 30, true));
             Div assigneeDiv = new Div().appendChild(new Img("", StorageFactory.getAvatarPath(milestone
-                    .getOwnerAvatarId(), 16))).appendChild(assigneeLink);
+                    .getOwnerAvatarId(), 16)).setCSSClass(UIConstants.CIRCLE_BOX)).appendChild(assigneeLink);
 
-            ELabel assigneeLbl = new ELabel(assigneeDiv.write(), ContentMode.HTML).withStyleName(UIConstants.META_INFO)
+            ELabel assigneeLbl = ELabel.html(assigneeDiv.write()).withStyleName(UIConstants.META_INFO)
                     .withWidthUndefined();
             metaLayout.addComponent(assigneeLbl);
+
+            int openAssignments = milestone.getNumOpenBugs() + milestone.getNumOpenTasks() + milestone.getNumOpenRisks();
+            int totalAssignments = milestone.getNumBugs() + milestone.getNumTasks() + milestone.getNumRisks();
+            ELabel progressInfoLbl;
+            if (totalAssignments > 0) {
+                progressInfoLbl = new ELabel(UserUIContext.getMessage(ProjectI18nEnum.OPT_PROJECT_TICKET,
+                        (totalAssignments - openAssignments), totalAssignments, (totalAssignments - openAssignments)
+                                * 100 / totalAssignments)).withStyleName(UIConstants.META_INFO);
+            } else {
+                progressInfoLbl = new ELabel(UserUIContext.getMessage(ProjectI18nEnum.OPT_NO_TICKET))
+                        .withStyleName(UIConstants.META_INFO);
+            }
+            metaLayout.addComponent(progressInfoLbl);
 
             return milestoneInfoLayout;
         }
     }
+
+
 }

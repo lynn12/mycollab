@@ -23,7 +23,7 @@ import com.mycollab.core.utils.BeanUtility;
 import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.module.project.CurrentProjectVariables;
 import com.mycollab.module.project.ProjectTypeConstants;
-import com.mycollab.module.project.events.BugEvent;
+import com.mycollab.module.project.event.BugEvent;
 import com.mycollab.module.project.i18n.BugI18nEnum;
 import com.mycollab.module.project.i18n.OptionI18nEnum.BugResolution;
 import com.mycollab.module.project.i18n.OptionI18nEnum.BugStatus;
@@ -40,7 +40,7 @@ import com.mycollab.vaadin.ui.AbstractBeanFieldGroupEditFieldFactory;
 import com.mycollab.vaadin.ui.AbstractFormLayoutFactory;
 import com.mycollab.vaadin.ui.AdvancedEditBeanForm;
 import com.mycollab.vaadin.ui.GenericBeanForm;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.mycollab.vaadin.web.ui.grid.GridFormLayoutHelper;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.shared.ui.MarginInfo;
@@ -64,7 +64,7 @@ public class ReOpenWindow extends MWindow {
     private VersionMultiSelectField affectedVersionsSelect;
 
     public ReOpenWindow(final SimpleBug bugValue) {
-        super(UserUIContext.getMessage(BugI18nEnum.OPT_REOPEN_BUG, bugValue.getSummary()));
+        super(UserUIContext.getMessage(BugI18nEnum.OPT_REOPEN_BUG, bugValue.getName()));
         this.bug = BeanUtility.deepClone(bugValue);
 
         MVerticalLayout contentLayout = new MVerticalLayout().withSpacing(false).withMargin(new MarginInfo(false, false, true, false));
@@ -91,9 +91,9 @@ public class ReOpenWindow extends MWindow {
             private GridFormLayoutHelper informationLayout;
 
             @Override
-            public ComponentContainer getLayout() {
+            public AbstractComponent getLayout() {
                 VerticalLayout layout = new VerticalLayout();
-                informationLayout = GridFormLayoutHelper.defaultFormLayoutHelper(2, 6);
+                informationLayout = GridFormLayoutHelper.defaultFormLayoutHelper(2, 3);
                 layout.addComponent(informationLayout.getLayout());
 
                 MButton reOpenBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_REOPEN), clickEvent -> {
@@ -131,11 +131,11 @@ public class ReOpenWindow extends MWindow {
                         close();
                         EventBusFactory.getInstance().post(new BugEvent.BugChanged(this, bug.getId()));
                     }
-                }).withStyleName(WebUIConstants.BUTTON_ACTION);
+                }).withStyleName(WebThemes.BUTTON_ACTION);
                 reOpenBtn.setClickShortcut(ShortcutAction.KeyCode.ENTER);
 
                 MButton cancelBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CANCEL), clickEvent -> close())
-                        .withStyleName(WebUIConstants.BUTTON_OPTION);
+                        .withStyleName(WebThemes.BUTTON_OPTION);
 
                 MHorizontalLayout controlsBtn = new MHorizontalLayout(cancelBtn, reOpenBtn).withMargin(new MarginInfo(true, true, true, false));
 
@@ -150,10 +150,9 @@ public class ReOpenWindow extends MWindow {
                     return informationLayout.addComponent(field, UserUIContext.getMessage(GenericI18Enum.FORM_ASSIGNEE), 0, 0);
                 } else if (SimpleBug.Field.affectedVersions.equalTo(propertyId)) {
                     return informationLayout.addComponent(field, UserUIContext.getMessage(BugI18nEnum.FORM_AFFECTED_VERSIONS),
-                            UserUIContext.getMessage(BugI18nEnum.FORM_AFFECTED_VERSIONS_HELP), 1, 0);
+                            UserUIContext.getMessage(BugI18nEnum.FORM_AFFECTED_VERSIONS_HELP), 0, 1);
                 } else if (propertyId.equals("comment")) {
-                    return informationLayout.addComponent(field, UserUIContext.getMessage(GenericI18Enum.OPT_COMMENT), 0, 1, 2,
-                            "100%");
+                    return informationLayout.addComponent(field, UserUIContext.getMessage(GenericI18Enum.OPT_COMMENT), 0, 2, 2, "100%");
                 }
                 return null;
             }

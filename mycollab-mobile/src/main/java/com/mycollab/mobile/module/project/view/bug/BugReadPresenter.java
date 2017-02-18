@@ -19,10 +19,10 @@ package com.mycollab.mobile.module.project.view.bug;
 import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.mobile.module.project.events.BugEvent;
+import com.mycollab.mobile.module.project.events.TicketEvent;
 import com.mycollab.mobile.module.project.view.AbstractProjectPresenter;
 import com.mycollab.mobile.ui.ConfirmDialog;
 import com.mycollab.module.project.CurrentProjectVariables;
-import com.mycollab.module.project.ProjectLinkGenerator;
 import com.mycollab.module.project.ProjectRolePermissionCollections;
 import com.mycollab.module.tracker.domain.SimpleBug;
 import com.mycollab.module.tracker.service.BugService;
@@ -32,7 +32,7 @@ import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.events.DefaultPreviewFormHandler;
 import com.mycollab.vaadin.mvp.ScreenData;
 import com.mycollab.vaadin.ui.NotificationUtil;
-import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.UI;
 
 /**
@@ -49,10 +49,6 @@ public class BugReadPresenter extends AbstractProjectPresenter<BugReadView> {
     @Override
     protected void postInitView() {
         view.getPreviewFormHandlers().addFormHandler(new DefaultPreviewFormHandler<SimpleBug>() {
-            @Override
-            public void onEdit(SimpleBug data) {
-                EventBusFactory.getInstance().post(new BugEvent.GotoEdit(this, data));
-            }
 
             @Override
             public void onAdd(SimpleBug data) {
@@ -69,7 +65,7 @@ public class BugReadPresenter extends AbstractProjectPresenter<BugReadView> {
                             if (dialog.isConfirmed()) {
                                 BugService bugService = AppContextUtil.getSpringBean(BugService.class);
                                 bugService.removeWithSession(data, UserUIContext.getUsername(), MyCollabUI.getAccountId());
-                                EventBusFactory.getInstance().post(new BugEvent.GotoList(this, null));
+                                EventBusFactory.getInstance().post(new TicketEvent.GotoDashboard(this, null));
                             }
                         });
             }
@@ -84,7 +80,7 @@ public class BugReadPresenter extends AbstractProjectPresenter<BugReadView> {
     }
 
     @Override
-    protected void onGo(ComponentContainer container, ScreenData<?> data) {
+    protected void onGo(HasComponents container, ScreenData<?> data) {
         if (CurrentProjectVariables.canRead(ProjectRolePermissionCollections.BUGS)) {
             if (data.getParams() instanceof Integer) {
                 BugService bugService = AppContextUtil.getSpringBean(BugService.class);
@@ -92,9 +88,6 @@ public class BugReadPresenter extends AbstractProjectPresenter<BugReadView> {
                 if (bug != null) {
                     view.previewItem(bug);
                     super.onGo(container, data);
-
-                    MyCollabUI.addFragment(ProjectLinkGenerator.generateBugPreviewLink(bug.getBugkey(),
-                            bug.getProjectShortName()), bug.getSummary());
                 } else {
                     NotificationUtil.showRecordNotExistNotification();
                 }

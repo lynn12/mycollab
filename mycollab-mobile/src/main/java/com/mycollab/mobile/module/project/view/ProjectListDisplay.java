@@ -35,6 +35,7 @@ import com.mycollab.module.project.service.ProjectService;
 import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.ELabel;
+import com.mycollab.vaadin.ui.IBeanList;
 import com.mycollab.vaadin.ui.UIConstants;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.Alignment;
@@ -53,10 +54,10 @@ public class ProjectListDisplay extends DefaultPagedBeanList<ProjectService, Pro
         super(AppContextUtil.getSpringBean(ProjectService.class), new ProjectRowDisplayHandler());
     }
 
-    public static class ProjectRowDisplayHandler implements RowDisplayHandler<SimpleProject> {
+    private static class ProjectRowDisplayHandler implements IBeanList.RowDisplayHandler<SimpleProject> {
 
         @Override
-        public Component generateRow(final SimpleProject project, int rowIndex) {
+        public Component generateRow(IBeanList<SimpleProject> host, final SimpleProject project, int rowIndex) {
             MVerticalLayout layout = new MVerticalLayout();
             A prjLink = new A(ProjectLinkBuilder.generateProjectFullLink(project.getId())).appendText(String.format
                     ("[%s] %s", project.getShortname(), project.getName()));
@@ -80,9 +81,9 @@ public class ProjectListDisplay extends DefaultPagedBeanList<ProjectService, Pro
             Div metaDiv = new Div().appendChild(activeMembersDiv, DivLessFormatter.EMPTY_SPACE(), createdTimeDiv, DivLessFormatter.EMPTY_SPACE(),
                     billableHoursDiv, DivLessFormatter.EMPTY_SPACE(), nonBillableHoursDiv);
             if (project.getLead() != null) {
-                Div leadDiv = new Div().appendChild(new Img("", StorageFactory.getAvatarPath(project
-                        .getLeadAvatarId(), 16)), new A(ProjectLinkBuilder.generateProjectMemberFullLink(project.getId(), project.getLead()))
-                        .appendText(project.getLeadFullName())).setTitle(UserUIContext.getMessage(ProjectI18nEnum.FORM_LEADER));
+                Div leadDiv = new Div().appendChild(new Img("", StorageFactory.getAvatarPath(project.getLeadAvatarId(), 16)).setCSSClass(UIConstants.CIRCLE_BOX),
+                        new A(ProjectLinkBuilder.generateProjectMemberFullLink(project.getId(), project.getLead()))
+                                .appendText(project.getLeadFullName())).setTitle(UserUIContext.getMessage(ProjectI18nEnum.FORM_LEADER));
                 metaDiv.appendChild(0, leadDiv);
                 metaDiv.appendChild(1, DivLessFormatter.EMPTY_SPACE());
             }
@@ -90,19 +91,18 @@ public class ProjectListDisplay extends DefaultPagedBeanList<ProjectService, Pro
             metaInfo.addComponent(ELabel.html(metaDiv.write()).withStyleName(UIConstants.META_INFO));
             layout.addComponent(metaInfo);
 
-            int openAssignments = project.getNumOpenBugs() + project.getNumOpenTasks() + project.getNumOpenRisks() + project.getNumOpenRisks();
+            int openAssignments = project.getNumOpenBugs() + project.getNumOpenTasks() + project.getNumOpenRisks();
             int totalAssignments = project.getNumBugs() + project.getNumTasks() + project.getNumRisks();
             ELabel progressInfoLbl;
             if (totalAssignments > 0) {
-                progressInfoLbl = new ELabel(UserUIContext.getMessage(ProjectI18nEnum.OPT_PROJECT_ASSIGNMENT,
+                progressInfoLbl = new ELabel(UserUIContext.getMessage(ProjectI18nEnum.OPT_PROJECT_TICKET,
                         (totalAssignments - openAssignments), totalAssignments, (totalAssignments - openAssignments)
                                 * 100 / totalAssignments)).withStyleName(UIConstants.META_INFO);
             } else {
-                progressInfoLbl = new ELabel(UserUIContext.getMessage(ProjectI18nEnum.OPT_NO_ASSIGNMENT))
+                progressInfoLbl = new ELabel(UserUIContext.getMessage(ProjectI18nEnum.OPT_NO_TICKET))
                         .withStyleName(UIConstants.META_INFO);
             }
             layout.addComponent(progressInfoLbl);
-
             return layout;
         }
     }

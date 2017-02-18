@@ -33,7 +33,7 @@ import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.events.DefaultPreviewFormHandler;
 import com.mycollab.vaadin.mvp.ScreenData;
 import com.mycollab.vaadin.ui.NotificationUtil;
-import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.UI;
 
 /**
@@ -50,10 +50,6 @@ public class MilestoneReadPresenter extends AbstractProjectPresenter<MilestoneRe
     @Override
     protected void postInitView() {
         view.getPreviewFormHandlers().addFormHandler(new DefaultPreviewFormHandler<SimpleMilestone>() {
-            @Override
-            public void onEdit(SimpleMilestone data) {
-                EventBusFactory.getInstance().post(new MilestoneEvent.GotoEdit(this, data));
-            }
 
             @Override
             public void onAdd(SimpleMilestone data) {
@@ -85,12 +81,11 @@ public class MilestoneReadPresenter extends AbstractProjectPresenter<MilestoneRe
     }
 
     @Override
-    protected void onGo(ComponentContainer container, ScreenData<?> data) {
+    protected void onGo(HasComponents container, ScreenData<?> data) {
         if (CurrentProjectVariables.canRead(ProjectRolePermissionCollections.MILESTONES)) {
             if (data.getParams() instanceof Integer) {
                 MilestoneService milestoneService = AppContextUtil.getSpringBean(MilestoneService.class);
-                SimpleMilestone milestone = milestoneService.findById(
-                        (Integer) data.getParams(), MyCollabUI.getAccountId());
+                SimpleMilestone milestone = milestoneService.findById((Integer) data.getParams(), MyCollabUI.getAccountId());
                 if (milestone != null) {
                     view.previewItem(milestone);
                     super.onGo(container, data);

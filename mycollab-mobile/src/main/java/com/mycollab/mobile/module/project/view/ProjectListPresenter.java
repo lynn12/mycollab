@@ -16,15 +16,13 @@
  */
 package com.mycollab.mobile.module.project.view;
 
-import com.mycollab.db.arguments.SearchCriteria;
 import com.mycollab.core.arguments.ValuedBean;
+import com.mycollab.db.arguments.SearchCriteria;
 import com.mycollab.mobile.mvp.AbstractPresenter;
 import com.mycollab.mobile.ui.IListView;
-import com.mycollab.vaadin.events.HasSearchHandlers;
-import com.mycollab.vaadin.events.SearchHandler;
 import com.mycollab.vaadin.mvp.ScreenData;
 import com.vaadin.addon.touchkit.ui.NavigationManager;
-import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.HasComponents;
 
 /**
  * @author MyCollab Ltd
@@ -40,22 +38,7 @@ public abstract class ProjectListPresenter<V extends IListView<S, B>, S extends 
     }
 
     @Override
-    protected void postInitView() {
-        super.postInitView();
-        HasSearchHandlers<S> searchHandlers = view.getSearchHandlers();
-        if (searchHandlers != null) {
-            searchHandlers.addSearchHandler(new SearchHandler<S>() {
-                @Override
-                public void onSearch(S criteria) {
-                    searchCriteria = criteria;
-                    view.getPagedBeanTable().search(criteria);
-                }
-            });
-        }
-    }
-
-    @Override
-    protected void onGo(ComponentContainer container, ScreenData<?> data) {
+    protected void onGo(HasComponents container, ScreenData<?> data) {
         NavigationManager currentNav = (NavigationManager) container;
         this.searchCriteria = (S) data.getParams();
         view.getPagedBeanTable().setSearchCriteria(searchCriteria);

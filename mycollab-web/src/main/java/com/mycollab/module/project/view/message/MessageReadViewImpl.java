@@ -34,12 +34,12 @@ import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.events.HasPreviewFormHandlers;
-import com.mycollab.vaadin.mvp.AbstractPageView;
+import com.mycollab.vaadin.mvp.AbstractVerticalPageView;
 import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.ui.*;
 import com.mycollab.vaadin.web.ui.AdvancedPreviewBeanForm;
 import com.mycollab.vaadin.web.ui.ConfirmDialogExt;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.*;
 import org.apache.commons.collections.CollectionUtils;
@@ -55,7 +55,7 @@ import java.util.List;
  * @since 1.0
  */
 @ViewComponent
-public class MessageReadViewImpl extends AbstractPageView implements MessageReadView {
+public class MessageReadViewImpl extends AbstractVerticalPageView implements MessageReadView {
     private static final long serialVersionUID = 1L;
 
     private AdvancedPreviewBeanForm<SimpleMessage> previewForm;
@@ -71,7 +71,7 @@ public class MessageReadViewImpl extends AbstractPageView implements MessageRead
         header = new MHorizontalLayout().withMargin(true).withStyleName("hdr-view").withFullWidth();
         previewForm = new AdvancedPreviewBeanForm<>();
 
-        contentWrapper = new MCssLayout().withStyleName(WebUIConstants.CONTENT_WRAPPER);
+        contentWrapper = new MCssLayout().withStyleName(WebThemes.CONTENT_WRAPPER);
         contentWrapper.addComponent(previewForm);
         contentWrapper.setWidth("900px");
         with(header, contentWrapper).expand(contentWrapper);
@@ -103,10 +103,9 @@ public class MessageReadViewImpl extends AbstractPageView implements MessageRead
     }
 
     class FormLayoutFactory extends AbstractFormLayoutFactory {
-        private static final long serialVersionUID = 1L;
 
         @Override
-        public ComponentContainer getLayout() {
+        public AbstractComponent getLayout() {
             header.removeAllComponents();
             MVerticalLayout messageAddLayout = new MVerticalLayout().withMargin(false).withFullWidth();
 
@@ -123,7 +122,7 @@ public class MessageReadViewImpl extends AbstractPageView implements MessageRead
                                 previewForm.fireCancelForm(message);
                             }
                         });
-            }).withIcon(FontAwesome.TRASH_O).withStyleName(WebUIConstants.BUTTON_DANGER);
+            }).withIcon(FontAwesome.TRASH_O).withStyleName(WebThemes.BUTTON_DANGER);
             deleteBtn.setVisible(CurrentProjectVariables.canAccess(ProjectRolePermissionCollections.MESSAGES));
 
             stickyCheck = new CheckBox(UserUIContext.getMessage(MessageI18nEnum.FORM_IS_STICK), message.getIsstick());
@@ -135,7 +134,7 @@ public class MessageReadViewImpl extends AbstractPageView implements MessageRead
             });
             stickyCheck.setEnabled(CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.MESSAGES));
 
-            HeaderWithFontAwesome headerText = ComponentUtils.headerH3(ProjectTypeConstants.MESSAGE, message.getTitle());
+            HeaderWithFontAwesome headerText = ComponentUtils.headerH2(ProjectTypeConstants.MESSAGE, message.getTitle());
             header.with(headerText, stickyCheck, deleteBtn).withAlign(headerText, Alignment.MIDDLE_LEFT)
                     .withAlign(stickyCheck, Alignment.MIDDLE_RIGHT).withAlign(deleteBtn, Alignment.MIDDLE_RIGHT).expand(headerText);
 
@@ -150,7 +149,7 @@ public class MessageReadViewImpl extends AbstractPageView implements MessageRead
 
             messageLayout.addComponent(userBlock);
 
-            MVerticalLayout rowLayout = new MVerticalLayout().withMargin(true).withFullWidth().withStyleName(WebUIConstants.MESSAGE_CONTAINER);
+            MVerticalLayout rowLayout = new MVerticalLayout().withFullWidth().withStyleName(WebThemes.MESSAGE_CONTAINER);
 
             MHorizontalLayout messageHeader = new MHorizontalLayout().withFullWidth();
             messageHeader.setDefaultComponentAlignment(Alignment.MIDDLE_LEFT);
@@ -174,7 +173,7 @@ public class MessageReadViewImpl extends AbstractPageView implements MessageRead
             if (CollectionUtils.isNotEmpty(attachments)) {
                 HorizontalLayout attachmentField = new HorizontalLayout();
                 Button attachmentIcon = new Button(null, FontAwesome.PAPERCLIP);
-                attachmentIcon.addStyleName(WebUIConstants.BUTTON_ICON_ONLY);
+                attachmentIcon.addStyleName(WebThemes.BUTTON_ICON_ONLY);
                 attachmentField.addComponent(attachmentIcon);
 
                 Label lbAttachment = new Label(UserUIContext.getMessage(GenericI18Enum.FORM_ATTACHMENTS));

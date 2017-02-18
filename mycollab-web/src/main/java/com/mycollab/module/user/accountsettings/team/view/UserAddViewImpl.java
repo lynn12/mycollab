@@ -40,7 +40,7 @@ import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.events.HasEditFormHandlers;
-import com.mycollab.vaadin.mvp.AbstractPageView;
+import com.mycollab.vaadin.mvp.AbstractVerticalPageView;
 import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.ui.*;
 import com.mycollab.vaadin.web.ui.*;
@@ -53,6 +53,7 @@ import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
 import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.fields.MPasswordField;
+import org.vaadin.viritin.fields.MTextField;
 import org.vaadin.viritin.layouts.MHorizontalLayout;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 
@@ -65,7 +66,7 @@ import static com.mycollab.vaadin.web.ui.utils.FormControlsGenerator.generateEdi
  * @since 1.0
  */
 @ViewComponent
-public class UserAddViewImpl extends AbstractPageView implements UserAddView {
+public class UserAddViewImpl extends AbstractVerticalPageView implements UserAddView {
     private static final long serialVersionUID = 1L;
 
     private EditUserForm editUserForm;
@@ -108,13 +109,13 @@ public class UserAddViewImpl extends AbstractPageView implements UserAddView {
         private static final long serialVersionUID = 1L;
 
 
-        public void displayBasicForm(SimpleUser newDataSource) {
+        private void displayBasicForm(SimpleUser newDataSource) {
             this.setFormLayoutFactory(new BasicFormLayoutFactory());
             this.setBeanFormFieldFactory(new BasicEditFormFieldFactory(editUserForm));
             super.setBean(newDataSource);
         }
 
-        public void displayAdvancedForm(SimpleUser newDataSource) {
+        private void displayAdvancedForm(SimpleUser newDataSource) {
             this.setFormLayoutFactory(new AdvancedFormLayoutFactory());
             this.setBeanFormFieldFactory(new AdvancedEditFormFieldFactory(editUserForm));
             super.setBean(newDataSource);
@@ -134,7 +135,7 @@ public class UserAddViewImpl extends AbstractPageView implements UserAddView {
             private RolePermissionContainer rolePermissionLayout;
 
             @Override
-            public ComponentContainer getLayout() {
+            public AbstractComponent getLayout() {
                 String title = (user.getUsername() == null) ? UserUIContext.getMessage(UserI18nEnum.NEW) : user.getDisplayName();
                 AddViewLayout formAddLayout = new AddViewLayout(title, FontAwesome.USER);
 
@@ -150,7 +151,7 @@ public class UserAddViewImpl extends AbstractPageView implements UserAddView {
                 Button moreInfoBtn = new MButton(UserUIContext.getMessage(UserI18nEnum.ACTION_MORE_INFORMATION), event -> {
                     editUserForm.displayAdvancedForm(user);
                     setFormBuffered(true);
-                }).withStyleName(WebUIConstants.BUTTON_LINK);
+                }).withStyleName(WebThemes.BUTTON_LINK);
                 MHorizontalLayout linkWrap = new MHorizontalLayout().withMargin(true).with(moreInfoBtn);
                 bottomPanel.with(linkWrap).withAlign(linkWrap, Alignment.MIDDLE_LEFT);
                 rolePermissionLayout = new RolePermissionContainer();
@@ -196,11 +197,8 @@ public class UserAddViewImpl extends AbstractPageView implements UserAddView {
                     return new AdminRoleSelectionField();
                 } else if (User.Field.email.equalTo(propertyId) || User.Field.firstname.equalTo(propertyId) ||
                         User.Field.lastname.equalTo(propertyId)) {
-                    TextField tf = new TextField();
-                    tf.setNullRepresentation("");
-                    tf.setRequired(true);
-                    tf.setRequiredError("This field must be not null");
-                    return tf;
+                    return new MTextField().withNullRepresentation("").withRequired(true)
+                            .withRequiredError("This field must be not null");
                 } else if (User.Field.password.equalTo(propertyId)) {
                     return new MPasswordField();
                 }
@@ -217,7 +215,7 @@ public class UserAddViewImpl extends AbstractPageView implements UserAddView {
             private RolePermissionContainer rolePermissionLayout;
 
             @Override
-            public ComponentContainer getLayout() {
+            public AbstractComponent getLayout() {
                 String title = (user.getUsername() == null) ? UserUIContext.getMessage(UserI18nEnum.NEW) : user.getDisplayName();
                 AddViewLayout formAddLayout = new AddViewLayout(title, FontAwesome.USER);
                 formAddLayout.addHeaderRight(generateEditFormControls(editUserForm, true, false, true));
@@ -295,14 +293,10 @@ public class UserAddViewImpl extends AbstractPageView implements UserAddView {
             protected Field<?> onCreateField(Object propertyId) {
                 if (SimpleUser.Field.roleid.equalTo(propertyId)) {
                     return new AdminRoleSelectionField();
-                } else if (User.Field.email.equalTo(propertyId) ||
-                        User.Field.firstname.equalTo(propertyId) ||
+                } else if (User.Field.email.equalTo(propertyId) || User.Field.firstname.equalTo(propertyId) ||
                         User.Field.lastname.equalTo(propertyId)) {
-                    TextField tf = new TextField();
-                    tf.setNullRepresentation("");
-                    tf.setRequired(true);
-                    tf.setRequiredError("This field must be not null");
-                    return tf;
+                    return new MTextField().withNullRepresentation("").withRequired(true)
+                            .withRequiredError("This field must be not null");
                 } else if (propertyId.equals("dateofbirth")) {
                     return new DateSelectionField();
                 } else if (propertyId.equals("timezone")) {
@@ -337,11 +331,10 @@ public class UserAddViewImpl extends AbstractPageView implements UserAddView {
         @Override
         public void setPropertyDataSource(Property newDataSource) {
             Object value = newDataSource.getValue();
-            if (value == null) {
-                Object itemId = roleBox.getItemIds().iterator().next();
-                roleBox.setValue(itemId);
-            } else if (value instanceof Integer) {
+            if (value instanceof Integer) {
                 roleBox.setValue(value);
+            } else if (value == null && Boolean.TRUE.equals(user.getIsAccountOwner())) {
+                roleBox.setValue(-1);
             }
             super.setPropertyDataSource(newDataSource);
         }

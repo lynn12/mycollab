@@ -16,12 +16,28 @@
  */
 package com.mycollab.mobile.ui;
 
+import com.mycollab.common.domain.FavoriteItem;
+import com.mycollab.common.service.FavoriteItemService;
+import com.mycollab.configuration.SiteConfiguration;
+import com.mycollab.core.MyCollabException;
+import com.mycollab.core.utils.StringUtils;
+import com.mycollab.module.project.CurrentProjectVariables;
+import com.mycollab.spring.AppContextUtil;
+import com.mycollab.vaadin.MyCollabUI;
+import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.mvp.IPreviewView;
+import com.mycollab.vaadin.touchkit.NavigationBarQuickMenu;
 import com.mycollab.vaadin.ui.AbstractBeanFieldGroupViewFieldFactory;
+import com.mycollab.vaadin.ui.ELabel;
 import com.mycollab.vaadin.ui.IFormLayoutFactory;
-import com.esofthead.vaadin.navigationbarquickmenu.NavigationBarQuickMenu;
-import com.vaadin.ui.ComponentContainer;
-import com.vaadin.ui.CssLayout;
+import com.mycollab.vaadin.ui.UIConstants;
+import com.vaadin.server.FontAwesome;
+import com.vaadin.ui.*;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.vaadin.viritin.button.MButton;
+import org.vaadin.viritin.layouts.MHorizontalLayout;
 
 /**
  * @param <B>
@@ -30,9 +46,11 @@ import com.vaadin.ui.CssLayout;
  */
 public abstract class AbstractPreviewItemComp<B> extends AbstractMobilePageView implements IPreviewView<B> {
     private static final long serialVersionUID = 1L;
+    private static Logger LOG = LoggerFactory.getLogger(AbstractPreviewItemComp.class);
 
     protected B beanItem;
     protected AdvancedPreviewBeanForm<B> previewForm;
+    private Button favoriteBtn;
 
     public AbstractPreviewItemComp() {
         previewForm = initPreviewForm();
@@ -40,15 +58,34 @@ public abstract class AbstractPreviewItemComp<B> extends AbstractMobilePageView 
 
     public void previewItem(final B item) {
         this.beanItem = item;
-        this.setCaption(initFormTitle());
 
         CssLayout content = new CssLayout();
+        content.addComponent(new MHorizontalLayout(ELabel.h2(initFormHeader())).withMargin(true).withStyleName("border-bottom").withFullWidth());
         content.addComponent(previewForm);
 
-        NavigationBarQuickMenu editBtn = new NavigationBarQuickMenu();
-        editBtn.setButtonCaption("...");
-        editBtn.setContent(createButtonControls());
-        this.setRightComponent(editBtn);
+        ComponentContainer buttonControls = createButtonControls();
+        if (buttonControls instanceof VerticalLayout) {
+            NavigationBarQuickMenu editBtn = new NavigationBarQuickMenu();
+            editBtn.setContent(buttonControls);
+            this.setRightComponent(editBtn);
+        } else if (buttonControls instanceof HorizontalLayout) {
+            if (StringUtils.isNotBlank(getType()) && !SiteConfiguration.isCommunityEdition()) {
+                favoriteBtn = new MButton("", clickEvent -> toggleFavorite()).withIcon(FontAwesome.HEART).withStyleName
+                        (UIConstants.CIRCLE_BOX);
+                ((HorizontalLayout)buttonControls).addComponent(favoriteBtn, 0);
+            }
+            this.setRightComponent(buttonControls);
+        } else {
+            throw new MyCollabException("Not support controls " + buttonControls);
+        }
+
+        if (favoriteBtn != null) {
+            if (isFavorite()) {
+                favoriteBtn.addStyleName("favorite-btn-selected");
+            } else {
+                favoriteBtn.addStyleName("favorite-btn");
+            }
+        }
 
         initRelatedComponents();
 
@@ -80,12 +117,14 @@ public abstract class AbstractPreviewItemComp<B> extends AbstractMobilePageView 
 
     abstract protected void afterPreviewItem();
 
-    abstract protected String initFormTitle();
+    abstract protected String initFormHeader();
 
     abstract protected AdvancedPreviewBeanForm<B> initPreviewForm();
 
     protected void initRelatedComponents() {
     }
+
+    abstract protected String getType();
 
     abstract protected IFormLayoutFactory initFormLayoutFactory();
 
@@ -94,5 +133,38 @@ public abstract class AbstractPreviewItemComp<B> extends AbstractMobilePageView 
     abstract protected ComponentContainer createButtonControls();
 
     abstract protected ComponentContainer createBottomPanel();
+
+    private void toggleFavorite() {
+        try {
+            if (isFavorite()) {
+                favoriteBtn.removeStyleName("favorite-btn-selected");
+                favoriteBtn.addStyleName("favorite-btn");
+            } else {
+                favoriteBtn.addStyleName("favorite-btn-selected");
+                favoriteBtn.removeStyleName("favorite-btn");
+            }
+            FavoriteItem favoriteItem = new FavoriteItem();
+            favoriteItem.setExtratypeid(CurrentProjectVariables.getProjectId());
+            favoriteItem.setType(getType());
+            favoriteItem.setTypeid(PropertyUtils.getProperty(beanItem, "id").toString());
+            favoriteItem.setSaccountid(MyCollabUI.getAccountId());
+            favoriteItem.setCreateduser(UserUIContext.getUsername());
+            FavoriteItemService favoriteItemService = AppContextUtil.getSpringBean(FavoriteItemService.class);
+            favoriteItemService.saveOrDelete(favoriteItem);
+        } catch (Exception e) {
+            LOG.error("Error while set favorite flag to bean", e);
+        }
+    }
+
+    private boolean isFavorite() {
+        try {
+            FavoriteItemService favoriteItemService = AppContextUtil.getSpringBean(FavoriteItemService.class);
+            return favoriteItemService.isUserFavorite(UserUIContext.getUsername(), getType(),
+                    PropertyUtils.getProperty(beanItem, "id").toString());
+        } catch (Exception e) {
+            LOG.error("Error while check favorite", e);
+            return false;
+        }
+    }
 
 }

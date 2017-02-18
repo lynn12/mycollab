@@ -22,13 +22,12 @@ import com.mycollab.db.arguments.SetSearchField;
 import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.module.crm.CrmDataTypeFactory;
 import com.mycollab.module.crm.domain.criteria.OpportunitySearchCriteria;
-import com.mycollab.module.crm.events.OpportunityEvent;
+import com.mycollab.module.crm.event.OpportunityEvent;
 import com.mycollab.module.crm.i18n.OptionI18nEnum.OpportunityLeadSource;
 import com.mycollab.module.crm.service.OpportunityService;
 import com.mycollab.spring.AppContextUtil;
 import com.mycollab.ui.chart.PieChartWrapper;
 import com.mycollab.vaadin.MyCollabUI;
-import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.mvp.ViewComponent;
 import org.jfree.data.general.DefaultPieDataset;
 
@@ -39,11 +38,11 @@ import java.util.List;
  * @since 2.0
  */
 @ViewComponent
-public class OpportunityLeadSourceDashboard extends PieChartWrapper<OpportunitySearchCriteria> implements IOpportunityLeadSourceDashboard {
+public class OpportunityLeadSourceDashboard extends PieChartWrapper<OpportunitySearchCriteria> {
     private static final long serialVersionUID = 1L;
 
     public OpportunityLeadSourceDashboard() {
-        super(400, 265);
+        super(OpportunityLeadSource.class, 400, 265);
     }
 
     @Override
@@ -61,17 +60,14 @@ public class OpportunityLeadSourceDashboard extends PieChartWrapper<OpportunityS
             boolean isFound = false;
             for (final GroupItem item : groupItems) {
                 if (source.name().equals(item.getGroupid())) {
-                    if (item.getValue() != 0)
-                        dataset.setValue(UserUIContext.getMessage(source), item.getValue());
-                    else
-                        dataset.setValue(UserUIContext.getMessage(source), item.getCountNum());
+                    dataset.setValue(source, item.getCountNum());
                     isFound = true;
                     break;
                 }
             }
 
             if (!isFound) {
-                dataset.setValue(UserUIContext.getMessage(source), 0);
+                dataset.setValue(source, 0);
             }
         }
 

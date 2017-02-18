@@ -25,7 +25,9 @@ import com.mycollab.shell.events.ShellEvent;
 import com.mycollab.vaadin.UserUIContext;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.ui.*;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.HorizontalLayout;
 import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.layouts.MHorizontalLayout;
 
@@ -36,23 +38,18 @@ import java.util.List;
  * @author MyCollab Ltd.
  * @since 4.0
  */
-public abstract class DynamicQueryParamLayout<S extends SearchCriteria> extends GenericSearchPanel.SearchLayout<S> {
+public abstract class DynamicQueryParamLayout<S extends SearchCriteria> extends SearchLayout<S> {
     private static final long serialVersionUID = 1L;
 
     protected String type;
-    protected BuildCriterionComponent<S> buildCriterionComp;
-    protected ComponentContainer header;
+    private BuildCriterionComponent<S> buildCriterionComp;
+    private ComponentContainer header;
 
     public DynamicQueryParamLayout(DefaultGenericSearchPanel<S> parent, String type) {
         super(parent, "advancedSearch");
-        setStyleName("advancedSearchLayout");
         this.type = type;
-        initLayout();
-    }
-
-    protected void initLayout() {
         header = constructHeader();
-        buildCriterionComp = new BuildCriterionComponent<S>(this, getParamFields(), getType(), type) {
+        buildCriterionComp = new BuildCriterionComponent<S>(this, getParamFields(), type) {
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -76,19 +73,19 @@ public abstract class DynamicQueryParamLayout<S extends SearchCriteria> extends 
 
     private HorizontalLayout createButtonControls() {
         MButton searchBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_SEARCH), clickEvent -> callSearchAction())
-                .withStyleName(WebUIConstants.BUTTON_ACTION).withIcon(FontAwesome.SEARCH);
+                .withStyleName(WebThemes.BUTTON_ACTION).withIcon(FontAwesome.SEARCH);
 
         MButton clearBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CLEAR), clickEvent -> clearFields())
-                .withStyleName(WebUIConstants.BUTTON_OPTION);
+                .withStyleName(WebThemes.BUTTON_OPTION);
 
         MButton basicSearchBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_BASIC_SEARCH),
                 clickEvent -> ((DefaultGenericSearchPanel<S>) searchPanel).moveToBasicSearchLayout())
-                .withStyleName(WebUIConstants.BUTTON_LINK);
+                .withStyleName(WebThemes.BUTTON_LINK);
 
         return new MHorizontalLayout(searchBtn, clearBtn, basicSearchBtn).withMargin(new MarginInfo(false, true, false, true));
     }
 
-    protected void clearFields() {
+    private void clearFields() {
         buildCriterionComp.clearAllFields();
     }
 
@@ -105,7 +102,9 @@ public abstract class DynamicQueryParamLayout<S extends SearchCriteria> extends 
 
     protected abstract Class<S> getType();
 
-    public abstract ComponentContainer constructHeader();
+    private ComponentContainer constructHeader() {
+        return ((DefaultGenericSearchPanel) searchPanel).constructHeader();
+    }
 
     public abstract Param[] getParamFields();
 

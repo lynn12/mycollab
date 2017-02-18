@@ -16,6 +16,7 @@
  */
 package com.mycollab.vaadin;
 
+import com.google.common.base.MoreObjects;
 import com.mycollab.common.SessionIdGenerator;
 import com.mycollab.common.i18n.ErrorI18nEnum;
 import com.mycollab.configuration.SiteConfiguration;
@@ -28,6 +29,7 @@ import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.ui.ThemeManager;
 import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.WebBrowser;
 import com.vaadin.ui.UI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +75,6 @@ public abstract class MyCollabUI extends UI {
     protected UserUIContext currentContext;
 
     private String initialSubDomain = "1";
-    private String siteUrl = "";
     private String currentFragmentUrl = "";
     private SimpleBillingAccount billingAccount;
     private Map<String, Object> attributes = new HashMap<>();
@@ -82,11 +83,7 @@ public abstract class MyCollabUI extends UI {
      * @return
      */
     public static String getSiteUrl() {
-        if (getInstance().siteUrl == null) {
-            getInstance().siteUrl = SiteConfiguration.getSiteUrl(getBillingAccount().getSubdomain());
-        }
-
-        return getInstance().siteUrl;
+        return SiteConfiguration.getSiteUrl(getBillingAccount().getSubdomain());
     }
 
     public static SimpleBillingAccount getBillingAccount() {
@@ -116,7 +113,7 @@ public abstract class MyCollabUI extends UI {
 
     public static String getSiteName() {
         try {
-            return getInstance().billingAccount.getSitename();
+            return MoreObjects.firstNonNull(getInstance().billingAccount.getSitename(), SiteConfiguration.getDefaultSiteName());
         } catch (Exception e) {
             return SiteConfiguration.getDefaultSiteName();
         }
@@ -194,5 +191,14 @@ public abstract class MyCollabUI extends UI {
         currentContext.clearSessionVariables();
         currentContext = null;
         super.close();
+    }
+
+    public static boolean isTablet() {
+        try {
+            WebBrowser webBrowser = Page.getCurrent().getWebBrowser();
+            return webBrowser.isIPad();
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

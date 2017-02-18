@@ -34,16 +34,14 @@ import com.mycollab.module.project.ProjectTypeConstants;
 import com.mycollab.module.project.domain.SimpleTask;
 import com.mycollab.module.project.domain.Task;
 import com.mycollab.module.project.domain.criteria.TaskSearchCriteria;
-import com.mycollab.module.project.events.TaskEvent;
-import com.mycollab.module.project.i18n.OptionI18nEnum.TaskPriority;
+import com.mycollab.module.project.event.TaskEvent;
+import com.mycollab.module.project.i18n.OptionI18nEnum.Priority;
 import com.mycollab.module.project.i18n.TaskI18nEnum;
 import com.mycollab.module.project.service.ProjectTaskService;
 import com.mycollab.module.project.ui.ProjectAssetsManager;
 import com.mycollab.module.project.ui.form.ProjectFormAttachmentDisplayField;
 import com.mycollab.module.project.ui.form.ProjectItemViewField;
 import com.mycollab.module.project.view.settings.component.ProjectUserFormLinkField;
-import com.mycollab.module.project.view.task.components.TaskSearchPanel;
-import com.mycollab.module.project.view.task.components.ToggleTaskSummaryWithParentRelationshipField;
 import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
@@ -76,7 +74,7 @@ public class TaskPreviewForm extends AdvancedPreviewBeanForm<SimpleTask> {
     @Override
     public void setBean(SimpleTask bean) {
         this.setFormLayoutFactory(new DefaultDynaFormLayout(ProjectTypeConstants.TASK, TaskDefaultFormLayoutFactory.getForm(),
-                Task.Field.taskname.name(), SimpleTask.Field.selected.name()));
+                Task.Field.name.name(), SimpleTask.Field.selected.name()));
         this.setBeanFormFieldFactory(new PreviewFormFieldFactory(this));
         super.setBean(bean);
     }
@@ -98,18 +96,18 @@ public class TaskPreviewForm extends AdvancedPreviewBeanForm<SimpleTask> {
                 return new DateTimeOptionViewField(beanItem.getStartdate());
             } else if (Task.Field.enddate.equalTo(propertyId)) {
                 return new DateTimeOptionViewField(beanItem.getEnddate());
-            } else if (Task.Field.deadline.equalTo(propertyId)) {
-                return new DateTimeOptionViewField(beanItem.getDeadline());
+            } else if (Task.Field.duedate.equalTo(propertyId)) {
+                return new DateTimeOptionViewField(beanItem.getDuedate());
             } else if (Task.Field.milestoneid.equalTo(propertyId)) {
                 return new ProjectItemViewField(ProjectTypeConstants.MILESTONE, beanItem.getMilestoneid() + "", beanItem.getMilestoneName());
             } else if (Task.Field.id.equalTo(propertyId)) {
                 return new ProjectFormAttachmentDisplayField(beanItem.getProjectid(), ProjectTypeConstants.TASK, beanItem.getId());
             } else if (Task.Field.priority.equalTo(propertyId)) {
                 if (StringUtils.isNotBlank(beanItem.getPriority())) {
-                    FontAwesome fontPriority = ProjectAssetsManager.getTaskPriority(beanItem.getPriority());
-                    String priorityLbl = fontPriority.getHtml() + " " + UserUIContext.getMessage(TaskPriority.class, beanItem.getPriority());
+                    FontAwesome fontPriority = ProjectAssetsManager.getPriority(beanItem.getPriority());
+                    String priorityLbl = fontPriority.getHtml() + " " + UserUIContext.getMessage(Priority.class, beanItem.getPriority());
                     DefaultViewField field = new DefaultViewField(priorityLbl, ContentMode.HTML);
-                    field.addStyleName("task-" + beanItem.getPriority().toLowerCase());
+                    field.addStyleName("priority-" + beanItem.getPriority().toLowerCase());
                     return field;
                 }
             } else if (Task.Field.isestimated.equalTo(propertyId)) {
@@ -120,12 +118,12 @@ public class TaskPreviewForm extends AdvancedPreviewBeanForm<SimpleTask> {
                     HumanTime humanTime = new HumanTime(beanItem.getDuration());
                     return new DefaultViewField(humanTime.getExactly());
                 }
-            } else if (Task.Field.notes.equalTo(propertyId)) {
-                return new RichTextViewField(beanItem.getNotes());
+            } else if (Task.Field.description.equalTo(propertyId)) {
+                return new RichTextViewField(beanItem.getDescription());
             } else if (Task.Field.parenttaskid.equalTo(propertyId)) {
                 return new SubTasksComp(beanItem);
             } else if (Task.Field.status.equalTo(propertyId)) {
-                return new I18nFormViewField(beanItem.getStatus(), StatusI18nEnum.class).withStyleName(WebUIConstants.FIELD_NOTE);
+                return new I18nFormViewField(beanItem.getStatus(), StatusI18nEnum.class).withStyleName(UIConstants.FIELD_NOTE);
             }
             return null;
         }
@@ -177,15 +175,15 @@ public class TaskPreviewForm extends AdvancedPreviewBeanForm<SimpleTask> {
                     SimpleTask task = new SimpleTask();
                     task.setMilestoneid(beanItem.getMilestoneid());
                     task.setParenttaskid(beanItem.getId());
-                    task.setPriority(TaskPriority.Medium.name());
+                    task.setPriority(Priority.Medium.name());
                     task.setProjectid(beanItem.getProjectid());
                     task.setSaccountid(beanItem.getSaccountid());
                     UI.getCurrent().addWindow(new TaskAddWindow(task));
-                }).withStyleName(WebUIConstants.BUTTON_ACTION).withIcon(FontAwesome.PLUS);
+                }).withStyleName(WebThemes.BUTTON_ACTION).withIcon(FontAwesome.PLUS);
 
                 final SplitButton splitButton = new SplitButton(addNewTaskBtn);
                 splitButton.setWidthUndefined();
-                splitButton.addStyleName(WebUIConstants.BUTTON_ACTION);
+                splitButton.addStyleName(WebThemes.BUTTON_ACTION);
 
                 OptionPopupContent popupButtonsControl = new OptionPopupContent();
                 Button selectBtn = new Button(UserUIContext.getMessage(GenericI18Enum.BUTTON_SELECT), clickEvent -> {
@@ -198,8 +196,8 @@ public class TaskPreviewForm extends AdvancedPreviewBeanForm<SimpleTask> {
             }
 
             ProjectTaskService taskService = AppContextUtil.getSpringBean(ProjectTaskService.class);
-            List<SimpleTask> subTasks = taskService.findSubTasks(beanItem.getId(), MyCollabUI.getAccountId(), new
-                    SearchCriteria.OrderField("createdTime", SearchCriteria.DESC));
+            List<SimpleTask> subTasks = taskService.findSubTasks(beanItem.getId(), MyCollabUI.getAccountId(),
+                    new SearchCriteria.OrderField("createdTime", SearchCriteria.DESC));
             if (CollectionUtils.isNotEmpty(subTasks)) {
                 for (SimpleTask subTask : subTasks) {
                     tasksLayout.addComponent(generateSubTaskContent(subTask));
@@ -214,19 +212,19 @@ public class TaskPreviewForm extends AdvancedPreviewBeanForm<SimpleTask> {
         }
 
         private HorizontalLayout generateSubTaskContent(final SimpleTask subTask) {
-            MHorizontalLayout layout = new MHorizontalLayout().withStyleName(WebUIConstants.HOVER_EFFECT_NOT_BOX);
+            MHorizontalLayout layout = new MHorizontalLayout().withStyleName(WebThemes.HOVER_EFFECT_NOT_BOX);
             layout.setDefaultComponentAlignment(Alignment.TOP_LEFT);
 
             final CheckBox checkBox = new CheckBox("", subTask.isCompleted());
             checkBox.setVisible(CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.TASKS));
             layout.with(checkBox);
 
-            Span priorityLink = new Span().appendText(ProjectAssetsManager.getTaskPriorityHtml(subTask.getPriority()))
+            Span priorityLink = new Span().appendText(ProjectAssetsManager.getPriorityHtml(subTask.getPriority()))
                     .setTitle(subTask.getPriority());
             layout.with(ELabel.html(priorityLink.write()).withWidthUndefined());
 
             String taskStatus = UserUIContext.getMessage(StatusI18nEnum.class, subTask.getStatus());
-            final ELabel statusLbl = new ELabel(taskStatus).withStyleName(WebUIConstants.FIELD_NOTE).withWidthUndefined();
+            final ELabel statusLbl = new ELabel(taskStatus).withStyleName(UIConstants.FIELD_NOTE).withWidthUndefined();
             layout.with(statusLbl);
 
             String avatarLink = StorageFactory.getAvatarPath(subTask.getAssignUserAvatarId(), 16);
@@ -289,10 +287,10 @@ public class TaskPreviewForm extends AdvancedPreviewBeanForm<SimpleTask> {
             setContent(content);
         }
 
-        private class TaskRowRenderer implements AbstractBeanPagedList.RowDisplayHandler<SimpleTask> {
+        private class TaskRowRenderer implements IBeanList.RowDisplayHandler<SimpleTask> {
             @Override
-            public Component generateRow(AbstractBeanPagedList host, final SimpleTask item, int rowIndex) {
-                MButton taskLink = new MButton(item.getTaskname(), clickEvent -> {
+            public Component generateRow(IBeanList<SimpleTask> host, final SimpleTask item, int rowIndex) {
+                MButton taskLink = new MButton(item.getName(), clickEvent -> {
                     if (item.getId().equals(parentTask.getId())) {
                         NotificationUtil.showErrorNotification(UserUIContext.getMessage(TaskI18nEnum.ERROR_CAN_NOT_ASSIGN_PARENT_TASK_TO_ITSELF));
                     } else {
@@ -303,7 +301,7 @@ public class TaskPreviewForm extends AdvancedPreviewBeanForm<SimpleTask> {
                     }
 
                     close();
-                }).withStyleName(WebUIConstants.BUTTON_LINK);
+                }).withStyleName(WebThemes.BUTTON_LINK, UIConstants.TEXT_ELLIPSIS).withFullWidth();
                 return new MCssLayout(taskLink).withStyleName("list-row").withFullWidth();
             }
         }

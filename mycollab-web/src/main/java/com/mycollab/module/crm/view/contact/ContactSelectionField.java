@@ -22,8 +22,9 @@ import com.mycollab.module.crm.service.ContactService;
 import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.ui.FieldSelection;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.vaadin.data.Property;
+import com.vaadin.data.Validator;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.*;
 import org.vaadin.viritin.button.MButton;
@@ -48,12 +49,13 @@ public class ContactSelectionField extends CustomField<Integer> implements Field
         browseBtn = new MButton("", clickEvent -> {
             ContactSelectionWindow contactWindow = new ContactSelectionWindow(ContactSelectionField.this);
             UI.getCurrent().addWindow(contactWindow);
-        }).withIcon(FontAwesome.ELLIPSIS_H).withStyleName(WebUIConstants.BUTTON_OPTION, WebUIConstants.BUTTON_SMALL_PADDING);
+            contactWindow.show();
+        }).withIcon(FontAwesome.ELLIPSIS_H).withStyleName(WebThemes.BUTTON_OPTION, WebThemes.BUTTON_SMALL_PADDING);
 
         clearBtn = new MButton("", clickEvent -> {
             contactName.setValue("");
             contact = null;
-        }).withIcon(FontAwesome.TRASH_O).withStyleName(WebUIConstants.BUTTON_OPTION, WebUIConstants.BUTTON_SMALL_PADDING);
+        }).withIcon(FontAwesome.TRASH_O).withStyleName(WebThemes.BUTTON_OPTION, WebThemes.BUTTON_SMALL_PADDING);
     }
 
     @Override
@@ -61,9 +63,7 @@ public class ContactSelectionField extends CustomField<Integer> implements Field
         contact = (SimpleContact) data;
         if (contact != null) {
             contactName.setValue(contact.getContactName());
-            setInternalValue(contact.getId());
         }
-
     }
 
     @Override
@@ -71,29 +71,27 @@ public class ContactSelectionField extends CustomField<Integer> implements Field
         final Object value = newDataSource.getValue();
         if (value instanceof Integer) {
             setContactByVal((Integer) value);
-            super.setPropertyDataSource(newDataSource);
-        } else {
-            super.setPropertyDataSource(newDataSource);
         }
+        super.setPropertyDataSource(newDataSource);
     }
 
     @Override
-    public void setValue(Integer value) {
-        this.setContactByVal(value);
-        super.setValue(value);
+    public void commit() throws SourceException, Validator.InvalidValueException {
+        if (contact != null) {
+            setInternalValue(contact.getId());
+        } else {
+            setInternalValue(null);
+        }
+        super.commit();
     }
 
     private void setContactByVal(Integer contactId) {
         ContactService contactService = AppContextUtil.getSpringBean(ContactService.class);
         SimpleContact contactVal = contactService.findById(contactId, MyCollabUI.getAccountId());
         if (contactVal != null) {
-            setInternalContact(contactVal);
+            this.contact = contact;
+            contactName.setValue(contact.getContactName());
         }
-    }
-
-    private void setInternalContact(SimpleContact contact) {
-        this.contact = contact;
-        contactName.setValue(contact.getContactName());
     }
 
     public SimpleContact getContact() {
@@ -102,10 +100,8 @@ public class ContactSelectionField extends CustomField<Integer> implements Field
 
     @Override
     protected Component initContent() {
-        MHorizontalLayout layout = new MHorizontalLayout().withFullWidth();
-        layout.setDefaultComponentAlignment(Alignment.MIDDLE_LEFT);
-        layout.with(contactName, browseBtn, clearBtn).expand(contactName);
-        return layout;
+        return new MHorizontalLayout(contactName, browseBtn, clearBtn).expand(contactName)
+                .alignAll(Alignment.MIDDLE_LEFT).withFullWidth();
     }
 
     @Override

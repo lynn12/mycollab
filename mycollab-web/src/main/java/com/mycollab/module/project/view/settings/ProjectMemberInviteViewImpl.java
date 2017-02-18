@@ -21,8 +21,8 @@ import com.mycollab.common.i18n.SecurityI18nEnum;
 import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.module.project.ProjectRolePermissionCollections;
 import com.mycollab.module.project.domain.SimpleProjectRole;
-import com.mycollab.module.project.events.ProjectMemberEvent;
-import com.mycollab.module.project.events.ProjectMemberEvent.InviteProjectMembers;
+import com.mycollab.module.project.event.ProjectMemberEvent;
+import com.mycollab.module.project.event.ProjectMemberEvent.InviteProjectMembers;
 import com.mycollab.module.project.i18n.ProjectMemberI18nEnum;
 import com.mycollab.module.project.i18n.ProjectRoleI18nEnum;
 import com.mycollab.module.project.i18n.RolePermissionI18nEnum;
@@ -34,14 +34,14 @@ import com.mycollab.security.PermissionMap;
 import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
-import com.mycollab.vaadin.mvp.AbstractPageView;
+import com.mycollab.vaadin.mvp.AbstractVerticalPageView;
 import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.mvp.ViewEvent;
 import com.mycollab.vaadin.ui.ELabel;
 import com.mycollab.vaadin.ui.FormContainer;
 import com.mycollab.vaadin.ui.UIConstants;
 import com.mycollab.vaadin.web.ui.AddViewLayout;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.mycollab.vaadin.web.ui.grid.GridFormLayoutHelper;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.server.FontAwesome;
@@ -57,7 +57,7 @@ import org.vaadin.viritin.layouts.MVerticalLayout;
  * @since 1.0
  */
 @ViewComponent
-public class ProjectMemberInviteViewImpl extends AbstractPageView implements ProjectMemberInviteView {
+public class ProjectMemberInviteViewImpl extends AbstractVerticalPageView implements ProjectMemberInviteView {
     private static final long serialVersionUID = 1L;
 
     private Integer roleId = 0;
@@ -108,11 +108,11 @@ public class ProjectMemberInviteViewImpl extends AbstractPageView implements Pro
             String roleName = (item != null) ? item.getBean().getRolename() : "";
             ProjectMemberInviteViewImpl.this.fireEvent(new ViewEvent<>(this,
                     new InviteProjectMembers(inviteUserTokenField.getInviteEmails(), roleId, roleName, messageArea.getValue())));
-        }).withIcon(FontAwesome.SEND).withStyleName(WebUIConstants.BUTTON_ACTION);
+        }).withIcon(FontAwesome.SEND).withStyleName(WebThemes.BUTTON_ACTION);
 
         MButton cancelBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CANCEL),
                 clickEvent -> EventBusFactory.getInstance().post(new ProjectMemberEvent.GotoList(this, null)))
-                .withStyleName(WebUIConstants.BUTTON_OPTION);
+                .withStyleName(WebThemes.BUTTON_OPTION);
         return new MHorizontalLayout(cancelBtn, inviteBtn);
     }
 

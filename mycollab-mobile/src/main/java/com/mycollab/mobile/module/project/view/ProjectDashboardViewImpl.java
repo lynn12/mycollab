@@ -16,19 +16,22 @@
  */
 package com.mycollab.mobile.module.project.view;
 
-import com.esofthead.vaadin.navigationbarquickmenu.NavigationBarQuickMenu;
 import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.core.utils.NumberUtils;
 import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.mobile.module.project.events.*;
 import com.mycollab.mobile.module.project.ui.ProjectMobileMenuPageView;
 import com.mycollab.module.project.CurrentProjectVariables;
+import com.mycollab.module.project.ProjectLinkGenerator;
+import com.mycollab.module.project.ProjectRolePermissionCollections;
 import com.mycollab.module.project.ProjectTypeConstants;
 import com.mycollab.module.project.domain.SimpleProject;
 import com.mycollab.module.project.i18n.*;
 import com.mycollab.module.project.ui.ProjectAssetsManager;
+import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.mvp.ViewComponent;
+import com.mycollab.vaadin.touchkit.NavigationBarQuickMenu;
 import com.mycollab.vaadin.ui.ELabel;
 import com.mycollab.vaadin.ui.UIConstants;
 import com.vaadin.addon.touchkit.ui.NavigationButton;
@@ -60,26 +63,39 @@ public class ProjectDashboardViewImpl extends ProjectMobileMenuPageView implemen
 
     private Component buildRightComponent() {
         NavigationBarQuickMenu menu = new NavigationBarQuickMenu();
-        menu.setButtonCaption("...");
 
         MVerticalLayout content = new MVerticalLayout();
-        content.with(new Button(UserUIContext.getMessage(MessageI18nEnum.NEW),
-                clickEvent -> EventBusFactory.getInstance().post(new MessageEvent.GotoAdd(this, null))));
 
-        content.with(new Button(UserUIContext.getMessage(MilestoneI18nEnum.NEW),
-                clickEvent -> EventBusFactory.getInstance().post(new MilestoneEvent.GotoAdd(this, null))));
+        if (CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.MESSAGES)) {
+            content.with(new Button(UserUIContext.getMessage(MessageI18nEnum.NEW),
+                    clickEvent -> EventBusFactory.getInstance().post(new MessageEvent.GotoAdd(this, null))));
+        }
 
-        content.with(new Button(UserUIContext.getMessage(TaskI18nEnum.NEW),
-                clickEvent -> EventBusFactory.getInstance().post(new TaskEvent.GotoAdd(this, null))));
+        if (CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.MILESTONES)) {
+            content.with(new Button(UserUIContext.getMessage(MilestoneI18nEnum.NEW),
+                    clickEvent -> EventBusFactory.getInstance().post(new MilestoneEvent.GotoAdd(this, null))));
+        }
 
-        content.with(new Button(UserUIContext.getMessage(BugI18nEnum.NEW),
-                clickEvent -> EventBusFactory.getInstance().post(new BugEvent.GotoAdd(this, null))));
+        if (CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.TASKS)) {
+            content.with(new Button(UserUIContext.getMessage(TaskI18nEnum.NEW),
+                    clickEvent -> EventBusFactory.getInstance().post(new TaskEvent.GotoAdd(this, null))));
+        }
 
-        content.with(new Button(UserUIContext.getMessage(RiskI18nEnum.NEW),
-                clickEvent -> EventBusFactory.getInstance().post(new RiskEvent.GotoAdd(this, null))));
+        if (CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.BUGS)) {
+            content.with(new Button(UserUIContext.getMessage(BugI18nEnum.NEW),
+                    clickEvent -> EventBusFactory.getInstance().post(new BugEvent.GotoAdd(this, null))));
+        }
 
-        menu.setContent(content);
-        return menu;
+        if (CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.RISKS)) {
+            content.with(new Button(UserUIContext.getMessage(RiskI18nEnum.NEW),
+                    clickEvent -> EventBusFactory.getInstance().post(new RiskEvent.GotoAdd(this, null))));
+        }
+
+        if (content.getComponentCount() > 0) {
+            menu.setContent(content);
+            return menu;
+        }
+        return null;
     }
 
     @Override
@@ -118,15 +134,15 @@ public class ProjectDashboardViewImpl extends ProjectMobileMenuPageView implemen
         metaInfo.addComponent(nonBillableHoursLbl);
         projectInfo.addComponent(metaInfo);
 
-        int openAssignments = currentProject.getNumOpenBugs() + currentProject.getNumOpenTasks() + currentProject.getNumOpenRisks() + currentProject.getNumOpenRisks();
+        int openAssignments = currentProject.getNumOpenBugs() + currentProject.getNumOpenTasks() + currentProject.getNumOpenRisks();
         int totalAssignments = currentProject.getNumBugs() + currentProject.getNumTasks() + currentProject.getNumRisks();
         ELabel progressInfoLbl;
         if (totalAssignments > 0) {
-            progressInfoLbl = new ELabel(UserUIContext.getMessage(ProjectI18nEnum.OPT_PROJECT_ASSIGNMENT,
+            progressInfoLbl = new ELabel(UserUIContext.getMessage(ProjectI18nEnum.OPT_PROJECT_TICKET,
                     (totalAssignments - openAssignments), totalAssignments, (totalAssignments - openAssignments)
                             * 100 / totalAssignments)).withWidthUndefined().withStyleName(UIConstants.META_INFO);
         } else {
-            progressInfoLbl = new ELabel(UserUIContext.getMessage(ProjectI18nEnum.OPT_NO_ASSIGNMENT)).withWidthUndefined().withStyleName
+            progressInfoLbl = new ELabel(UserUIContext.getMessage(ProjectI18nEnum.OPT_NO_TICKET)).withWidthUndefined().withStyleName
                     (UIConstants.META_INFO);
         }
         projectInfo.addComponent(progressInfoLbl);
@@ -148,17 +164,9 @@ public class ProjectDashboardViewImpl extends ProjectMobileMenuPageView implemen
         milestoneBtn.addClickListener(navigationButtonClickEvent -> EventBusFactory.getInstance().post(new MilestoneEvent.GotoList(this, null)));
         btnGroup.addComponent(new NavigationButtonWrap(ProjectAssetsManager.getAsset(ProjectTypeConstants.MILESTONE), milestoneBtn));
 
-        NavigationButton taskBtn = new NavigationButton(UserUIContext.getMessage(TaskI18nEnum.LIST));
-        taskBtn.addClickListener(navigationButtonClickEvent -> EventBusFactory.getInstance().post(new TaskEvent.GotoList(this, null)));
-        btnGroup.addComponent(new NavigationButtonWrap(ProjectAssetsManager.getAsset(ProjectTypeConstants.TASK), taskBtn));
-
-        NavigationButton bugBtn = new NavigationButton(UserUIContext.getMessage(BugI18nEnum.LIST));
-        bugBtn.addClickListener(navigationButtonClickEvent -> EventBusFactory.getInstance().post(new BugEvent.GotoList(this, null)));
-        btnGroup.addComponent(new NavigationButtonWrap(ProjectAssetsManager.getAsset(ProjectTypeConstants.BUG), bugBtn));
-
-        NavigationButton riskBtn = new NavigationButton(UserUIContext.getMessage(RiskI18nEnum.LIST));
-        riskBtn.addClickListener(navigationButtonClickEvent -> EventBusFactory.getInstance().post(new RiskEvent.GotoList(this, null)));
-        btnGroup.addComponent(new NavigationButtonWrap(ProjectAssetsManager.getAsset(ProjectTypeConstants.RISK), riskBtn));
+        NavigationButton taskBtn = new NavigationButton(UserUIContext.getMessage(TicketI18nEnum.LIST));
+        taskBtn.addClickListener(navigationButtonClickEvent -> EventBusFactory.getInstance().post(new TicketEvent.GotoDashboard(this, null)));
+        btnGroup.addComponent(new NavigationButtonWrap(ProjectAssetsManager.getAsset(ProjectTypeConstants.TICKET), taskBtn));
 
         NavigationButton userBtn = new NavigationButton(UserUIContext.getMessage(ProjectMemberI18nEnum.LIST));
         userBtn.addClickListener(navigationButtonClickEvent -> EventBusFactory.getInstance().post(new ProjectMemberEvent.GotoList(this, null)));
@@ -167,10 +175,17 @@ public class ProjectDashboardViewImpl extends ProjectMobileMenuPageView implemen
         mainLayout.addComponent(btnGroup);
     }
 
+    @Override
+    protected void onBecomingVisible() {
+        super.onBecomingVisible();
+        MyCollabUI.addFragment(ProjectLinkGenerator.generateProjectLink(CurrentProjectVariables
+                .getProject().getId()), UserUIContext.getMessage(ProjectCommonI18nEnum.VIEW_DASHBOARD));
+    }
+
     private static class NavigationButtonWrap extends MHorizontalLayout {
         NavigationButtonWrap(FontAwesome icon, NavigationButton button) {
             this.setStyleName("navigation-button-wrap");
-            ELabel iconLbl = ELabel.fontIcon(icon).withWidthUndefined();
+            ELabel iconLbl = ELabel.fontIcon(icon);
             with(iconLbl, button).withAlign(iconLbl, Alignment.MIDDLE_LEFT).expand(button);
         }
     }

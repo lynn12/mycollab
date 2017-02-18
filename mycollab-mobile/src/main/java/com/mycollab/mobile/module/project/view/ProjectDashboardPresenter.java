@@ -18,14 +18,10 @@ package com.mycollab.mobile.module.project.view;
 
 import com.mycollab.mobile.module.project.view.parameters.ProjectScreenData;
 import com.mycollab.module.project.CurrentProjectVariables;
-import com.mycollab.module.project.ProjectLinkGenerator;
 import com.mycollab.module.project.ProjectRolePermissionCollections;
-import com.mycollab.module.project.i18n.ProjectCommonI18nEnum;
-import com.mycollab.vaadin.MyCollabUI;
-import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.mvp.ScreenData;
 import com.mycollab.vaadin.ui.NotificationUtil;
-import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.HasComponents;
 
 /**
  * @author MyCollab Ltd.
@@ -39,15 +35,13 @@ public class ProjectDashboardPresenter extends AbstractProjectPresenter<ProjectD
     }
 
     @Override
-    protected void onGo(ComponentContainer container, ScreenData<?> data) {
+    protected void onGo(HasComponents container, ScreenData<?> data) {
         if (data instanceof ProjectScreenData.Edit) {
             // TODO: Handle edit project
         } else {
             if (CurrentProjectVariables.canRead(ProjectRolePermissionCollections.PROJECT)) {
                 super.onGo(container, data);
                 view.displayDashboard();
-                MyCollabUI.addFragment(ProjectLinkGenerator.generateProjectLink(CurrentProjectVariables
-                        .getProject().getId()), UserUIContext.getMessage(ProjectCommonI18nEnum.VIEW_DASHBOARD));
             } else {
                 NotificationUtil.showMessagePermissionAlert();
             }

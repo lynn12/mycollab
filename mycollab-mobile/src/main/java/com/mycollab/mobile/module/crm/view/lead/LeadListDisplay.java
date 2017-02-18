@@ -23,8 +23,9 @@ import com.mycollab.module.crm.domain.SimpleLead;
 import com.mycollab.module.crm.domain.criteria.LeadSearchCriteria;
 import com.mycollab.module.crm.service.LeadService;
 import com.mycollab.spring.AppContextUtil;
-import com.vaadin.ui.Button;
+import com.mycollab.vaadin.ui.IBeanList;
 import com.vaadin.ui.Component;
+import org.vaadin.viritin.button.MButton;
 
 /**
  * @author MyCollab Ltd.
@@ -37,15 +38,12 @@ public class LeadListDisplay extends DefaultPagedBeanList<LeadService, LeadSearc
         super(AppContextUtil.getSpringBean(LeadService.class), new LeadRowDisplayHandler());
     }
 
-    private static class LeadRowDisplayHandler implements RowDisplayHandler<SimpleLead> {
+    private static class LeadRowDisplayHandler implements IBeanList.RowDisplayHandler<SimpleLead> {
 
         @Override
-        public Component generateRow(final SimpleLead lead, int rowIndex) {
-            final Button b = new Button(lead.getLeadName(), clickEvent -> EventBusFactory.getInstance().post(new LeadEvent.GotoRead(this,
-                    lead.getId())));
-            b.setWidth("100%");
-            return b;
+        public Component generateRow(IBeanList<SimpleLead> host, final SimpleLead lead, int rowIndex) {
+            return new MButton(lead.getLeadName(), clickEvent -> EventBusFactory.getInstance().post(new LeadEvent.GotoRead(this,
+                    lead.getId()))).withFullWidth();
         }
-
     }
 }

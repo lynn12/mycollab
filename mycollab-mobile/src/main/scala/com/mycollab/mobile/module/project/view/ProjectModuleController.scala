@@ -22,24 +22,21 @@ import com.mycollab.common.domain.criteria.ActivityStreamSearchCriteria
 import com.mycollab.common.i18n.OptionI18nEnum.StatusI18nEnum
 import com.mycollab.core.MyCollabException
 import com.mycollab.core.utils.BeanUtility
-import com.mycollab.db.arguments.{NumberSearchField, SetSearchField, StringSearchField}
+import com.mycollab.db.arguments.{NumberSearchField, SearchField, SetSearchField, StringSearchField}
 import com.mycollab.eventmanager.ApplicationEventListener
 import com.mycollab.mobile.module.project.events._
-import com.mycollab.mobile.module.project.view.bug.BugPresenter
 import com.mycollab.mobile.module.project.view.message.MessagePresenter
 import com.mycollab.mobile.module.project.view.milestone.MilestonePresenter
 import com.mycollab.mobile.module.project.view.parameters.ProjectScreenData.{Add, ProjectActivities}
 import com.mycollab.mobile.module.project.view.parameters._
-import com.mycollab.mobile.module.project.view.risk.IRiskPresenter
 import com.mycollab.mobile.module.project.view.settings.ProjectUserPresenter
-import com.mycollab.mobile.module.project.view.task.TaskPresenter
+import com.mycollab.mobile.module.project.view.ticket.TicketPresenter
 import com.mycollab.mobile.mvp.view.PresenterOptionUtil
 import com.mycollab.module.project.domain._
 import com.mycollab.module.project.domain.criteria._
 import com.mycollab.module.project.service.ProjectService
 import com.mycollab.module.project.{CurrentProjectVariables, ProjectMemberStatusConstants}
 import com.mycollab.module.tracker.domain.SimpleBug
-import com.mycollab.module.tracker.domain.criteria.BugSearchCriteria
 import com.mycollab.spring.AppContextUtil
 import com.mycollab.vaadin.mvp.{AbstractController, PageActionChain, PresenterResolver, ScreenData}
 import com.mycollab.vaadin.{MyCollabUI, UserUIContext}
@@ -51,6 +48,7 @@ import com.vaadin.addon.touchkit.ui.NavigationManager
   */
 class ProjectModuleController(val navManager: NavigationManager) extends AbstractController {
   bindProjectEvents()
+  bindTicketEvents()
   bindBugEvents()
   bindMessageEvents()
   bindMilestoneEvents()
@@ -104,42 +102,39 @@ class ProjectModuleController(val navManager: NavigationManager) extends Abstrac
     })
   }
   
-  private def bindBugEvents() {
-    this.register(new ApplicationEventListener[BugEvent.GotoList]() {
-      @Subscribe def handle(event: BugEvent.GotoList) {
-        val params: Any = event.getData
-        val presenter = PresenterResolver.getPresenter(classOf[BugPresenter])
-        if (params == null) {
-          val criteria = new BugSearchCriteria
-          criteria.setProjectId(new NumberSearchField(CurrentProjectVariables.getProjectId))
-          presenter.go(navManager, new BugScreenData.Search(criteria))
-        }
-        else if (params.isInstanceOf[BugScreenData.Search]) {
-          presenter.go(navManager, params.asInstanceOf[BugScreenData.Search])
-        }
-        else {
-          throw new MyCollabException("Invalid search parameter: " + BeanUtility.printBeanObj(params))
-        }
+  private def bindTicketEvents(): Unit = {
+    this.register(new ApplicationEventListener[TicketEvent.GotoDashboard]() {
+      @Subscribe def handle(event: TicketEvent.GotoDashboard) {
+        val searchCriteria = new ProjectTicketSearchCriteria
+        searchCriteria.setProjectIds(new SetSearchField[Integer](CurrentProjectVariables.getProjectId))
+        searchCriteria.setTypes(CurrentProjectVariables.getRestrictedTicketTypes)
+        searchCriteria.setIsOpenned(new SearchField())
+        val data = new TicketScreenData.GotoDashboard(searchCriteria)
+        val presenter = PresenterResolver.getPresenter(classOf[TicketPresenter])
+        presenter.go(navManager, data)
       }
     })
+  }
+  
+  private def bindBugEvents() {
     this.register(new ApplicationEventListener[BugEvent.GotoRead]() {
       @Subscribe def handle(event: BugEvent.GotoRead) {
         val data = new BugScreenData.Read(event.getData.asInstanceOf[Integer])
-        val presenter = PresenterResolver.getPresenter(classOf[BugPresenter])
+        val presenter = PresenterResolver.getPresenter(classOf[TicketPresenter])
         presenter.go(navManager, data)
       }
     })
     this.register(new ApplicationEventListener[BugEvent.GotoAdd]() {
       @Subscribe def handle(event: BugEvent.GotoAdd) {
         val data = new BugScreenData.Add(new SimpleBug)
-        val presenter = PresenterResolver.getPresenter(classOf[BugPresenter])
+        val presenter = PresenterResolver.getPresenter(classOf[TicketPresenter])
         presenter.go(navManager, data)
       }
     })
     this.register(new ApplicationEventListener[BugEvent.GotoEdit]() {
       @Subscribe def handle(event: BugEvent.GotoEdit) {
         val data = new BugScreenData.Edit(event.getData.asInstanceOf[SimpleBug])
-        val presenter = PresenterResolver.getPresenter(classOf[BugPresenter])
+        val presenter = PresenterResolver.getPresenter(classOf[TicketPresenter])
         presenter.go(navManager, data)
       }
     })
@@ -213,74 +208,48 @@ class ProjectModuleController(val navManager: NavigationManager) extends Abstrac
   }
   
   private def bindTaskEvents() {
-    this.register(new ApplicationEventListener[TaskEvent.GotoList]() {
-      @Subscribe def handle(event: TaskEvent.GotoList) {
-        val criteria = new TaskSearchCriteria
-        criteria.setProjectId(NumberSearchField.equal(CurrentProjectVariables.getProjectId))
-        val data = new TaskScreenData.Search(criteria)
-        val presenter = PresenterResolver.getPresenter(classOf[TaskPresenter])
-        presenter.go(navManager, data)
-      }
-    })
     this.register(new ApplicationEventListener[TaskEvent.GotoRead]() {
       @Subscribe def handle(event: TaskEvent.GotoRead) {
         val data = new TaskScreenData.Read(event.getData.asInstanceOf[Integer])
-        val presenter = PresenterResolver.getPresenter(classOf[TaskPresenter])
+        val presenter = PresenterResolver.getPresenter(classOf[TicketPresenter])
         presenter.go(navManager, data)
       }
     })
     this.register(new ApplicationEventListener[TaskEvent.GotoEdit]() {
       @Subscribe def handle(event: TaskEvent.GotoEdit) {
         val data = new TaskScreenData.Edit(event.getData.asInstanceOf[SimpleTask])
-        val presenter = PresenterResolver.getPresenter(classOf[TaskPresenter])
+        val presenter = PresenterResolver.getPresenter(classOf[TicketPresenter])
         presenter.go(navManager, data)
       }
     })
     this.register(new ApplicationEventListener[TaskEvent.GotoAdd]() {
       @Subscribe def handle(event: TaskEvent.GotoAdd) {
         val data = new TaskScreenData.Add(new SimpleTask)
-        val presenter = PresenterResolver.getPresenter(classOf[TaskPresenter])
+        val presenter = PresenterResolver.getPresenter(classOf[TicketPresenter])
         presenter.go(navManager, data)
       }
     })
   }
   
   private def bindRiskEvents() {
-    this.register(new ApplicationEventListener[RiskEvent.GotoList]() {
-      @Subscribe def handle(event: RiskEvent.GotoList) {
-        val params: Any = event.getData
-        val presenter = PresenterOptionUtil.getPresenter(classOf[IRiskPresenter])
-        if (params == null) {
-          val criteria = new RiskSearchCriteria
-          criteria.setProjectId(NumberSearchField.equal(CurrentProjectVariables.getProjectId))
-          presenter.go(navManager, new RiskScreenData.Search(criteria))
-        }
-        else if (params.isInstanceOf[RiskScreenData.Search]) {
-          presenter.go(navManager, params.asInstanceOf[RiskScreenData.Search])
-        }
-        else {
-          throw new MyCollabException("Invalid search parameter: " + BeanUtility.printBeanObj(params))
-        }
-      }
-    })
     this.register(new ApplicationEventListener[RiskEvent.GotoRead]() {
       @Subscribe def handle(event: RiskEvent.GotoRead) {
         val data = new RiskScreenData.Read(event.getData.asInstanceOf[Integer])
-        val presenter = PresenterOptionUtil.getPresenter(classOf[IRiskPresenter])
+        val presenter = PresenterOptionUtil.getPresenter(classOf[TicketPresenter])
         presenter.go(navManager, data)
       }
     })
     this.register(new ApplicationEventListener[RiskEvent.GotoAdd]() {
       @Subscribe def handle(event: RiskEvent.GotoAdd) {
         val data = new RiskScreenData.Add(new SimpleRisk)
-        val presenter = PresenterOptionUtil.getPresenter(classOf[IRiskPresenter])
+        val presenter = PresenterOptionUtil.getPresenter(classOf[TicketPresenter])
         presenter.go(navManager, data)
       }
     })
     this.register(new ApplicationEventListener[RiskEvent.GotoEdit]() {
       @Subscribe def handle(event: RiskEvent.GotoEdit) {
         val data = new RiskScreenData.Edit(event.getData.asInstanceOf[SimpleRisk])
-        val presenter = PresenterOptionUtil.getPresenter(classOf[IRiskPresenter])
+        val presenter = PresenterOptionUtil.getPresenter(classOf[TicketPresenter])
         presenter.go(navManager, data)
       }
     })

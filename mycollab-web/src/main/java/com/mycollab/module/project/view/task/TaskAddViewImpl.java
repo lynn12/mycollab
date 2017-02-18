@@ -31,7 +31,7 @@ import com.mycollab.vaadin.ui.AdvancedEditBeanForm;
 import com.mycollab.vaadin.ui.IFormLayoutFactory;
 import com.mycollab.vaadin.web.ui.DefaultDynaFormLayout;
 import com.mycollab.vaadin.web.ui.field.AttachmentUploadField;
-import com.vaadin.server.Resource;
+import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.ComponentContainer;
 
 import java.util.List;
@@ -65,11 +65,11 @@ public class TaskAddViewImpl extends AbstractEditItemComp<SimpleTask> implements
 
     @Override
     protected String initFormTitle() {
-        return (beanItem.getId() == null) ? null : beanItem.getTaskname();
+        return (beanItem.getId() == null) ? null : beanItem.getName();
     }
 
     @Override
-    protected Resource initFormIconResource() {
+    protected FontAwesome initFormIconResource() {
         return ProjectAssetsManager.getAsset(ProjectTypeConstants.TASK);
     }
 

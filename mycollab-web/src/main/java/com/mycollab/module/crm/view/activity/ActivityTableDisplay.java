@@ -23,7 +23,7 @@ import com.mycollab.configuration.StorageFactory;
 import com.mycollab.core.utils.StringUtils;
 import com.mycollab.module.crm.CrmLinkGenerator;
 import com.mycollab.module.crm.CrmTypeConstants;
-import com.mycollab.module.crm.data.CrmLinkBuilder;
+import com.mycollab.module.crm.CrmLinkBuilder;
 import com.mycollab.module.crm.domain.SimpleActivity;
 import com.mycollab.module.crm.domain.criteria.ActivitySearchCriteria;
 import com.mycollab.module.crm.service.EventService;
@@ -35,7 +35,7 @@ import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.ELabel;
 import com.mycollab.vaadin.web.ui.CheckBoxDecor;
 import com.mycollab.vaadin.web.ui.LabelLink;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.mycollab.vaadin.web.ui.table.DefaultPagedBeanTable;
 import com.vaadin.server.FontAwesome;
 import org.jsoup.Jsoup;
@@ -89,9 +89,9 @@ public class ActivityTableDisplay extends DefaultPagedBeanTable<EventService, Ac
             b.setIconLink(iconLink);
 
             if (simpleEvent.isCompleted()) {
-                b.addStyleName(WebUIConstants.LINK_COMPLETED);
+                b.addStyleName(WebThemes.LINK_COMPLETED);
             } else if (simpleEvent.isOverdue()) {
-                b.addStyleName(WebUIConstants.LINK_OVERDUE);
+                b.addStyleName(WebThemes.LINK_OVERDUE);
             }
             b.setDescription(generateToolTip(simpleEvent));
             return b;

@@ -17,7 +17,7 @@
 package com.mycollab.module.crm.ui.components;
 
 import com.mycollab.vaadin.events.HasEditFormHandlers;
-import com.mycollab.vaadin.mvp.AbstractPageView;
+import com.mycollab.vaadin.mvp.AbstractVerticalPageView;
 import com.mycollab.vaadin.mvp.IFormAddView;
 import com.mycollab.vaadin.ui.AbstractBeanFieldGroupEditFieldFactory;
 import com.mycollab.vaadin.ui.AdvancedEditBeanForm;
@@ -26,6 +26,7 @@ import com.mycollab.vaadin.ui.WrappedFormLayoutFactory;
 import com.mycollab.vaadin.web.ui.AddViewLayout2;
 import com.vaadin.server.Resource;
 import com.vaadin.shared.ui.MarginInfo;
+import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.ComponentContainer;
 
 /**
@@ -33,7 +34,7 @@ import com.vaadin.ui.ComponentContainer;
  * @author MyCollab Ltd.
  * @since 3.0
  */
-public abstract class AbstractEditItemComp<B> extends AbstractPageView implements IFormAddView<B> {
+public abstract class AbstractEditItemComp<B> extends AbstractVerticalPageView implements IFormAddView<B> {
     private static final long serialVersionUID = 1L;
 
     protected B beanItem;
@@ -60,10 +61,9 @@ public abstract class AbstractEditItemComp<B> extends AbstractPageView implement
     }
 
     class FormLayoutFactory extends WrappedFormLayoutFactory {
-        private static final long serialVersionUID = 1L;
 
         @Override
-        public ComponentContainer getLayout() {
+        public AbstractComponent getLayout() {
             AddViewLayout2 formAddLayout = new AddViewLayout2(initFormTitle(), initFormIconResource());
 
             ComponentContainer buttonControls = createButtonControls();

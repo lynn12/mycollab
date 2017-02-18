@@ -40,7 +40,7 @@ import com.mycollab.vaadin.events.DefaultPreviewFormHandler;
 import com.mycollab.vaadin.mvp.ScreenData;
 import com.mycollab.vaadin.ui.NotificationUtil;
 import com.mycollab.vaadin.ui.RelatedListHandler;
-import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.UI;
 
 import java.util.ArrayList;
@@ -166,7 +166,7 @@ public class LeadReadPresenter extends AbstractCrmPresenter<LeadReadView> {
             @Override
             public void createNewRelatedItem(String itemId) {
                 if (itemId.equals(CrmTypeConstants.TASK)) {
-                    final SimpleTask task = new SimpleTask();
+                    final SimpleCrmTask task = new SimpleCrmTask();
                     task.setType(CrmTypeConstants.ACCOUNT);
                     task.setTypeid(view.getItem().getId());
                     EventBusFactory.getInstance().post(new ActivityEvent.TaskEdit(LeadReadPresenter.this, task));
@@ -186,7 +186,7 @@ public class LeadReadPresenter extends AbstractCrmPresenter<LeadReadView> {
     }
 
     @Override
-    protected void onGo(ComponentContainer container, ScreenData<?> data) {
+    protected void onGo(HasComponents container, ScreenData<?> data) {
         if (UserUIContext.canRead(RolePermissionCollections.CRM_LEAD)) {
 
             if (data.getParams() instanceof Integer) {

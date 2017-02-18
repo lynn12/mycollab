@@ -52,7 +52,7 @@ class ComponentRelayEmailNotificationActionImpl extends SendMailToAllMembersActi
   protected def buildExtraTemplateVariables(context: MailContext[SimpleComponent]) {
     val emailNotification = context.getEmailNotification
 
-    val summary = bean.getComponentname
+    val summary = bean.getName
     val summaryLink = ProjectLinkGenerator.generateBugComponentPreviewFullLink(siteUrl, bean.getProjectid, bean.getId)
 
     val avatarId = if (projectMember != null) projectMember.getMemberAvatarId else ""
@@ -68,7 +68,7 @@ class ComponentRelayEmailNotificationActionImpl extends SendMailToAllMembersActi
     contentGenerator.putVariable("projectName", bean.getProjectName)
     contentGenerator.putVariable("projectNotificationUrl", ProjectLinkGenerator.generateProjectSettingFullLink(siteUrl, bean.getProjectid))
     contentGenerator.putVariable("actionHeading", context.getMessage(actionEnum, makeChangeUser))
-    contentGenerator.putVariable("summary", summary)
+    contentGenerator.putVariable("name", summary)
     contentGenerator.putVariable("summaryLink", summaryLink)
   }
 

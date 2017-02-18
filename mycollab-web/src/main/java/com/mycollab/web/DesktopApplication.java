@@ -40,9 +40,9 @@ import com.mycollab.shell.view.LoginView;
 import com.mycollab.shell.view.MainWindowContainer;
 import com.mycollab.shell.view.ShellUrlResolver;
 import com.mycollab.spring.AppContextUtil;
-import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.AsyncInvoker;
 import com.mycollab.vaadin.MyCollabUI;
+import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.Utils;
 import com.mycollab.vaadin.mvp.ControllerRegistry;
 import com.mycollab.vaadin.mvp.PresenterResolver;
@@ -57,7 +57,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.JavaScript;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Window;
-import org.mybatis.spring.MyBatisSystemException;
+import org.eclipse.jetty.io.EofException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.UncategorizedSQLException;
@@ -72,7 +72,7 @@ import static com.mycollab.core.utils.ExceptionUtils.getExceptionType;
  * @author MyCollab Ltd.
  * @since 1.0
  */
-@Theme(MyCollabVersion.THEME_VERSION)
+@Theme(Version.THEME_VERSION)
 @Widgetset("com.mycollab.widgetset.MyCollabWidgetSet")
 public class DesktopApplication extends MyCollabUI {
     private static final long serialVersionUID = 1L;
@@ -132,7 +132,7 @@ public class DesktopApplication extends MyCollabUI {
                 || userAgent.contains("msie 7.0") || userAgent.contains("msie 8.0") || userAgent.contains("msie 9.0");
     }
 
-    private static Class[] systemExceptions = new Class[]{UncategorizedSQLException.class, MyBatisSystemException.class};
+    private static Class[] systemExceptions = new Class[]{UncategorizedSQLException.class};
 
     private String printRequest(VaadinRequest request) {
         StringBuilder requestInfo = new StringBuilder();
@@ -258,7 +258,11 @@ public class DesktopApplication extends MyCollabUI {
             return;
         }
 
-        LOG.error("Error ", e);
+        EofException eofException = getExceptionType(e, EofException.class);
+        if (eofException != null) {
+            return;
+        }
+        LOG.error("Error", e);
         ConfirmDialog dialog = ConfirmDialogExt.show(DesktopApplication.this,
                 UserUIContext.getMessage(GenericI18Enum.WINDOW_ERROR_TITLE, MyCollabUI.getSiteName()),
                 UserUIContext.getMessage(GenericI18Enum.ERROR_USER_NOTICE_INFORMATION_MESSAGE),

@@ -16,19 +16,15 @@
  */
 package com.mycollab.mobile.module.project.view.milestone;
 
-import com.mycollab.common.GenericLinkUtils;
 import com.mycollab.mobile.module.project.view.ProjectListPresenter;
 import com.mycollab.module.project.CurrentProjectVariables;
 import com.mycollab.module.project.ProjectRolePermissionCollections;
 import com.mycollab.module.project.domain.SimpleMilestone;
 import com.mycollab.module.project.domain.criteria.MilestoneSearchCriteria;
-import com.mycollab.module.project.i18n.MilestoneI18nEnum;
 import com.mycollab.module.project.i18n.OptionI18nEnum.MilestoneStatus;
-import com.mycollab.vaadin.MyCollabUI;
-import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.mvp.ScreenData;
 import com.mycollab.vaadin.ui.NotificationUtil;
-import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.HasComponents;
 
 /**
  * @author MyCollab Ltd.
@@ -42,12 +38,10 @@ public class MilestoneListPresenter extends ProjectListPresenter<MilestoneListVi
     }
 
     @Override
-    protected void onGo(ComponentContainer container, ScreenData<?> data) {
+    protected void onGo(HasComponents container, ScreenData<?> data) {
         if (CurrentProjectVariables.canRead(ProjectRolePermissionCollections.MILESTONES)) {
             super.onGo(container, data);
             view.displayStatus(MilestoneStatus.InProgress);
-            MyCollabUI.addFragment("project/milestone/list/" + GenericLinkUtils.encodeParam(CurrentProjectVariables.getProjectId()),
-                    UserUIContext.getMessage(MilestoneI18nEnum.LIST));
         } else {
             NotificationUtil.showMessagePermissionAlert();
         }

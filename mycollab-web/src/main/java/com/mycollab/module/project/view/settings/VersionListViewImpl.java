@@ -34,7 +34,7 @@ import com.mycollab.vaadin.events.HasMassItemActionHandler;
 import com.mycollab.vaadin.events.HasSearchHandlers;
 import com.mycollab.vaadin.events.HasSelectableItemHandlers;
 import com.mycollab.vaadin.events.HasSelectionOptionHandlers;
-import com.mycollab.vaadin.mvp.AbstractPageView;
+import com.mycollab.vaadin.mvp.AbstractVerticalPageView;
 import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.ui.DefaultMassItemActionHandlerContainer;
 import com.mycollab.vaadin.ui.ELabel;
@@ -53,7 +53,7 @@ import java.util.GregorianCalendar;
  * @since 1.0
  */
 @ViewComponent
-public class VersionListViewImpl extends AbstractPageView implements VersionListView {
+public class VersionListViewImpl extends AbstractVerticalPageView implements VersionListView {
     private static final long serialVersionUID = 1L;
 
     private final VersionSearchPanel versionSearchPanel;
@@ -75,11 +75,11 @@ public class VersionListViewImpl extends AbstractPageView implements VersionList
         tableItem = new DefaultPagedBeanTable<>(AppContextUtil.getSpringBean(VersionService.class),
                 SimpleVersion.class,
                 new TableViewField(null, "selected", WebUIConstants.TABLE_CONTROL_WIDTH),
-                Arrays.asList(new TableViewField(GenericI18Enum.FORM_NAME, "versionname", WebUIConstants.TABLE_EX_LABEL_WIDTH),
+                Arrays.asList(new TableViewField(GenericI18Enum.FORM_NAME, "name", WebUIConstants.TABLE_EX_LABEL_WIDTH),
                         new TableViewField(GenericI18Enum.FORM_STATUS, "status", WebUIConstants.TABLE_M_LABEL_WIDTH),
                         new TableViewField(GenericI18Enum.FORM_DESCRIPTION, "description", 2 * WebUIConstants.TABLE_EX_LABEL_WIDTH),
                         new TableViewField(GenericI18Enum.FORM_DUE_DATE, "duedate", WebUIConstants.TABLE_DATE_TIME_WIDTH),
-                        new TableViewField(GenericI18Enum.FORM_PROGRESS, "id", WebUIConstants.TABLE_EX_LABEL_WIDTH)));
+                        new TableViewField(GenericI18Enum.FORM_PROGRESS, "id", WebUIConstants.TABLE_M_LABEL_WIDTH)));
 
         tableItem.addGeneratedColumn("selected", (source, itemId, columnId) -> {
             final SimpleVersion version = tableItem.getBeanByIndex(itemId);
@@ -90,14 +90,14 @@ public class VersionListViewImpl extends AbstractPageView implements VersionList
             return cb;
         });
 
-        tableItem.addGeneratedColumn("versionname", (source, itemId, columnId) -> {
+        tableItem.addGeneratedColumn("name", (source, itemId, columnId) -> {
             final Version bugVersion = tableItem.getBeanByIndex(itemId);
-            final LabelLink b = new LabelLink(bugVersion.getVersionname(), ProjectLinkBuilder
+            final LabelLink b = new LabelLink(bugVersion.getName(), ProjectLinkBuilder
                     .generateBugVersionPreviewFullLink(bugVersion.getProjectid(), bugVersion.getId()));
             if (bugVersion.getStatus() != null && bugVersion.getStatus().equals(StatusI18nEnum.Closed.name())) {
-                b.addStyleName(WebUIConstants.LINK_COMPLETED);
+                b.addStyleName(WebThemes.LINK_COMPLETED);
             } else if (bugVersion.getDuedate() != null && (bugVersion.getDuedate().before(new GregorianCalendar().getTime()))) {
-                b.addStyleName(WebUIConstants.LINK_OVERDUE);
+                b.addStyleName(WebThemes.LINK_OVERDUE);
             }
             b.setDescription(ProjectTooltipGenerator.generateToolTipVersion(UserUIContext.getUserLocale(), MyCollabUI.getDateFormat(),
                     bugVersion, MyCollabUI.getSiteUrl(), UserUIContext.getUserTimeZone()));
@@ -139,7 +139,7 @@ public class VersionListViewImpl extends AbstractPageView implements VersionList
         final CssLayout layoutWrapper = new CssLayout();
         layoutWrapper.setWidth("100%");
         MHorizontalLayout layout = new MHorizontalLayout();
-        layoutWrapper.addStyleName(WebUIConstants.TABLE_ACTION_CONTROLS);
+        layoutWrapper.addStyleName(WebThemes.TABLE_ACTION_CONTROLS);
         layoutWrapper.addComponent(layout);
 
         this.selectOptionButton = new SelectionOptionButton(this.tableItem);

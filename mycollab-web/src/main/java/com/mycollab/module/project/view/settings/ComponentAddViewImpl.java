@@ -30,7 +30,7 @@ import com.mycollab.vaadin.ui.AbstractBeanFieldGroupEditFieldFactory;
 import com.mycollab.vaadin.ui.AdvancedEditBeanForm;
 import com.mycollab.vaadin.ui.IFormLayoutFactory;
 import com.mycollab.vaadin.web.ui.DefaultDynaFormLayout;
-import com.vaadin.server.Resource;
+import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.ComponentContainer;
 
 import static com.mycollab.vaadin.web.ui.utils.FormControlsGenerator.generateEditFormControls;
@@ -50,11 +50,11 @@ public class ComponentAddViewImpl extends AbstractEditItemComp<Component> implem
 
     @Override
     protected String initFormTitle() {
-        return (beanItem.getId() == null) ? null : beanItem.getComponentname();
+        return (beanItem.getId() == null) ? null : beanItem.getName();
     }
 
     @Override
-    protected Resource initFormIconResource() {
+    protected FontAwesome initFormIconResource() {
         return ProjectAssetsManager.getAsset(ProjectTypeConstants.BUG_COMPONENT);
     }
 

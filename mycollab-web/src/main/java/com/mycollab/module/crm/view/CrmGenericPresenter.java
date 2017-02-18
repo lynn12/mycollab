@@ -17,11 +17,11 @@
 package com.mycollab.module.crm.view;
 
 import com.mycollab.eventmanager.EventBusFactory;
-import com.mycollab.module.crm.events.CrmEvent;
+import com.mycollab.module.crm.event.CrmEvent;
 import com.mycollab.vaadin.mvp.PageView;
 import com.mycollab.vaadin.mvp.ScreenData;
 import com.mycollab.vaadin.web.ui.AbstractPresenter;
-import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.HasComponents;
 
 /**
  * @author MyCollab Ltd.
@@ -35,9 +35,9 @@ public class CrmGenericPresenter<V extends PageView> extends AbstractPresenter<V
     }
 
     @Override
-    protected void onGo(ComponentContainer container, ScreenData<?> data) {
+    protected void onGo(HasComponents container, ScreenData<?> data) {
         CrmModule crmModule = (CrmModule) container;
-        crmModule.addView(view);
+        crmModule.setContent(view);
     }
 
     @Override

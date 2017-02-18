@@ -21,7 +21,7 @@ import com.mycollab.db.arguments.SetSearchField;
 import com.mycollab.module.project.CurrentProjectVariables;
 import com.mycollab.module.project.ProjectTypeConstants;
 import com.mycollab.module.project.i18n.OptionI18nEnum.BugStatus;
-import com.mycollab.module.project.view.bug.components.BugRowRenderer;
+import com.mycollab.module.project.view.bug.BugRowRenderer;
 import com.mycollab.module.project.view.settings.component.ProjectUserFormLinkField;
 import com.mycollab.module.tracker.domain.Component;
 import com.mycollab.module.tracker.domain.SimpleBug;
@@ -53,7 +53,7 @@ public class ComponentPreviewForm extends AdvancedPreviewBeanForm<SimpleComponen
     @Override
     public void setBean(SimpleComponent bean) {
         setFormLayoutFactory(new DefaultDynaFormLayout(ProjectTypeConstants.BUG_COMPONENT, ComponentDefaultFormLayoutFactory.getForm(),
-                Component.Field.componentname.name()));
+                Component.Field.name.name()));
         setBeanFormFieldFactory(new ReadFormFieldFactory(this));
         super.setBean(bean);
     }

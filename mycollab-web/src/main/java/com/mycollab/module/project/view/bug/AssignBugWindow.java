@@ -22,7 +22,7 @@ import com.mycollab.common.service.CommentService;
 import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.module.project.CurrentProjectVariables;
 import com.mycollab.module.project.ProjectTypeConstants;
-import com.mycollab.module.project.events.BugEvent;
+import com.mycollab.module.project.event.BugEvent;
 import com.mycollab.module.project.i18n.BugI18nEnum;
 import com.mycollab.module.project.view.settings.component.ProjectMemberSelectionField;
 import com.mycollab.module.tracker.domain.BugWithBLOBs;
@@ -35,7 +35,7 @@ import com.mycollab.vaadin.ui.AbstractBeanFieldGroupEditFieldFactory;
 import com.mycollab.vaadin.ui.AbstractFormLayoutFactory;
 import com.mycollab.vaadin.ui.AdvancedEditBeanForm;
 import com.mycollab.vaadin.ui.GenericBeanForm;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.mycollab.vaadin.web.ui.grid.GridFormLayoutHelper;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.server.FontAwesome;
@@ -59,7 +59,7 @@ class AssignBugWindow extends MWindow {
     private final SimpleBug bug;
 
     AssignBugWindow(SimpleBug bug) {
-        super(UserUIContext.getMessage(BugI18nEnum.OPT_ASSIGN_BUG, bug.getSummary()));
+        super(UserUIContext.getMessage(BugI18nEnum.OPT_ASSIGN_BUG, bug.getName()));
         this.bug = bug;
 
         VerticalLayout contentLayout = new VerticalLayout();
@@ -87,7 +87,7 @@ class AssignBugWindow extends MWindow {
             private GridFormLayoutHelper informationLayout;
 
             @Override
-            public ComponentContainer getLayout() {
+            public AbstractComponent getLayout() {
                 final VerticalLayout layout = new VerticalLayout();
                 this.informationLayout = GridFormLayoutHelper.defaultFormLayoutHelper(2, 2);
 
@@ -118,11 +118,11 @@ class AssignBugWindow extends MWindow {
                         close();
                         EventBusFactory.getInstance().post(new BugEvent.BugChanged(this, bug.getId()));
                     }
-                }).withStyleName(WebUIConstants.BUTTON_ACTION).withIcon(FontAwesome.SHARE);
+                }).withStyleName(WebThemes.BUTTON_ACTION).withIcon(FontAwesome.SHARE);
                 approveBtn.setClickShortcut(ShortcutAction.KeyCode.ENTER);
 
                 MButton cancelBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CANCEL), clickEvent -> close())
-                        .withStyleName(WebUIConstants.BUTTON_OPTION);
+                        .withStyleName(WebThemes.BUTTON_OPTION);
 
                 MHorizontalLayout controlsBtn = new MHorizontalLayout(cancelBtn, approveBtn).withMargin(new MarginInfo(true, true, false, false));
                 layout.addComponent(controlsBtn);

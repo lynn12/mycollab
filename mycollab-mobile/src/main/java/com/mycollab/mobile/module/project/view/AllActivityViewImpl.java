@@ -16,8 +16,12 @@
  */
 package com.mycollab.mobile.module.project.view;
 
+import com.hp.gagawa.java.elements.A;
+import com.hp.gagawa.java.elements.Img;
+import com.hp.gagawa.java.elements.Text;
 import com.mycollab.common.ActivityStreamConstants;
 import com.mycollab.common.domain.criteria.ActivityStreamSearchCriteria;
+import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.configuration.StorageFactory;
 import com.mycollab.core.utils.StringUtils;
 import com.mycollab.eventmanager.EventBusFactory;
@@ -26,27 +30,27 @@ import com.mycollab.mobile.module.project.events.ProjectEvent;
 import com.mycollab.mobile.module.project.ui.AbstractListPageView;
 import com.mycollab.mobile.shell.events.ShellEvent;
 import com.mycollab.mobile.ui.AbstractPagedBeanList;
-import com.mycollab.mobile.ui.AbstractPagedBeanList.RowDisplayHandler;
 import com.mycollab.mobile.ui.SearchInputField;
 import com.mycollab.module.project.ProjectLinkBuilder;
+import com.mycollab.module.project.ProjectLinkGenerator;
 import com.mycollab.module.project.ProjectTypeConstants;
 import com.mycollab.module.project.domain.ProjectActivityStream;
 import com.mycollab.module.project.i18n.ProjectCommonI18nEnum;
+import com.mycollab.module.project.i18n.ProjectI18nEnum;
 import com.mycollab.module.project.ui.ProjectAssetsManager;
 import com.mycollab.module.project.view.ProjectLocalizationTypeMap;
 import com.mycollab.spring.AppContextUtil;
+import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.mvp.ViewComponent;
+import com.mycollab.vaadin.ui.ELabel;
+import com.mycollab.vaadin.ui.IBeanList;
+import com.mycollab.vaadin.ui.UIConstants;
 import com.mycollab.vaadin.ui.registry.AuditLogRegistry;
-import com.hp.gagawa.java.elements.A;
-import com.hp.gagawa.java.elements.Img;
-import com.hp.gagawa.java.elements.Text;
 import com.vaadin.server.FontAwesome;
-import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.Label;
 
 /**
  * @author MyCollab Ltd.
@@ -84,7 +88,7 @@ public class AllActivityViewImpl extends AbstractListPageView<ActivityStreamSear
         activityBtn.setIcon(FontAwesome.INBOX);
         addMenuItem(activityBtn);
 
-        Button prjBtn = new Button("Projects", clickEvent -> {
+        Button prjBtn = new Button(UserUIContext.getMessage(ProjectI18nEnum.LIST), clickEvent -> {
             closeMenu();
             EventBusFactory.getInstance().post(new ProjectEvent.GotoProjectList(this, null));
         });
@@ -93,7 +97,7 @@ public class AllActivityViewImpl extends AbstractListPageView<ActivityStreamSear
 
         addSection("Settings:");
 
-        Button logoutBtn = new Button("Logout", clickEvent -> {
+        Button logoutBtn = new Button(UserUIContext.getMessage(GenericI18Enum.BUTTON_SIGNOUT), clickEvent -> {
             closeMenu();
             EventBusFactory.getInstance().post(new ShellEvent.LogOut(this));
         });
@@ -106,10 +110,16 @@ public class AllActivityViewImpl extends AbstractListPageView<ActivityStreamSear
         return null;
     }
 
-    private static class ActivityStreamRowHandler implements RowDisplayHandler<ProjectActivityStream> {
+    @Override
+    public void onBecomingVisible() {
+        super.onBecomingVisible();
+        MyCollabUI.addFragment("project/activities/", UserUIContext.getMessage(ProjectCommonI18nEnum.M_VIEW_PROJECT_ACTIVITIES));
+    }
+
+    private static class ActivityStreamRowHandler implements IBeanList.RowDisplayHandler<ProjectActivityStream> {
 
         @Override
-        public Component generateRow(final ProjectActivityStream activityStream, int rowIndex) {
+        public Component generateRow(IBeanList<ProjectActivityStream> host, final ProjectActivityStream activityStream, int rowIndex) {
             CssLayout layout = new CssLayout();
             layout.addStyleName("activity-cell");
             StringBuilder content = new StringBuilder();
@@ -164,8 +174,7 @@ public class AllActivityViewImpl extends AbstractListPageView<ActivityStreamSear
                 }
             }
 
-            Label actionLbl = new Label(content.toString(), ContentMode.HTML);
-            layout.addComponent(actionLbl);
+            layout.addComponent(ELabel.html(content.toString()));
             return layout;
         }
 
@@ -173,7 +182,8 @@ public class AllActivityViewImpl extends AbstractListPageView<ActivityStreamSear
 
     private static String buildAssigneeValue(ProjectActivityStream activityStream) {
         DivLessFormatter div = new DivLessFormatter();
-        Img userAvatar = new Img("", StorageFactory.getAvatarPath(activityStream.getCreatedUserAvatarId(), 16));
+        Img userAvatar = new Img("", StorageFactory.getAvatarPath(activityStream.getCreatedUserAvatarId(), 16))
+                .setCSSClass(UIConstants.CIRCLE_BOX);
         A userLink = new A().setHref(ProjectLinkBuilder.generateProjectMemberFullLink(
                 activityStream.getExtratypeid(), activityStream.getCreateduser()));
         userLink.appendText(StringUtils.trim(activityStream.getCreatedUserFullName(), 30, true));
@@ -189,10 +199,10 @@ public class AllActivityViewImpl extends AbstractListPageView<ActivityStreamSear
 
         if (ProjectTypeConstants.TASK.equals(activityStream.getType())
                 || ProjectTypeConstants.BUG.equals(activityStream.getType())) {
-            itemLink.setHref(ProjectLinkBuilder.generateProjectItemLink(activityStream.getProjectShortName(),
+            itemLink.setHref(ProjectLinkGenerator.generateProjectItemLink(activityStream.getProjectShortName(),
                     activityStream.getExtratypeid(), activityStream.getType(), activityStream.getItemKey() + ""));
         } else {
-            itemLink.setHref(ProjectLinkBuilder.generateProjectItemLink(activityStream.getProjectShortName(),
+            itemLink.setHref(ProjectLinkGenerator.generateProjectItemLink(activityStream.getProjectShortName(),
                     activityStream.getExtratypeid(), activityStream.getType(), activityStream.getTypeid()));
         }
         itemLink.appendText(StringUtils.trim(activityStream.getNamefield(), 50, true));

@@ -18,10 +18,15 @@ package com.mycollab.mobile.module.project.view.task;
 
 import com.hp.gagawa.java.elements.A;
 import com.hp.gagawa.java.elements.Div;
+import com.hp.gagawa.java.elements.Span;
 import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.common.i18n.OptionI18nEnum.StatusI18nEnum;
 import com.mycollab.configuration.SiteConfiguration;
+import com.mycollab.core.utils.StringUtils;
+import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.html.DivLessFormatter;
+import com.mycollab.mobile.form.view.DynaFormLayout;
+import com.mycollab.mobile.module.project.events.TaskEvent;
 import com.mycollab.mobile.module.project.ui.CommentNavigationButton;
 import com.mycollab.mobile.module.project.ui.ProjectAttachmentDisplayComp;
 import com.mycollab.mobile.module.project.ui.ProjectPreviewFormControlsGenerator;
@@ -32,13 +37,10 @@ import com.mycollab.mobile.ui.MobileUIConstants;
 import com.mycollab.module.ecm.domain.Content;
 import com.mycollab.module.ecm.service.ResourceService;
 import com.mycollab.module.file.AttachmentUtils;
-import com.mycollab.module.project.CurrentProjectVariables;
-import com.mycollab.module.project.ProjectLinkBuilder;
-import com.mycollab.module.project.ProjectRolePermissionCollections;
-import com.mycollab.module.project.ProjectTypeConstants;
+import com.mycollab.module.project.*;
 import com.mycollab.module.project.domain.SimpleTask;
 import com.mycollab.module.project.domain.Task;
-import com.mycollab.module.project.i18n.OptionI18nEnum.TaskPriority;
+import com.mycollab.module.project.i18n.OptionI18nEnum.Priority;
 import com.mycollab.module.project.service.ProjectTaskService;
 import com.mycollab.module.project.ui.ProjectAssetsManager;
 import com.mycollab.spring.AppContextUtil;
@@ -46,16 +48,20 @@ import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.events.HasPreviewFormHandlers;
 import com.mycollab.vaadin.mvp.ViewComponent;
+import com.mycollab.vaadin.touchkit.NavigationBarQuickMenu;
 import com.mycollab.vaadin.ui.AbstractBeanFieldGroupViewFieldFactory;
 import com.mycollab.vaadin.ui.GenericBeanForm;
 import com.mycollab.vaadin.ui.IFormLayoutFactory;
+import com.mycollab.vaadin.ui.UIConstants;
 import com.mycollab.vaadin.ui.field.DefaultViewField;
+import com.mycollab.vaadin.ui.field.I18nFormViewField;
 import com.mycollab.vaadin.ui.field.RichTextViewField;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.*;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.vaadin.viritin.button.MButton;
+import org.vaadin.viritin.layouts.MHorizontalLayout;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 
 import java.util.List;
@@ -100,14 +106,20 @@ public class TaskReadViewImpl extends AbstractPreviewItemComp<SimpleTask> implem
         if (CollectionUtils.isNotEmpty(attachments)) {
             attachmentComp = new ProjectAttachmentDisplayComp(attachments);
             previewForm.addComponent(attachmentComp);
-        } else if (attachmentComp != null && attachmentComp.getParent().equals(previewForm)) {
+        } else if (attachmentComp != null) {
             previewForm.removeComponent(attachmentComp);
         }
     }
 
     @Override
-    protected String initFormTitle() {
-        return beanItem.getTaskname();
+    protected String initFormHeader() {
+        Span beanTitle = new Span().appendText(beanItem.getName());
+        if (beanItem.isCompleted()) {
+            beanTitle.setCSSClass(MobileUIConstants.LINK_COMPLETED);
+        } else if (beanItem.isOverdue()) {
+            beanTitle.setCSSClass(MobileUIConstants.LINK_OVERDUE);
+        }
+        return ProjectAssetsManager.getAsset(ProjectTypeConstants.TASK).getHtml() + " " + beanTitle.write();
     }
 
     @Override
@@ -117,7 +129,7 @@ public class TaskReadViewImpl extends AbstractPreviewItemComp<SimpleTask> implem
 
     @Override
     protected IFormLayoutFactory initFormLayoutFactory() {
-        return new TaskFormLayoutFactory();
+        return new DynaFormLayout(ProjectTypeConstants.TASK, TaskDefaultFormLayoutFactory.getForm(), Task.Field.name.name());
     }
 
     @Override
@@ -126,13 +138,16 @@ public class TaskReadViewImpl extends AbstractPreviewItemComp<SimpleTask> implem
     }
 
     @Override
+    protected String getType() {
+        return ProjectTypeConstants.TASK;
+    }
+
+    @Override
     protected ComponentContainer createButtonControls() {
         ProjectPreviewFormControlsGenerator<SimpleTask> taskPreviewForm = new ProjectPreviewFormControlsGenerator<>(previewForm);
-        final VerticalLayout topPanel = taskPreviewForm.createButtonControls(
-                ProjectPreviewFormControlsGenerator.ASSIGN_BTN_PRESENTED
-                        | ProjectPreviewFormControlsGenerator.CLONE_BTN_PRESENTED
-                        | ProjectPreviewFormControlsGenerator.DELETE_BTN_PRESENTED
-                        | ProjectPreviewFormControlsGenerator.EDIT_BTN_PRESENTED,
+        final VerticalLayout formControls = taskPreviewForm.createButtonControls(
+                ProjectPreviewFormControlsGenerator.CLONE_BTN_PRESENTED
+                        | ProjectPreviewFormControlsGenerator.DELETE_BTN_PRESENTED,
                 ProjectRolePermissionCollections.TASKS);
 
         quickActionStatusBtn = new Button("", clickEvent -> {
@@ -159,7 +174,10 @@ public class TaskReadViewImpl extends AbstractPreviewItemComp<SimpleTask> implem
             quickActionStatusBtn.setEnabled(false);
         }
 
-        return topPanel;
+        MButton editBtn = new MButton("", clickEvent -> EventBusFactory.getInstance().post(new TaskEvent.GotoEdit(this, beanItem)))
+                .withIcon(FontAwesome.EDIT).withStyleName(UIConstants.CIRCLE_BOX)
+                .withVisible(CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.TASKS));
+        return new MHorizontalLayout(editBtn, new NavigationBarQuickMenu(formControls));
     }
 
     @Override
@@ -179,6 +197,13 @@ public class TaskReadViewImpl extends AbstractPreviewItemComp<SimpleTask> implem
         return toolbarLayout;
     }
 
+    @Override
+    protected void onBecomingVisible() {
+        super.onBecomingVisible();
+        MyCollabUI.addFragment(ProjectLinkGenerator.generateTaskPreviewLink(beanItem.getTaskkey(),
+                beanItem.getProjectShortname()), beanItem.getName());
+    }
+
     private class ReadFormFieldFactory extends AbstractBeanFieldGroupViewFieldFactory<SimpleTask> {
         private static final long serialVersionUID = 1L;
 
@@ -188,22 +213,21 @@ public class TaskReadViewImpl extends AbstractPreviewItemComp<SimpleTask> implem
 
         @Override
         protected Field<?> onCreateField(final Object propertyId) {
-            if (propertyId.equals("assignuser")) {
-                return new DefaultViewField(ProjectLinkBuilder.generateProjectMemberHtmlLink(CurrentProjectVariables
-                        .getProjectId(), beanItem.getAssignuser(), beanItem.getAssignUserFullName(), beanItem
-                        .getAssignUserAvatarId(), false), ContentMode.HTML);
-            } else if (propertyId.equals("startdate")) {
+            if (Task.Field.assignuser.equalTo(propertyId)) {
+                return new DefaultViewField(ProjectLinkBuilder.generateProjectMemberHtmlLink(CurrentProjectVariables.getProjectId(),
+                        beanItem.getAssignuser(), beanItem.getAssignUserFullName(), beanItem.getAssignUserAvatarId(), false), ContentMode.HTML);
+            } else if (Task.Field.startdate.equalTo(propertyId)) {
                 return new DefaultViewField(UserUIContext.formatDate(beanItem.getStartdate()));
-            } else if (propertyId.equals("enddate")) {
+            } else if (Task.Field.enddate.equalTo(propertyId)) {
                 return new DefaultViewField(UserUIContext.formatDate(beanItem.getEnddate()));
-            } else if (propertyId.equals("deadline")) {
-                return new DefaultViewField(UserUIContext.formatDate(beanItem.getDeadline()));
-            } else if (propertyId.equals("priority")) {
+            } else if (Task.Field.duedate.equalTo(propertyId)) {
+                return new DefaultViewField(UserUIContext.formatDate(beanItem.getDuedate()));
+            } else if (Task.Field.priority.equalTo(propertyId)) {
                 if (StringUtils.isNotBlank(beanItem.getPriority())) {
-                    FontAwesome fontPriority = ProjectAssetsManager.getTaskPriority(beanItem.getPriority());
-                    String priorityLbl = fontPriority.getHtml() + " " + UserUIContext.getMessage(TaskPriority.class, beanItem.getPriority());
+                    FontAwesome fontPriority = ProjectAssetsManager.getPriority(beanItem.getPriority());
+                    String priorityLbl = fontPriority.getHtml() + " " + UserUIContext.getMessage(Priority.class, beanItem.getPriority());
                     DefaultViewField field = new DefaultViewField(priorityLbl, ContentMode.HTML);
-                    field.addStyleName("task-" + beanItem.getPriority().toLowerCase());
+                    field.addStyleName("priority-" + beanItem.getPriority().toLowerCase());
                     return field;
                 }
             } else if (Task.Field.milestoneid.equalTo(propertyId)) {
@@ -214,8 +238,10 @@ public class TaskReadViewImpl extends AbstractPreviewItemComp<SimpleTask> implem
                             .MILESTONE).getHtml()).appendChild(DivLessFormatter.EMPTY_SPACE(), milestoneLink);
                     return new DefaultViewField(milestoneDiv.write(), ContentMode.HTML);
                 }
-            } else if (propertyId.equals("notes")) {
-                return new RichTextViewField(beanItem.getNotes());
+            } else if (Task.Field.description.equalTo(propertyId)) {
+                return new RichTextViewField(beanItem.getDescription());
+            } else if (Task.Field.status.equalTo(propertyId)) {
+                return new I18nFormViewField(beanItem.getStatus(), StatusI18nEnum.class).withStyleName(UIConstants.FIELD_NOTE);
             }
             return null;
         }

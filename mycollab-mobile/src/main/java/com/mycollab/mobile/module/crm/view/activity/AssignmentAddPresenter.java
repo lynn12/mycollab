@@ -23,7 +23,7 @@ import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.mobile.module.crm.events.ActivityEvent;
 import com.mycollab.mobile.module.crm.view.AbstractCrmPresenter;
 import com.mycollab.mobile.shell.events.ShellEvent;
-import com.mycollab.module.crm.domain.Task;
+import com.mycollab.module.crm.domain.CrmTask;
 import com.mycollab.module.crm.i18n.TaskI18nEnum;
 import com.mycollab.module.crm.service.TaskService;
 import com.mycollab.security.RolePermissionCollections;
@@ -33,7 +33,7 @@ import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.events.DefaultEditFormHandler;
 import com.mycollab.vaadin.mvp.ScreenData;
 import com.mycollab.vaadin.ui.NotificationUtil;
-import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.HasComponents;
 
 /**
  * @author MyCollab Ltd.
@@ -48,17 +48,17 @@ public class AssignmentAddPresenter extends AbstractCrmPresenter<AssignmentAddVi
 
     @Override
     protected void postInitView() {
-        view.getEditFormHandlers().addFormHandler(new DefaultEditFormHandler<Task>() {
+        view.getEditFormHandlers().addFormHandler(new DefaultEditFormHandler<CrmTask>() {
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onSave(final Task item) {
+            public void onSave(final CrmTask item) {
                 save(item);
                 EventBusFactory.getInstance().post(new ShellEvent.NavigateBack(this, null));
             }
 
             @Override
-            public void onSaveAndNew(final Task item) {
+            public void onSaveAndNew(final CrmTask item) {
                 save(item);
                 EventBusFactory.getInstance().post(new ActivityEvent.TaskAdd(this, null));
             }
@@ -66,12 +66,12 @@ public class AssignmentAddPresenter extends AbstractCrmPresenter<AssignmentAddVi
     }
 
     @Override
-    protected void onGo(ComponentContainer container, ScreenData<?> data) {
+    protected void onGo(HasComponents container, ScreenData<?> data) {
         if (UserUIContext.canWrite(RolePermissionCollections.CRM_TASK)) {
 
-            Task task;
-            if (data.getParams() instanceof Task) {
-                task = (Task) data.getParams();
+            CrmTask task;
+            if (data.getParams() instanceof CrmTask) {
+                task = (CrmTask) data.getParams();
             } else if (data.getParams() instanceof Integer) {
                 TaskService taskService = AppContextUtil.getSpringBean(TaskService.class);
                 task = taskService.findByPrimaryKey((Integer) data.getParams(), MyCollabUI.getAccountId());
@@ -99,7 +99,7 @@ public class AssignmentAddPresenter extends AbstractCrmPresenter<AssignmentAddVi
         }
     }
 
-    public void save(Task item) {
+    public void save(CrmTask item) {
         TaskService taskService = AppContextUtil.getSpringBean(TaskService.class);
         item.setSaccountid(MyCollabUI.getAccountId());
         if (item.getId() == null) {

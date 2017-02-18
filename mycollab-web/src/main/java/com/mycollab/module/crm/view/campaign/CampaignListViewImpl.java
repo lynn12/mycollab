@@ -19,6 +19,7 @@ package com.mycollab.module.crm.view.campaign;
 import com.mycollab.module.crm.CrmTypeConstants;
 import com.mycollab.module.crm.domain.SimpleCampaign;
 import com.mycollab.module.crm.domain.criteria.CampaignSearchCriteria;
+import com.mycollab.module.crm.fielddef.CampaignTableFieldDef;
 import com.mycollab.module.crm.ui.components.AbstractListItemComp;
 import com.mycollab.module.crm.ui.components.ComponentUtils;
 import com.mycollab.security.RolePermissionCollections;
@@ -27,7 +28,6 @@ import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.ui.DefaultMassItemActionHandlerContainer;
 import com.mycollab.vaadin.web.ui.DefaultGenericSearchPanel;
 import com.mycollab.vaadin.web.ui.table.AbstractPagedBeanTable;
-import com.vaadin.ui.Button;
 import com.vaadin.ui.UI;
 import org.vaadin.viritin.button.MButton;
 
@@ -46,31 +46,19 @@ public class CampaignListViewImpl extends AbstractListItemComp<CampaignSearchCri
         MButton customizeViewBtn = ComponentUtils.createCustomizeViewButton()
                 .withListener(clickEvent -> UI.getCurrent().addWindow(new CampaignListCustomizeWindow(tableItem)));
         this.addExtraButton(customizeViewBtn);
-
-        Button importBtn = ComponentUtils.createImportEntitiesButton()
-                .withListener(clickEvent -> UI.getCurrent().addWindow(new CampaignImportWindow()));
-        importBtn.setVisible(UserUIContext.canWrite(RolePermissionCollections.CRM_CAMPAIGN));
-        this.addExtraButton(importBtn);
-
     }
 
     @Override
     protected DefaultGenericSearchPanel<CampaignSearchCriteria> createSearchPanel() {
-        return new CampaignSearchPanel();
+        return new CampaignSearchPanel(true);
     }
 
     @Override
     protected AbstractPagedBeanTable<CampaignSearchCriteria, SimpleCampaign> createBeanTable() {
-        CampaignTableDisplay campaignTableDisplay = new CampaignTableDisplay(
-                CrmTypeConstants.CAMPAIGN, CampaignTableFieldDef.selected(),
-                Arrays.asList(CampaignTableFieldDef.campaignname(),
-                        CampaignTableFieldDef.status(),
-                        CampaignTableFieldDef.type(),
-                        CampaignTableFieldDef.expectedRevenue(),
-                        CampaignTableFieldDef.endDate(),
-                        CampaignTableFieldDef.assignUser()));
-
-        return campaignTableDisplay;
+        return new CampaignTableDisplay(CrmTypeConstants.CAMPAIGN, CampaignTableFieldDef.selected(),
+                Arrays.asList(CampaignTableFieldDef.campaignname(), CampaignTableFieldDef.status(),
+                        CampaignTableFieldDef.type(), CampaignTableFieldDef.expectedRevenue(),
+                        CampaignTableFieldDef.endDate(), CampaignTableFieldDef.assignUser()));
     }
 
     @Override

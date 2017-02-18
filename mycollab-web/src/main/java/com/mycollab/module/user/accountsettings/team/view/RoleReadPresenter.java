@@ -36,7 +36,7 @@ import com.mycollab.vaadin.mvp.ViewPermission;
 import com.mycollab.vaadin.ui.NotificationUtil;
 import com.mycollab.vaadin.web.ui.AbstractPresenter;
 import com.mycollab.vaadin.web.ui.ConfirmDialogExt;
-import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.UI;
 
 /**
@@ -66,7 +66,7 @@ public class RoleReadPresenter extends AbstractPresenter<RoleReadView> {
 
             @Override
             public void onDelete(final Role role) {
-                if (Boolean.TRUE.equals(role.getIssystemrole())) {
+                if (Boolean.TRUE.equals(role.getIssystemrole()) || Boolean.TRUE.equals(role.getIsdefault())) {
                     NotificationUtil.showErrorNotification(UserUIContext.getMessage(RoleI18nEnum.ERROR_CAN_NOT_DELETE_SYSTEM_ROLE, role.getRolename()));
                 } else {
                     ConfirmDialogExt.show(UI.getCurrent(),
@@ -100,7 +100,7 @@ public class RoleReadPresenter extends AbstractPresenter<RoleReadView> {
     }
 
     @Override
-    protected void onGo(ComponentContainer container, ScreenData<?> data) {
+    protected void onGo(HasComponents container, ScreenData<?> data) {
         if (UserUIContext.canRead(RolePermissionCollections.ACCOUNT_ROLE)) {
             RoleService roleService = AppContextUtil.getSpringBean(RoleService.class);
             SimpleRole role = roleService.findById((Integer) data.getParams(), MyCollabUI.getAccountId());

@@ -23,14 +23,13 @@ import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.module.project.CurrentProjectVariables;
 import com.mycollab.module.project.ProjectRolePermissionCollections;
 import com.mycollab.module.project.ProjectTypeConstants;
-import com.mycollab.module.project.events.BugComponentEvent;
+import com.mycollab.module.project.event.BugComponentEvent;
 import com.mycollab.module.project.i18n.ComponentI18nEnum;
 import com.mycollab.module.project.ui.components.ComponentUtils;
 import com.mycollab.module.tracker.domain.criteria.ComponentSearchCriteria;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.HeaderWithFontAwesome;
-import com.mycollab.vaadin.web.ui.DefaultGenericSearchPanel;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.*;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.*;
@@ -62,11 +61,10 @@ public class ComponentSearchPanel extends DefaultGenericSearchPanel<ComponentSea
 
     @Override
     protected Component buildExtraControls() {
-        MButton createBtn = new MButton(UserUIContext.getMessage(ComponentI18nEnum.NEW),
+        return new MButton(UserUIContext.getMessage(ComponentI18nEnum.NEW),
                 clickEvent -> EventBusFactory.getInstance().post(new BugComponentEvent.GotoAdd(this, null)))
-                .withIcon(FontAwesome.PLUS).withStyleName(WebUIConstants.BUTTON_ACTION);
-        createBtn.setVisible(CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.COMPONENTS));
-        return createBtn;
+                .withIcon(FontAwesome.PLUS).withStyleName(WebThemes.BUTTON_ACTION)
+                .withVisible(CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.COMPONENTS));
     }
 
     private class ComponentBasicSearchLayout extends BasicSearchLayout<ComponentSearchCriteria> {
@@ -74,13 +72,8 @@ public class ComponentSearchPanel extends DefaultGenericSearchPanel<ComponentSea
         private TextField nameField;
         private CheckBox myItemCheckbox;
 
-        public ComponentBasicSearchLayout() {
+        ComponentBasicSearchLayout() {
             super(ComponentSearchPanel.this);
-        }
-
-        @Override
-        public ComponentContainer constructHeader() {
-            return ComponentSearchPanel.this.constructHeader();
         }
 
         @Override
@@ -98,12 +91,12 @@ public class ComponentSearchPanel extends DefaultGenericSearchPanel<ComponentSea
             basicSearchBody.with(myItemCheckbox);
 
             MButton searchBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_SEARCH), clickEvent -> callSearchAction())
-                    .withIcon(FontAwesome.SEARCH).withStyleName(WebUIConstants.BUTTON_ACTION)
+                    .withIcon(FontAwesome.SEARCH).withStyleName(WebThemes.BUTTON_ACTION)
                     .withClickShortcut(ShortcutAction.KeyCode.ENTER);
             basicSearchBody.with(searchBtn);
 
             MButton cancelBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CLEAR), clickEvent -> nameField.setValue(""))
-                    .withStyleName(WebUIConstants.BUTTON_OPTION);
+                    .withStyleName(WebThemes.BUTTON_OPTION);
             basicSearchBody.with(cancelBtn);
 
             return basicSearchBody;
@@ -115,7 +108,7 @@ public class ComponentSearchPanel extends DefaultGenericSearchPanel<ComponentSea
             searchCriteria.setProjectId(new NumberSearchField(CurrentProjectVariables.getProjectId()));
             searchCriteria.setComponentName(StringSearchField.and(this.nameField.getValue().trim()));
 
-            if (this.myItemCheckbox.getValue()) {
+            if (myItemCheckbox.getValue()) {
                 searchCriteria.setUserlead(StringSearchField.and(UserUIContext.getUsername()));
             } else {
                 searchCriteria.setUserlead(null);
@@ -124,5 +117,4 @@ public class ComponentSearchPanel extends DefaultGenericSearchPanel<ComponentSea
             return searchCriteria;
         }
     }
-
 }

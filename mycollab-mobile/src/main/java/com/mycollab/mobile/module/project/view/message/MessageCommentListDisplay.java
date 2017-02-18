@@ -55,7 +55,7 @@ public class MessageCommentListDisplay extends VerticalLayout implements Reloada
             commentBox = new ProjectCommentRequestComp(type, typeId, extraTypeId);
         }
 
-        commentList = new BeanList<>(AppContextUtil.getSpringBean(CommentService.class), CommentRowDisplayHandler.class);
+        commentList = new BeanList<>(AppContextUtil.getSpringBean(CommentService.class), new CommentRowDisplayHandler());
         commentList.setDisplayEmptyListText(false);
         this.addComponent(commentList);
         displayCommentList();
@@ -69,8 +69,7 @@ public class MessageCommentListDisplay extends VerticalLayout implements Reloada
         final CommentSearchCriteria searchCriteria = new CommentSearchCriteria();
         searchCriteria.setType(StringSearchField.and(type));
         searchCriteria.setTypeId(StringSearchField.and(typeId));
-        Integer numComments = commentList.setSearchCriteria(searchCriteria);
-        return numComments;
+        return commentList.setSearchCriteria(searchCriteria);
     }
 
     public int getNumComments() {
@@ -86,12 +85,11 @@ public class MessageCommentListDisplay extends VerticalLayout implements Reloada
         displayCommentList();
     }
 
-    public static class CommentRowDisplayHandler extends BeanList.RowDisplayHandler<SimpleComment> {
-        private static final long serialVersionUID = 7604097872938029830L;
+    private static class CommentRowDisplayHandler implements IBeanList.RowDisplayHandler<SimpleComment> {
 
         @Override
-        public Component generateRow(SimpleComment comment, int rowIndex) {
-            MHorizontalLayout commentBlock = new MHorizontalLayout().withSpacing(false).withFullWidth();
+        public Component generateRow(IBeanList<SimpleComment> host, SimpleComment comment, int rowIndex) {
+            MHorizontalLayout commentBlock = new MHorizontalLayout().withSpacing(true).withFullWidth();
             commentBlock.setStyleName("comment-block");
             Image userAvatarImg = UserAvatarControlFactory.createUserAvatarEmbeddedComponent(comment.getOwnerAvatarId(), 32);
             userAvatarImg.addStyleName(UIConstants.CIRCLE_BOX);

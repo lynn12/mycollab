@@ -16,7 +16,7 @@
  */
 package com.mycollab.module.project.domain;
 
-import com.mycollab.common.i18n.OptionI18nEnum;
+import com.mycollab.common.i18n.OptionI18nEnum.StatusI18nEnum;
 import com.mycollab.core.utils.DateTimeUtils;
 import com.mycollab.core.utils.StringUtils;
 
@@ -41,6 +41,10 @@ public class SimpleRisk extends Risk {
 
     private String milestoneName;
 
+    private Double billableHours;
+
+    private Double nonBillableHours;
+
     public String getProjectName() {
         return projectName;
     }
@@ -51,7 +55,7 @@ public class SimpleRisk extends Risk {
 
     public String getRaisedByUserFullName() {
         if (StringUtils.isBlank(raisedByUserFullName)) {
-            return StringUtils.extractNameFromEmail(getRaisedbyuser());
+            return StringUtils.extractNameFromEmail(getCreateduser());
         }
         return raisedByUserFullName;
     }
@@ -62,7 +66,7 @@ public class SimpleRisk extends Risk {
 
     public String getAssignedToUserFullName() {
         if (StringUtils.isBlank(assignedToUserFullName)) {
-            return StringUtils.extractNameFromEmail(getAssigntouser());
+            return StringUtils.extractNameFromEmail(getAssignuser());
         }
         return assignedToUserFullName;
     }
@@ -95,10 +99,13 @@ public class SimpleRisk extends Risk {
         this.assignToUserAvatarId = assignToUserAvatarId;
     }
 
+    public boolean isCompleted() {
+        return StatusI18nEnum.Closed.name().equals(getStatus());
+    }
+
     public boolean isOverdue() {
         Date now = DateTimeUtils.getCurrentDateWithoutMS();
-        return OptionI18nEnum.StatusI18nEnum.Open.name().equals(getStatus()) && (getDatedue() != null) &&
-                getDatedue().before(now);
+        return StatusI18nEnum.Open.name().equals(getStatus()) && (getDuedate() != null) && getDuedate().before(now);
     }
 
     public String getMilestoneName() {
@@ -115,6 +122,22 @@ public class SimpleRisk extends Risk {
 
     public void setProjectShortName(String projectShortName) {
         this.projectShortName = projectShortName;
+    }
+
+    public Double getBillableHours() {
+        return billableHours;
+    }
+
+    public void setBillableHours(Double billableHours) {
+        this.billableHours = billableHours;
+    }
+
+    public Double getNonBillableHours() {
+        return nonBillableHours;
+    }
+
+    public void setNonBillableHours(Double nonBillableHours) {
+        this.nonBillableHours = nonBillableHours;
     }
 
     public enum Field {

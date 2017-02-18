@@ -16,21 +16,21 @@
  */
 package com.mycollab.mobile.module.project.view.message;
 
-import com.esofthead.vaadin.navigationbarquickmenu.NavigationBarQuickMenu;
 import com.hp.gagawa.java.elements.A;
 import com.mycollab.core.utils.StringUtils;
-import com.mycollab.db.arguments.SetSearchField;
-import com.mycollab.db.arguments.StringSearchField;
 import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.mobile.module.project.events.MessageEvent;
 import com.mycollab.mobile.module.project.ui.AbstractListPageView;
-import com.mycollab.mobile.ui.*;
+import com.mycollab.mobile.module.project.ui.SearchInputView;
+import com.mycollab.mobile.module.project.ui.SearchNavigationButton;
+import com.mycollab.mobile.ui.AbstractPagedBeanList;
+import com.mycollab.mobile.ui.DefaultPagedBeanList;
+import com.mycollab.mobile.ui.MobileAttachmentUtils;
+import com.mycollab.mobile.ui.SearchInputField;
 import com.mycollab.module.ecm.domain.Content;
 import com.mycollab.module.ecm.service.ResourceService;
 import com.mycollab.module.file.AttachmentUtils;
-import com.mycollab.module.project.CurrentProjectVariables;
-import com.mycollab.module.project.ProjectLinkBuilder;
-import com.mycollab.module.project.ProjectTypeConstants;
+import com.mycollab.module.project.*;
 import com.mycollab.module.project.domain.SimpleMessage;
 import com.mycollab.module.project.domain.criteria.MessageSearchCriteria;
 import com.mycollab.module.project.i18n.MessageI18nEnum;
@@ -40,12 +40,14 @@ import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.ui.ELabel;
+import com.mycollab.vaadin.ui.IBeanList;
 import com.mycollab.vaadin.ui.UIConstants;
 import com.mycollab.vaadin.ui.UserAvatarControlFactory;
+import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.*;
 import org.apache.commons.collections.CollectionUtils;
+import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.layouts.MHorizontalLayout;
-import org.vaadin.viritin.layouts.MVerticalLayout;
 
 import java.util.List;
 
@@ -70,32 +72,34 @@ public class MessageListViewImpl extends AbstractListPageView<MessageSearchCrite
 
     @Override
     protected SearchInputField<MessageSearchCriteria> createSearchField() {
-        return new SearchInputField<MessageSearchCriteria>() {
-            @Override
-            protected MessageSearchCriteria fillUpSearchCriteria(String value) {
-                MessageSearchCriteria searchCriteria = new MessageSearchCriteria();
-                searchCriteria.setProjectids(new SetSearchField<>(CurrentProjectVariables.getProjectId()));
-                searchCriteria.setTitle(StringSearchField.and(value));
-                return searchCriteria;
-            }
-        };
+        return null;
     }
 
     @Override
     protected Component buildRightComponent() {
-        NavigationBarQuickMenu menu = new NavigationBarQuickMenu();
-        menu.setButtonCaption("...");
-        MVerticalLayout content = new MVerticalLayout();
-        content.with(new Button(UserUIContext.getMessage(MessageI18nEnum.NEW),
-                clickEvent -> EventBusFactory.getInstance().post(new MessageEvent.GotoAdd(this, null))));
-        menu.setContent(content);
-        return menu;
+        SearchNavigationButton searchBtn = new SearchNavigationButton() {
+            @Override
+            protected SearchInputView getSearchInputView() {
+                return new MessageSearchInputView();
+            }
+        };
+        MButton newMessageBtn = new MButton("", clickEvent -> EventBusFactory.getInstance().post(new MessageEvent.GotoAdd(this, null)))
+                .withIcon(FontAwesome.PLUS).withStyleName(UIConstants.CIRCLE_BOX)
+                .withVisible(CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.MESSAGES));
+        return new MHorizontalLayout(searchBtn, newMessageBtn).alignAll(Alignment.TOP_RIGHT);
     }
 
-    public static class MessageRowDisplayHandler implements AbstractPagedBeanList.RowDisplayHandler<SimpleMessage> {
+    @Override
+    public void onBecomingVisible() {
+        super.onBecomingVisible();
+        MyCollabUI.addFragment(ProjectLinkGenerator.generateMessagesLink(CurrentProjectVariables.getProjectId()),
+                UserUIContext.getMessage(MessageI18nEnum.LIST));
+    }
+
+    private static class MessageRowDisplayHandler implements IBeanList.RowDisplayHandler<SimpleMessage> {
 
         @Override
-        public Component generateRow(final SimpleMessage message, int rowIndex) {
+        public Component generateRow(IBeanList<SimpleMessage> host, final SimpleMessage message, int rowIndex) {
             MHorizontalLayout mainLayout = new MHorizontalLayout().withStyleName("message-block").withFullWidth();
             Image userAvatarImg = UserAvatarControlFactory.createUserAvatarEmbeddedComponent(message.getPostedUserAvatarId(), 32);
             userAvatarImg.addStyleName(UIConstants.CIRCLE_BOX);

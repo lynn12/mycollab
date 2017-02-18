@@ -19,7 +19,7 @@ package com.mycollab.module.crm.view.lead;
 
 import com.mycollab.common.TableViewField;
 import com.mycollab.module.crm.CrmTooltipGenerator;
-import com.mycollab.module.crm.data.CrmLinkBuilder;
+import com.mycollab.module.crm.CrmLinkBuilder;
 import com.mycollab.module.crm.domain.SimpleLead;
 import com.mycollab.module.crm.domain.criteria.LeadSearchCriteria;
 import com.mycollab.module.crm.i18n.OptionI18nEnum.AccountIndustry;
@@ -74,7 +74,7 @@ public class LeadTableDisplay extends DefaultPagedBeanTable<LeadService, LeadSea
 
             LabelLink b = new LabelLink(lead.getLeadName(), CrmLinkBuilder.generateLeadPreviewLinkFull(lead.getId()));
             if ("Dead".equals(lead.getStatus()) || "Converted".equals(lead.getStatus())) {
-                b.addStyleName(WebUIConstants.LINK_COMPLETED);
+                b.addStyleName(WebThemes.LINK_COMPLETED);
             }
             b.setDescription(CrmTooltipGenerator.generateTooltipLead(
                     UserUIContext.getUserLocale(), lead,

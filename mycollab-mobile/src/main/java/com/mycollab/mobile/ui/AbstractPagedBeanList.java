@@ -16,12 +16,13 @@
  */
 package com.mycollab.mobile.ui;
 
-import com.esofthead.vaadin.mobilecomponent.InfiniteScrollLayout;
 import com.mycollab.db.arguments.BasicSearchRequest;
 import com.mycollab.db.arguments.SearchCriteria;
+import com.mycollab.vaadin.touchkit.InfiniteScrollLayout;
 import com.mycollab.vaadin.ui.ELabel;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
+import com.vaadin.ui.VerticalLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +38,7 @@ public abstract class AbstractPagedBeanList<S extends SearchCriteria, B> extends
     protected List<B> currentListData;
     private RowDisplayHandler<B> rowDisplayHandler;
 
-    protected CssLayout listContainer;
+    protected VerticalLayout listContainer;
 
     protected BasicSearchRequest<S> searchRequest;
     protected int currentPage = 1;
@@ -49,10 +50,10 @@ public abstract class AbstractPagedBeanList<S extends SearchCriteria, B> extends
         super();
         setSizeFull();
         this.rowDisplayHandler = rowDisplayHandler;
-        InfiniteScrollLayout scrollLayout = InfiniteScrollLayout.extend(this);
-        scrollLayout.addScrollListener(() -> loadMore());
-        listContainer = new CssLayout();
+        listContainer = new VerticalLayout();
         this.addComponent(listContainer);
+        InfiniteScrollLayout scrollLayout = InfiniteScrollLayout.extend(this);
+        scrollLayout.addScrollListener(this::loadMore);
     }
 
     public AbstractPagedBeanList(RowDisplayHandler<B> rowDisplayHandler, int defaultNumberSearchItems) {
@@ -61,10 +62,10 @@ public abstract class AbstractPagedBeanList<S extends SearchCriteria, B> extends
     }
 
     @Override
-    public void search(final S searchCriteria) {
+    public Integer search(final S searchCriteria) {
         currentPage = 1;
         searchRequest = new BasicSearchRequest<>(searchCriteria, currentPage, displayNumItems);
-        doSearch();
+        return doSearch();
     }
 
     @Override
@@ -88,7 +89,7 @@ public abstract class AbstractPagedBeanList<S extends SearchCriteria, B> extends
 
     abstract protected List<B> queryCurrentData();
 
-    protected void doSearch() {
+    protected Integer doSearch() {
         totalCount = this.queryTotalCount();
         this.totalPage = (totalCount - 1) / searchRequest.getNumberOfItems() + 1;
         if (searchRequest.getCurrentPage() > this.totalPage) {
@@ -99,21 +100,21 @@ public abstract class AbstractPagedBeanList<S extends SearchCriteria, B> extends
         currentViewCount = currentListData.size();
 
         listContainer.removeAllComponents();
-
         renderRows();
+        return totalCount;
     }
 
     protected void renderRows() {
         int i = 0;
         for (final B item : currentListData) {
-            final Component row = rowDisplayHandler.generateRow(item, i);
+            final Component row = rowDisplayHandler.generateRow(this, item, i);
+            row.addStyleName("row");
             listContainer.addComponent(row);
-            listContainer.addComponent(ELabel.hr());
             i++;
         }
     }
 
-    protected void loadMore() {
+    private void loadMore() {
         currentPage += 1;
         searchRequest.setCurrentPage(currentPage);
         List<B> currentData = this.queryCurrentData();
@@ -124,10 +125,10 @@ public abstract class AbstractPagedBeanList<S extends SearchCriteria, B> extends
 
         int i = currentViewCount + 1;
         for (final B item : currentData) {
-            final Component row = rowDisplayHandler.generateRow(item, i);
+            final Component row = rowDisplayHandler.generateRow(this, item, i);
+            row.addStyleName("row");
             if (row != null) {
                 listContainer.addComponent(row);
-                listContainer.addComponent(ELabel.hr());
             }
 
             i++;
@@ -142,11 +143,8 @@ public abstract class AbstractPagedBeanList<S extends SearchCriteria, B> extends
         return this.rowDisplayHandler;
     }
 
-    public CssLayout getListContainer() {
-        return this.listContainer;
-    }
-
-    public interface RowDisplayHandler<B> {
-        Component generateRow(B obj, int rowIndex);
+    public void addComponentAtTop(Component component) {
+        component.addStyleName("row");
+        listContainer.addComponentAsFirst(component);
     }
 }

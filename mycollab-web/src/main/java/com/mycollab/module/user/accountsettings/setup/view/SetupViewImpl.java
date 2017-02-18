@@ -27,13 +27,10 @@ import com.mycollab.module.user.accountsettings.localization.UserI18nEnum;
 import com.mycollab.module.user.accountsettings.view.events.ProfileEvent;
 import com.mycollab.servlet.InstallUtils;
 import com.mycollab.vaadin.UserUIContext;
-import com.mycollab.vaadin.mvp.AbstractPageView;
+import com.mycollab.vaadin.mvp.AbstractVerticalPageView;
 import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.ui.*;
-import com.mycollab.vaadin.web.ui.AddViewLayout;
-import com.mycollab.vaadin.web.ui.ConfirmDialogExt;
-import com.mycollab.vaadin.web.ui.IntegerField;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.*;
 import com.mycollab.vaadin.web.ui.grid.GridFormLayoutHelper;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.server.FontAwesome;
@@ -52,7 +49,7 @@ import java.io.File;
  * @since 5.0.5
  */
 @ViewComponent
-public class SetupViewImpl extends AbstractPageView implements SetupView {
+public class SetupViewImpl extends AbstractVerticalPageView implements SetupView {
     private static Logger LOG = LoggerFactory.getLogger(SetupViewImpl.class);
 
     private SmtpEditForm editForm;
@@ -87,7 +84,7 @@ public class SetupViewImpl extends AbstractPageView implements SetupView {
         private GridFormLayoutHelper informationLayout;
 
         @Override
-        public ComponentContainer getLayout() {
+        public AbstractComponent getLayout() {
             AddViewLayout formAddLayout = new AddViewLayout(UserUIContext.getMessage(ShellI18nEnum.OPT_SMTP_SETTING), FontAwesome.WRENCH);
             FormContainer layout = new FormContainer();
             informationLayout = GridFormLayoutHelper.defaultFormLayoutHelper(2, 6);
@@ -101,7 +98,7 @@ public class SetupViewImpl extends AbstractPageView implements SetupView {
         private Layout createButtonControls() {
             final MButton closeBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CLOSE),
                     clickEvent -> EventBusFactory.getInstance().post(new ProfileEvent.GotoProfileView(this)))
-                    .withStyleName(WebUIConstants.BUTTON_OPTION);
+                    .withStyleName(WebThemes.BUTTON_OPTION);
 
             final MButton saveBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_SAVE), clickEvent -> {
                 if (editForm.validateForm()) {
@@ -122,9 +119,9 @@ public class SetupViewImpl extends AbstractPageView implements SetupView {
                                 });
                     }
                 }
-            }).withIcon(FontAwesome.SAVE).withStyleName(WebUIConstants.BUTTON_ACTION).withClickShortcut(ShortcutAction.KeyCode.ENTER);
+            }).withIcon(FontAwesome.SAVE).withStyleName(WebThemes.BUTTON_ACTION).withClickShortcut(ShortcutAction.KeyCode.ENTER);
 
-            return new MHorizontalLayout(closeBtn, saveBtn).withMargin(true);
+            return new MHorizontalLayout(closeBtn, saveBtn);
         }
 
         private void saveEmailConfiguration() {
@@ -153,17 +150,23 @@ public class SetupViewImpl extends AbstractPageView implements SetupView {
         @Override
         protected Component onAttachField(Object propertyId, Field<?> field) {
             if (propertyId.equals("host")) {
-                return informationLayout.addComponent(field, "Host", 0, 0);
+                return informationLayout.addComponent(field, UserUIContext.getMessage(ShellI18nEnum.FORM_HOST),
+                        UserUIContext.getMessage(ShellI18nEnum.FORM_HOST_HELP), 0, 0);
             } else if (propertyId.equals("user")) {
-                return informationLayout.addComponent(field, "User Name", 0, 1);
+                return informationLayout.addComponent(field, UserUIContext.getMessage(ShellI18nEnum.FORM_MAIL_USER_NAME),
+                        UserUIContext.getMessage(ShellI18nEnum.FORM_MAIL_USER_NAME_HELP), 0, 1);
             } else if (propertyId.equals("password")) {
-                return informationLayout.addComponent(field, UserUIContext.getMessage(ShellI18nEnum.FORM_PASSWORD), 0, 2);
+                return informationLayout.addComponent(field, UserUIContext.getMessage(ShellI18nEnum.FORM_PASSWORD),
+                        UserUIContext.getMessage(ShellI18nEnum.FORM_MAIL_PASSWORD_HELP), 0, 2);
             } else if (propertyId.equals("port")) {
-                return informationLayout.addComponent(field, "Port", 0, 3);
+                return informationLayout.addComponent(field, UserUIContext.getMessage(ShellI18nEnum.FORM_PORT),
+                        UserUIContext.getMessage(ShellI18nEnum.FORM_PORT_HELP), 0, 3);
             } else if (propertyId.equals("isStartTls")) {
-                return informationLayout.addComponent(field, "StartTls", 0, 4);
+                return informationLayout.addComponent(field, "StartTls",
+                        UserUIContext.getMessage(ShellI18nEnum.FORM_MAIL_SECURITY_HELP), 0, 4);
             } else if (propertyId.equals("isSsl")) {
-                return informationLayout.addComponent(field, "Tls/Ssl", 0, 5);
+                return informationLayout.addComponent(field, "Tls/Ssl",
+                        UserUIContext.getMessage(ShellI18nEnum.FORM_MAIL_SECURITY_HELP), 0, 5);
             }
             return null;
         }

@@ -26,10 +26,13 @@ import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.*;
 import com.mycollab.vaadin.web.ui.AttachmentDisplayComponent;
 import com.mycollab.vaadin.web.ui.ConfirmDialogExt;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.ui.*;
+import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.UI;
 import org.apache.commons.collections.CollectionUtils;
 import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.layouts.MHorizontalLayout;
@@ -41,18 +44,18 @@ import java.util.List;
  * @author MyCollab Ltd.
  * @since 1.0
  */
-public class CommentRowDisplayHandler extends BeanList.RowDisplayHandler<SimpleComment> {
+public class CommentRowDisplayHandler implements IBeanList.RowDisplayHandler<SimpleComment> {
     private static final long serialVersionUID = 1L;
 
     @Override
-    public Component generateRow(final SimpleComment comment, int rowIndex) {
+    public Component generateRow(IBeanList<SimpleComment> host, final SimpleComment comment, int rowIndex) {
         final MHorizontalLayout layout = new MHorizontalLayout().withMargin(new MarginInfo(true, true, true, false))
                 .withFullWidth();
 
         ProjectMemberBlock memberBlock = new ProjectMemberBlock(comment.getCreateduser(), comment.getOwnerAvatarId(), comment.getOwnerFullName());
         layout.addComponent(memberBlock);
 
-        MVerticalLayout rowLayout = new MVerticalLayout().withFullWidth().withStyleName(WebUIConstants.MESSAGE_CONTAINER);
+        MVerticalLayout rowLayout = new MVerticalLayout().withFullWidth().withStyleName(WebThemes.MESSAGE_CONTAINER);
 
         MHorizontalLayout messageHeader = new MHorizontalLayout().withMargin(false).withFullWidth();
         messageHeader.setDefaultComponentAlignment(Alignment.MIDDLE_LEFT);
@@ -63,7 +66,7 @@ public class CommentRowDisplayHandler extends BeanList.RowDisplayHandler<SimpleC
         timePostLbl.setStyleName(UIConstants.META_INFO);
 
         if (hasDeletePermission(comment)) {
-            MButton msgDeleteBtn = new MButton(FontAwesome.TRASH_O).withStyleName(WebUIConstants.BUTTON_ICON_ONLY)
+            MButton msgDeleteBtn = new MButton(FontAwesome.TRASH_O).withStyleName(WebThemes.BUTTON_ICON_ONLY)
                     .withListener(clickEvent -> {
                         ConfirmDialogExt.show(UI.getCurrent(),
                                 UserUIContext.getMessage(GenericI18Enum.DIALOG_DELETE_TITLE, MyCollabUI.getSiteName()),
@@ -74,7 +77,7 @@ public class CommentRowDisplayHandler extends BeanList.RowDisplayHandler<SimpleC
                                     if (confirmDialog.isConfirmed()) {
                                         CommentService commentService = AppContextUtil.getSpringBean(CommentService.class);
                                         commentService.removeWithSession(comment, UserUIContext.getUsername(), MyCollabUI.getAccountId());
-                                        owner.removeRow(layout);
+                                        ((BeanList) host).removeRow(layout);
                                     }
                                 });
                     });

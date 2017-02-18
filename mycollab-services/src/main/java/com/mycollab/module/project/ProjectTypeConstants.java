@@ -25,6 +25,8 @@ public class ProjectTypeConstants {
 
     public static final String PROJECT_ROLE = "project_role";
 
+    public static final String TICKET = "Project-Assignment";
+
     public static final String TASK = "Project-Task";
 
     public static final String MESSAGE = "Project-Message";
@@ -52,6 +54,8 @@ public class ProjectTypeConstants {
     public static final String INVOICE = "Project-Invoice";
 
     public static final String FINANCE = "Project-Finance";
+
+    public static final String REPORTS = "Project-Reports";
 
     public static final String MEMBER = "Project-Member";
 }

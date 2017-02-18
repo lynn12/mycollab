@@ -20,11 +20,12 @@ import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.module.crm.CrmTooltipGenerator;
 import com.mycollab.module.crm.domain.SimpleCase;
 import com.mycollab.module.crm.domain.criteria.CaseSearchCriteria;
+import com.mycollab.module.crm.fielddef.CaseTableFieldDef;
 import com.mycollab.module.crm.i18n.CaseI18nEnum;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.FieldSelection;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 import org.vaadin.viritin.layouts.MWindow;
@@ -42,17 +43,16 @@ public class CaseSelectionWindow extends MWindow {
 
     public CaseSelectionWindow(FieldSelection fieldSelection) {
         super(UserUIContext.getMessage(GenericI18Enum.ACTION_SELECT_VALUE, UserUIContext.getMessage(CaseI18nEnum.SINGLE)));
-        this.withModal(true).withResizable(false).withWidth("1000px");
+        this.withModal(true).withResizable(false).withWidth("1000px").withCenter();
         this.fieldSelection = fieldSelection;
     }
 
     public void show() {
         createCaseList();
-        CaseSearchPanel searchPanel = new CaseSearchPanel();
+        CaseSearchPanel searchPanel = new CaseSearchPanel(false);
         searchPanel.addSearchHandler(criteria -> tableItem.setSearchCriteria(criteria));
         this.setContent(new MVerticalLayout(searchPanel, tableItem));
         tableItem.setSearchCriteria(new CaseSearchCriteria());
-        center();
     }
 
     private void createCaseList() {
@@ -66,7 +66,7 @@ public class CaseSelectionWindow extends MWindow {
             return new MButton(cases.getSubject(), clickEvent -> {
                 fieldSelection.fireValueChange(cases);
                 close();
-            }).withStyleName(WebUIConstants.BUTTON_LINK).withDescription(CrmTooltipGenerator.generateTooltipCases(
+            }).withStyleName(WebThemes.BUTTON_LINK).withDescription(CrmTooltipGenerator.generateTooltipCases(
                     UserUIContext.getUserLocale(), cases, MyCollabUI.getSiteUrl(), UserUIContext.getUserTimeZone()));
         });
     }

@@ -16,17 +16,17 @@
  */
 package com.mycollab.module.user.ui.components;
 
-import com.esofthead.vaadin.cropField.CropField;
-import com.esofthead.vaadin.cropField.client.VCropSelection;
 import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.common.i18n.ShellI18nEnum;
 import com.mycollab.core.MyCollabException;
 import com.mycollab.core.UserInvalidInputException;
 import com.mycollab.core.utils.ImageUtil;
 import com.mycollab.vaadin.UserUIContext;
+import com.mycollab.vaadin.addon.webcomponents.CropField;
+import com.mycollab.vaadin.addon.webcomponents.client.VCropSelection;
 import com.mycollab.vaadin.ui.ELabel;
 import com.mycollab.vaadin.web.ui.ByteArrayImageResource;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Resource;
 import com.vaadin.shared.ui.MarginInfo;
@@ -80,7 +80,7 @@ public class ImagePreviewCropWindow extends MWindow {
         previewBoxTitle.addComponent(ELabel.html(UserUIContext.getMessage(ShellI18nEnum.OPT_IMAGE_EDIT_INSTRUCTION)));
 
         MButton cancelBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CANCEL), clickEvent -> close())
-                .withStyleName(WebUIConstants.BUTTON_OPTION);
+                .withStyleName(WebThemes.BUTTON_OPTION);
 
         MButton acceptBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_ACCEPT), clickEvent -> {
             if (scaleImageData != null && scaleImageData.length > 0) {
@@ -92,7 +92,7 @@ public class ImagePreviewCropWindow extends MWindow {
                     throw new MyCollabException("Error when saving user avatar", e);
                 }
             }
-        }).withIcon(FontAwesome.CHECK).withStyleName(WebUIConstants.BUTTON_ACTION);
+        }).withIcon(FontAwesome.CHECK).withStyleName(WebThemes.BUTTON_ACTION);
 
         MHorizontalLayout controlBtns = new MHorizontalLayout(acceptBtn, cancelBtn);
 

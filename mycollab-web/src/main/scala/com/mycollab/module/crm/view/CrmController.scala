@@ -20,7 +20,7 @@ import com.mycollab.eventmanager.ApplicationEventListener
 import com.mycollab.module.crm.data.{CustomViewScreenData, NotificationSettingScreenData}
 import com.mycollab.module.crm.domain._
 import com.mycollab.module.crm.domain.criteria._
-import com.mycollab.module.crm.events._
+import com.mycollab.module.crm.event._
 import com.mycollab.module.crm.view.account.{AccountAddPresenter, AccountListPresenter, AccountReadPresenter}
 import com.mycollab.module.crm.view.activity._
 import com.mycollab.module.crm.view.campaign.{CampaignAddPresenter, CampaignListPresenter, CampaignReadPresenter}
@@ -120,7 +120,7 @@ class CrmController(val container: CrmModule) extends AbstractController {
     this.register(new ApplicationEventListener[ActivityEvent.TaskAdd]() {
       @Subscribe def handle(event: ActivityEvent.TaskAdd) {
         val presenter = PresenterResolver.getPresenter(classOf[AssignmentAddPresenter])
-        presenter.go(container, new AssignmentScreenData.Add(new SimpleTask))
+        presenter.go(container, new AssignmentScreenData.Add(new SimpleCrmTask))
       }
     })
 

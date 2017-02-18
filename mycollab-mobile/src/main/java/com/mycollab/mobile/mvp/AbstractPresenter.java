@@ -24,7 +24,7 @@ import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.mvp.*;
 import com.mycollab.vaadin.ui.NotificationUtil;
 import com.vaadin.addon.touchkit.ui.NavigationManager;
-import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.UI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +40,7 @@ public abstract class AbstractPresenter<V extends PageView> implements IPresente
     private static final long serialVersionUID = 1L;
     private static final Logger LOG = LoggerFactory.getLogger(AbstractPresenter.class);
 
-    protected Class<V> viewClass;
+    private Class<V> viewClass;
     protected V view;
 
     public AbstractPresenter(Class<V> viewClass) {
@@ -65,7 +65,7 @@ public abstract class AbstractPresenter<V extends PageView> implements IPresente
     }
 
     @Override
-    public boolean go(ComponentContainer container, ScreenData<?> data) {
+    public boolean go(HasComponents container, ScreenData<?> data) {
         getView();
 
         if (checkPermissionAccessIfAny()) {
@@ -81,7 +81,7 @@ public abstract class AbstractPresenter<V extends PageView> implements IPresente
         return true;
     }
 
-    protected abstract void onGo(ComponentContainer container, ScreenData<?> data);
+    protected abstract void onGo(HasComponents container, ScreenData<?> data);
 
     private boolean checkPermissionAccessIfAny() {
         ViewPermission viewPermission = this.getClass().getAnnotation(ViewPermission.class);
@@ -105,7 +105,7 @@ public abstract class AbstractPresenter<V extends PageView> implements IPresente
     }
 
     @Override
-    public void handleChain(ComponentContainer container, PageActionChain pageActionChain) {
+    public void handleChain(HasComponents container, PageActionChain pageActionChain) {
         ScreenData pageAction = pageActionChain.pop();
         boolean isSuccess = go(container, pageAction);
 
@@ -119,12 +119,14 @@ public abstract class AbstractPresenter<V extends PageView> implements IPresente
             NotificationUtil.showRecordNotExistNotification();
         } else if (getExceptionType(throwable, SecureAccessException.class) != null) {
             NotificationUtil.showMessagePermissionAlert();
+        } else if (getExceptionType(throwable, PresenterNotFoundException.class) != null) {
+            NotificationUtil.showFeatureNotPresentInSubscription();
         } else {
             LOG.error("Exception", throwable);
         }
     }
 
-    protected void onHandleChain(ComponentContainer container, PageActionChain pageActionChain) {
+    protected void onHandleChain(HasComponents container, PageActionChain pageActionChain) {
         throw new UnsupportedOperationException("You need override this method");
     }
 }

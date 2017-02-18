@@ -19,6 +19,7 @@ package com.mycollab.module.crm.view.cases;
 import com.mycollab.module.crm.CrmTypeConstants;
 import com.mycollab.module.crm.domain.SimpleCase;
 import com.mycollab.module.crm.domain.criteria.CaseSearchCriteria;
+import com.mycollab.module.crm.fielddef.CaseTableFieldDef;
 import com.mycollab.module.crm.ui.components.AbstractListItemComp;
 import com.mycollab.module.crm.ui.components.ComponentUtils;
 import com.mycollab.security.RolePermissionCollections;
@@ -45,25 +46,20 @@ public class CaseListViewImpl extends AbstractListItemComp<CaseSearchCriteria, S
         MButton customizeViewBtn = ComponentUtils.createCustomizeViewButton().withListener(clickEvent -> UI.getCurrent().addWindow(
                 new CaseListCustomizeWindow(tableItem)));
         this.addExtraButton(customizeViewBtn);
-
-        MButton importBtn = ComponentUtils.createImportEntitiesButton().withListener(clickEvent -> UI.getCurrent().addWindow(new CaseImportWindow()));
-        importBtn.setVisible(UserUIContext.canWrite(RolePermissionCollections.CRM_CASE));
-        this.addExtraButton(importBtn);
     }
 
     @Override
     protected DefaultGenericSearchPanel<CaseSearchCriteria> createSearchPanel() {
-        return new CaseSearchPanel();
+        return new CaseSearchPanel(true);
     }
 
     @Override
     protected AbstractPagedBeanTable<CaseSearchCriteria, SimpleCase> createBeanTable() {
         return new CaseTableDisplay(
                 CrmTypeConstants.CASE, CaseTableFieldDef.selected(),
-                Arrays.asList(CaseTableFieldDef.subject(),
-                        CaseTableFieldDef.account(), CaseTableFieldDef.priority(),
-                        CaseTableFieldDef.status(), CaseTableFieldDef.assignUser(),
-                        CaseTableFieldDef.createdTime()));
+                Arrays.asList(CaseTableFieldDef.subject(), CaseTableFieldDef.account(),
+                        CaseTableFieldDef.priority(), CaseTableFieldDef.status(),
+                        CaseTableFieldDef.assignUser(), CaseTableFieldDef.createdTime()));
     }
 
     @Override

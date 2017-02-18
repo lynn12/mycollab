@@ -23,6 +23,7 @@ import com.mycollab.form.view.builder.TextDynaFieldBuilder;
 import com.mycollab.form.view.builder.type.DynaForm;
 import com.mycollab.form.view.builder.type.DynaSection;
 import com.mycollab.module.project.i18n.BugI18nEnum;
+import com.mycollab.module.project.i18n.MilestoneI18nEnum;
 import com.mycollab.module.tracker.domain.BugWithBLOBs;
 import com.mycollab.module.tracker.domain.SimpleBug;
 
@@ -36,14 +37,14 @@ public class BugDefaultFormLayoutFactory {
         DynaSection mainSection = new DynaSectionBuilder().layoutType(DynaSection.LayoutType.TWO_COLUMN).build();
 
         //Row 1
-        mainSection.fields(new TextDynaFieldBuilder().fieldName(BugWithBLOBs.Field.summary)
+        mainSection.fields(new TextDynaFieldBuilder().fieldName(BugWithBLOBs.Field.name)
                 .displayName(BugI18nEnum.FORM_SUMMARY)
                 .fieldIndex(0).mandatory(true).required(true).colSpan(true).build());
 
         //Row 2
         mainSection.fields(new TextDynaFieldBuilder().fieldName(BugWithBLOBs.Field.priority)
-                .displayName(BugI18nEnum.FORM_PRIORITY)
-                .contextHelp(BugI18nEnum.FORM_PRIORITY_HELP)
+                .displayName(GenericI18Enum.FORM_PRIORITY)
+                .contextHelp(GenericI18Enum.FORM_PRIORITY_HELP)
                 .fieldIndex(1).build());
 
         mainSection.fields(new TextDynaFieldBuilder().fieldName(BugWithBLOBs.Field.assignuser)
@@ -85,15 +86,15 @@ public class BugDefaultFormLayoutFactory {
                 .fieldIndex(9).build());
 
         mainSection.fields(new TextDynaFieldBuilder().fieldName(BugWithBLOBs.Field.milestoneid)
-                .displayName(BugI18nEnum.FORM_PHASE)
+                .displayName(MilestoneI18nEnum.SINGLE)
                 .fieldIndex(10).build());
 
-        mainSection.fields(new TextDynaFieldBuilder().fieldName(BugWithBLOBs.Field.estimatetime)
+        mainSection.fields(new TextDynaFieldBuilder().fieldName(BugWithBLOBs.Field.originalestimate)
                 .displayName(BugI18nEnum.FORM_ORIGINAL_ESTIMATE)
                 .contextHelp(BugI18nEnum.FORM_ORIGINAL_ESTIMATE_HELP)
                 .fieldIndex(11).build());
 
-        mainSection.fields(new TextDynaFieldBuilder().fieldName(BugWithBLOBs.Field.estimateremaintime)
+        mainSection.fields(new TextDynaFieldBuilder().fieldName(BugWithBLOBs.Field.remainestimate)
                 .displayName(BugI18nEnum.FORM_REMAIN_ESTIMATE)
                 .contextHelp(BugI18nEnum.FORM_REMAIN_ESTIMATE_HELP)
                 .fieldIndex(12).build());

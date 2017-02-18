@@ -29,7 +29,7 @@ import com.mycollab.module.project.ProjectLinkBuilder;
 import com.mycollab.module.project.ProjectTooltipGenerator;
 import com.mycollab.module.project.domain.SimpleProject;
 import com.mycollab.module.project.domain.criteria.ProjectSearchCriteria;
-import com.mycollab.module.project.events.ProjectEvent;
+import com.mycollab.module.project.event.ProjectEvent;
 import com.mycollab.module.project.i18n.ProjectI18nEnum;
 import com.mycollab.module.project.i18n.ProjectMemberI18nEnum;
 import com.mycollab.module.project.i18n.TimeTrackingI18nEnum;
@@ -39,10 +39,10 @@ import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.ELabel;
+import com.mycollab.vaadin.ui.IBeanList;
 import com.mycollab.vaadin.ui.UIConstants;
-import com.mycollab.vaadin.web.ui.AbstractBeanPagedList;
 import com.mycollab.vaadin.web.ui.DefaultBeanPagedList;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
@@ -67,17 +67,17 @@ public class ProjectPagedList extends DefaultBeanPagedList<ProjectService, Proje
         if (pageControls != null) {
             Button browseProjectsBtn = new Button(UserUIContext.getMessage(ProjectI18nEnum.ACTION_BROWSE),
                     clickEvent -> EventBusFactory.getInstance().post(new ProjectEvent.GotoList(this, null)));
-            browseProjectsBtn.addStyleName(WebUIConstants.BUTTON_LINK);
+            browseProjectsBtn.addStyleName(WebThemes.BUTTON_LINK);
             pageControls.addComponent(browseProjectsBtn, 0);
             pageControls.setComponentAlignment(browseProjectsBtn, Alignment.MIDDLE_LEFT);
         }
         return pageControls;
     }
 
-    public static class ProjectRowDisplayHandler implements AbstractBeanPagedList.RowDisplayHandler<SimpleProject> {
+    private static class ProjectRowDisplayHandler implements IBeanList.RowDisplayHandler<SimpleProject> {
 
         @Override
-        public Component generateRow(AbstractBeanPagedList host, final SimpleProject project, final int rowIndex) {
+        public Component generateRow(IBeanList<SimpleProject> host, final SimpleProject project, final int rowIndex) {
             final MHorizontalLayout layout = new MHorizontalLayout().withFullWidth().withStyleName("projectblock");
             layout.addComponent(ProjectAssetsUtil.buildProjectLogo(project.getShortname(), project.getId(), project.getAvatarid(), 64));
             if (project.isArchived()) {
@@ -128,12 +128,12 @@ public class ProjectPagedList extends DefaultBeanPagedList<ProjectService, Proje
                 }
 
                 accountDiv.appendChild(new A(ProjectLinkBuilder.generateClientPreviewFullLink(project.getAccountid()))
-                        .appendText(StringUtils.trim(project.getClientName(), 30, true))).setCSSClass(WebUIConstants.BLOCK)
+                        .appendText(StringUtils.trim(project.getClientName(), 30, true))).setCSSClass(UIConstants.BLOCK)
                         .setTitle(project.getClientName());
                 metaDiv.appendChild(0, accountDiv);
                 metaDiv.appendChild(1, DivLessFormatter.EMPTY_SPACE());
             }
-            metaDiv.setCSSClass(WebUIConstants.FLEX_DISPLAY);
+            metaDiv.setCSSClass(WebThemes.FLEX_DISPLAY);
             metaInfo.addComponent(ELabel.html(metaDiv.write()).withStyleName(UIConstants.META_INFO).withWidthUndefined());
 
             linkIconFix.addComponent(metaInfo);
@@ -142,11 +142,11 @@ public class ProjectPagedList extends DefaultBeanPagedList<ProjectService, Proje
             int totalAssignments = project.getNumBugs() + project.getNumTasks() + project.getNumRisks();
             ELabel progressInfoLbl;
             if (totalAssignments > 0) {
-                progressInfoLbl = new ELabel(UserUIContext.getMessage(ProjectI18nEnum.OPT_PROJECT_ASSIGNMENT,
+                progressInfoLbl = new ELabel(UserUIContext.getMessage(ProjectI18nEnum.OPT_PROJECT_TICKET,
                         (totalAssignments - openAssignments), totalAssignments, (totalAssignments - openAssignments)
                                 * 100 / totalAssignments)).withStyleName(UIConstants.META_INFO);
             } else {
-                progressInfoLbl = new ELabel(UserUIContext.getMessage(ProjectI18nEnum.OPT_NO_ASSIGNMENT))
+                progressInfoLbl = new ELabel(UserUIContext.getMessage(ProjectI18nEnum.OPT_NO_TICKET))
                         .withStyleName(UIConstants.META_INFO);
             }
             linkIconFix.addComponent(progressInfoLbl);

@@ -16,18 +16,14 @@
  */
 package com.mycollab.mobile.module.project.view.settings;
 
-import com.mycollab.common.GenericLinkUtils;
 import com.mycollab.mobile.module.project.view.ProjectListPresenter;
 import com.mycollab.module.project.CurrentProjectVariables;
 import com.mycollab.module.project.ProjectRolePermissionCollections;
 import com.mycollab.module.project.domain.SimpleProjectMember;
 import com.mycollab.module.project.domain.criteria.ProjectMemberSearchCriteria;
-import com.mycollab.module.project.i18n.ProjectMemberI18nEnum;
-import com.mycollab.vaadin.MyCollabUI;
-import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.mvp.ScreenData;
 import com.mycollab.vaadin.ui.NotificationUtil;
-import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.HasComponents;
 
 /**
  * @author MyCollab Ltd.
@@ -41,11 +37,9 @@ public class ProjectMemberListPresenter extends ProjectListPresenter<ProjectMemb
     }
 
     @Override
-    protected void onGo(ComponentContainer container, ScreenData<?> data) {
+    protected void onGo(HasComponents container, ScreenData<?> data) {
         if (CurrentProjectVariables.canRead(ProjectRolePermissionCollections.USERS)) {
             super.onGo(container, data);
-            MyCollabUI.addFragment("project/user/list/" + GenericLinkUtils.encodeParam(CurrentProjectVariables.getProjectId()),
-                    UserUIContext.getMessage(ProjectMemberI18nEnum.LIST));
         } else {
             NotificationUtil.showMessagePermissionAlert();
         }

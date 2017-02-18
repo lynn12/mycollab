@@ -22,7 +22,7 @@ import com.mycollab.mobile.ui.IListView;
 import com.mycollab.mobile.ui.SearchInputField;
 import com.mycollab.vaadin.events.HasSearchHandlers;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.CssLayout;
 
 /**
  * @author MyCollab Ltd.
@@ -32,31 +32,15 @@ public abstract class AbstractListPageView<S extends SearchCriteria, B> extends 
     private static final long serialVersionUID = 3603608419228750094L;
 
     protected AbstractPagedBeanList<S, B> itemList;
-    protected SearchInputField searchInputField;
 
     public AbstractListPageView() {
         itemList = createBeanList();
-        searchInputField = createSearchField();
-
-        if (searchInputField != null) {
-            VerticalLayout content = new VerticalLayout();
-            content.addComponent(searchInputField);
-            content.addComponent(itemList);
-            content.setExpandRatio(itemList, 1.0f);
-            setContent(content);
-        } else {
-            setContent(itemList);
-        }
+        setContent(itemList);
     }
 
     @Override
     public AbstractPagedBeanList<S, B> getPagedBeanTable() {
         return itemList;
-    }
-
-    @Override
-    public HasSearchHandlers<S> getSearchHandlers() {
-        return searchInputField;
     }
 
     protected void doSearch() {

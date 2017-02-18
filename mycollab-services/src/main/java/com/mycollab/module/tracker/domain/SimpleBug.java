@@ -18,8 +18,8 @@ package com.mycollab.module.tracker.domain;
 
 import com.mycollab.core.arguments.NotBindable;
 import com.mycollab.core.utils.DateTimeUtils;
-import com.mycollab.module.project.i18n.OptionI18nEnum.BugStatus;
 import com.mycollab.core.utils.StringUtils;
+import com.mycollab.module.project.i18n.OptionI18nEnum.BugStatus;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -81,9 +81,7 @@ public class SimpleBug extends BugWithBLOBs {
 
     public String getLoguserFullName() {
         if (isBlank(loguserFullName)) {
-            String displayName = getLogby();
-            return StringUtils
-                    .extractNameFromEmail(displayName);
+            return StringUtils.extractNameFromEmail(getCreateduser());
         }
         return loguserFullName;
     }
@@ -173,8 +171,8 @@ public class SimpleBug extends BugWithBLOBs {
         return isCompleted(this);
     }
 
-    public static final boolean isCompleted(BugWithBLOBs bug) {
-        return BugStatus.Verified.name().equals(bug.getStatus()) || BugStatus.Resolved.name().equals(bug.getStatus());
+    public static boolean isCompleted(BugWithBLOBs bug) {
+        return BugStatus.Verified.name().equals(bug.getStatus());
     }
 
     public Double getBillableHours() {

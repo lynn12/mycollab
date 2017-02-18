@@ -21,7 +21,7 @@ import com.mycollab.common.i18n.LicenseI18nEnum;
 import com.mycollab.common.i18n.ShellI18nEnum;
 import com.mycollab.common.ui.components.notification.RequestUploadAvatarNotification;
 import com.mycollab.common.ui.components.notification.SmtpSetupNotification;
-import com.mycollab.community.shell.view.components.CommunitySliderPanel;
+import com.mycollab.community.shell.view.components.AdRequestWindow;
 import com.mycollab.core.utils.StringUtils;
 import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.module.mail.service.ExtMailService;
@@ -32,7 +32,6 @@ import com.mycollab.module.user.ui.SettingUIConstants;
 import com.mycollab.shell.events.ShellEvent;
 import com.mycollab.shell.view.AbstractMainView;
 import com.mycollab.shell.view.components.AbstractAboutWindow;
-import com.mycollab.community.shell.view.components.AdRequestWindow;
 import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
@@ -41,7 +40,6 @@ import com.mycollab.vaadin.mvp.ViewManager;
 import com.mycollab.vaadin.ui.UserAvatarControlFactory;
 import com.mycollab.vaadin.web.ui.NotificationComponent;
 import com.mycollab.vaadin.web.ui.OptionPopupContent;
-import com.mycollab.web.IDesktopModule;
 import com.vaadin.server.BrowserWindowOpener;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.FontAwesome;
@@ -51,7 +49,6 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Window;
 import org.vaadin.hene.popupbutton.PopupButton;
-import org.vaadin.sliderpanel.SliderPanel;
 import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.layouts.MHorizontalLayout;
 
@@ -64,11 +61,6 @@ import java.util.GregorianCalendar;
  */
 @ViewComponent
 public class MainViewImpl extends AbstractMainView {
-    @Override
-    protected void postAddModule(IDesktopModule module) {
-        SliderPanel sliderPanel = CommunitySliderPanel.buildCommunitySliderPanel();
-        bodyLayout.with(sliderPanel);
-    }
 
     @Override
     protected MHorizontalLayout buildAccountMenuLayout() {
@@ -78,9 +70,9 @@ public class MainViewImpl extends AbstractMainView {
         accountNameLabel.addStyleName("subDomain");
         accountLayout.addComponent(accountNameLabel);
 
-        MButton buyPremiumBtn = new MButton(UserUIContext.getMessage(LicenseI18nEnum.OPT_TRIAL_THE_PRO_EDITION),
-                clickEvent -> UI.getCurrent().addWindow(new AdWindow()))
-                .withIcon(FontAwesome.SHOPPING_CART).withStyleName("ad");
+        MButton buyPremiumBtn = new MButton("", clickEvent -> UI.getCurrent().addWindow(new AdWindow()))
+                .withIcon(FontAwesome.SHOPPING_CART).withStyleName("ad")
+                .withDescription(UserUIContext.getMessage(LicenseI18nEnum.OPT_TRIAL_THE_PRO_EDITION));
         accountLayout.addComponent(buyPremiumBtn);
 
         NotificationComponent notificationComponent = new NotificationComponent();
@@ -128,13 +120,6 @@ public class MainViewImpl extends AbstractMainView {
             EventBusFactory.getInstance().post(new ShellEvent.GotoUserAccountModule(this, new String[]{"setting", "general"}));
         }).withIcon(SettingAssetsManager.getAsset(SettingUIConstants.GENERAL_SETTING));
         accountPopupContent.addOption(generalSettingBtn);
-
-        MButton themeCustomizeBtn = new MButton(UserUIContext.getMessage(AdminI18nEnum.VIEW_THEME), clickEvent -> {
-            accountMenu.setPopupVisible(false);
-            EventBusFactory.getInstance().post(new ShellEvent.GotoUserAccountModule(this, new String[]{"setting", "theme"}));
-        }).withIcon(SettingAssetsManager.getAsset(SettingUIConstants.THEME_CUSTOMIZE));
-        accountPopupContent.addOption(themeCustomizeBtn);
-
 
         MButton setupBtn = new MButton(UserUIContext.getMessage(AdminI18nEnum.VIEW_SETUP), clickEvent -> {
             accountMenu.setPopupVisible(false);

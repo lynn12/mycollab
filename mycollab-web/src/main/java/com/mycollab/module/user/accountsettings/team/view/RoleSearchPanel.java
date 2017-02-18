@@ -26,9 +26,7 @@ import com.mycollab.module.user.events.RoleEvent;
 import com.mycollab.security.RolePermissionCollections;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.HeaderWithFontAwesome;
-import com.mycollab.vaadin.web.ui.DefaultGenericSearchPanel;
-import com.mycollab.vaadin.web.ui.GenericSearchPanel;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.*;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.*;
@@ -63,22 +61,17 @@ public class RoleSearchPanel extends DefaultGenericSearchPanel<RoleSearchCriteri
     protected Component buildExtraControls() {
         return new MButton(UserUIContext.getMessage(RoleI18nEnum.NEW),
                 clickEvent -> EventBusFactory.getInstance().post(new RoleEvent.GotoAdd(this, null)))
-                .withIcon(FontAwesome.PLUS).withStyleName(WebUIConstants.BUTTON_ACTION)
+                .withIcon(FontAwesome.PLUS).withStyleName(WebThemes.BUTTON_ACTION)
                 .withVisible(UserUIContext.canWrite(RolePermissionCollections.ACCOUNT_ROLE));
     }
 
-    private class RoleBasicSearchLayout extends GenericSearchPanel.BasicSearchLayout<RoleSearchCriteria> {
+    private class RoleBasicSearchLayout extends BasicSearchLayout<RoleSearchCriteria> {
         private static final long serialVersionUID = 1L;
 
         private TextField nameField;
 
         private RoleBasicSearchLayout() {
             super(RoleSearchPanel.this);
-        }
-
-        @Override
-        public ComponentContainer constructHeader() {
-            return RoleSearchPanel.this.constructHeader();
         }
 
         @Override
@@ -91,12 +84,12 @@ public class RoleSearchPanel extends DefaultGenericSearchPanel<RoleSearchCriteri
             basicSearchBody.addComponent(nameField);
 
             MButton searchBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_SEARCH), clickEvent -> callSearchAction())
-                    .withIcon(FontAwesome.SEARCH).withStyleName(WebUIConstants.BUTTON_ACTION)
+                    .withIcon(FontAwesome.SEARCH).withStyleName(WebThemes.BUTTON_ACTION)
                     .withClickShortcut(ShortcutAction.KeyCode.ENTER);
             basicSearchBody.addComponent(searchBtn);
 
             MButton clearBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CLEAR), clickEvent -> nameField.setValue(""))
-                    .withStyleName(WebUIConstants.BUTTON_OPTION);
+                    .withStyleName(WebThemes.BUTTON_OPTION);
             basicSearchBody.addComponent(clearBtn);
             basicSearchBody.setComponentAlignment(clearBtn, Alignment.MIDDLE_LEFT);
             return basicSearchBody;

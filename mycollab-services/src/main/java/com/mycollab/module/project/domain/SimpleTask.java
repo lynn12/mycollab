@@ -16,7 +16,7 @@
  */
 package com.mycollab.module.project.domain;
 
-import com.mycollab.common.i18n.OptionI18nEnum;
+import com.mycollab.common.i18n.OptionI18nEnum.StatusI18nEnum;
 import com.mycollab.core.utils.DateTimeUtils;
 import com.mycollab.core.utils.StringUtils;
 
@@ -99,7 +99,7 @@ public class SimpleTask extends Task {
 
     public String getLogByFullName() {
         if (StringUtils.isBlank(logByFullName)) {
-            return StringUtils.extractNameFromEmail(getLogby());
+            return StringUtils.extractNameFromEmail(getCreateduser());
         }
         return logByFullName;
     }
@@ -189,25 +189,24 @@ public class SimpleTask extends Task {
     }
 
     public boolean isCompleted() {
-        return OptionI18nEnum.StatusI18nEnum.Closed.name().equals(getStatus()) || ((getPercentagecomplete() != null)
-                && (100d == getPercentagecomplete()));
+        return StatusI18nEnum.Closed.name().equals(getStatus());
     }
 
     public boolean isPending() {
-        return OptionI18nEnum.StatusI18nEnum.Pending.name().equals(getStatus());
+        return StatusI18nEnum.Pending.name().equals(getStatus());
     }
 
     public boolean isOverdue() {
         if (!isCompleted()) {
             Date now = DateTimeUtils.getCurrentDateWithoutMS();
-            return (getDeadline() != null && getDeadline().before(now));
+            return (getDuedate() != null && getDuedate().before(now));
         }
 
         return false;
     }
 
     public Date getDeadlineRoundPlusOne() {
-        Date value = getDeadline();
+        Date value = getDuedate();
         return (value != null) ? DateTimeUtils.subtractOrAddDayDuration(value, 1) : null;
     }
 

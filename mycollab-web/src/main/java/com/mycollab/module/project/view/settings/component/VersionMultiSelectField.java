@@ -40,10 +40,9 @@ public class VersionMultiSelectField extends MultiSelectComp {
     private static final long serialVersionUID = 1L;
 
     public VersionMultiSelectField() {
-        super("versionname", true);
+        super("name", true);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected List<Version> createData() {
         VersionSearchCriteria searchCriteria = new VersionSearchCriteria();

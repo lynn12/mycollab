@@ -17,8 +17,7 @@
 package com.mycollab.module.project.view.user;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.eventbus.AllowConcurrentEvents;
-import com.google.common.eventbus.Subscribe;
+
 import com.hp.gagawa.java.elements.A;
 import com.hp.gagawa.java.elements.Div;
 import com.hp.gagawa.java.elements.Img;
@@ -26,22 +25,22 @@ import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.common.i18n.OptionI18nEnum;
 import com.mycollab.configuration.SiteConfiguration;
 import com.mycollab.configuration.StorageFactory;
-import com.mycollab.core.utils.NumberUtils;
 import com.mycollab.core.utils.StringUtils;
-import com.mycollab.db.arguments.BooleanSearchField;
-import com.mycollab.db.arguments.SetSearchField;
-import com.mycollab.eventmanager.ApplicationEventListener;
 import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.html.DivLessFormatter;
-import com.mycollab.module.project.*;
+import com.mycollab.module.project.CurrentProjectVariables;
+import com.mycollab.module.project.ProjectLinkBuilder;
+import com.mycollab.module.project.ProjectRolePermissionCollections;
 import com.mycollab.module.project.domain.SimpleProject;
-import com.mycollab.module.project.domain.criteria.ItemTimeLoggingSearchCriteria;
-import com.mycollab.module.project.events.*;
-import com.mycollab.module.project.i18n.*;
-import com.mycollab.module.project.service.ItemTimeLoggingService;
+import com.mycollab.module.project.event.ProjectEvent;
+import com.mycollab.module.project.event.ProjectMemberEvent;
+import com.mycollab.module.project.event.ProjectNotificationEvent;
+import com.mycollab.module.project.i18n.ProjectCommonI18nEnum;
+import com.mycollab.module.project.i18n.ProjectI18nEnum;
+import com.mycollab.module.project.i18n.ProjectMemberI18nEnum;
 import com.mycollab.module.project.service.ProjectService;
-import com.mycollab.module.project.ui.ProjectAssetsManager;
 import com.mycollab.module.project.ui.ProjectAssetsUtil;
+import com.mycollab.module.project.view.ProjectBreadcrumb;
 import com.mycollab.module.project.view.ProjectView;
 import com.mycollab.module.project.view.parameters.ProjectScreenData;
 import com.mycollab.security.RolePermissionCollections;
@@ -50,20 +49,21 @@ import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.mvp.PageActionChain;
+import com.mycollab.vaadin.mvp.ViewManager;
 import com.mycollab.vaadin.ui.ELabel;
 import com.mycollab.vaadin.ui.UIConstants;
 import com.mycollab.vaadin.ui.UIUtils;
 import com.mycollab.vaadin.web.ui.ConfirmDialogExt;
 import com.mycollab.vaadin.web.ui.OptionPopupContent;
 import com.mycollab.vaadin.web.ui.SearchTextField;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.themes.ValoTheme;
+
 import org.vaadin.hene.popupbutton.PopupButton;
 import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.layouts.MHorizontalLayout;
@@ -75,81 +75,33 @@ import org.vaadin.viritin.layouts.MVerticalLayout;
  */
 public class ProjectInfoComponent extends MHorizontalLayout {
 
-    private Label billableHoursLbl, nonBillableHoursLbl;
-
-    private ApplicationEventListener<ProjectEvent.TimeLoggingChangedEvent>
-            timeLoggingChangedEventApplicationEventListener = new ApplicationEventListener<ProjectEvent.TimeLoggingChangedEvent>() {
-        @Subscribe
-        @AllowConcurrentEvents
-        @Override
-        public void handle(ProjectEvent.TimeLoggingChangedEvent event) {
-            ItemTimeLoggingSearchCriteria baseCriteria = new ItemTimeLoggingSearchCriteria();
-            baseCriteria.setProjectIds(new SetSearchField<>(CurrentProjectVariables.getProjectId()));
-
-            //get Billable hours
-            baseCriteria.setIsBillable(new BooleanSearchField(true));
-            ItemTimeLoggingService loggingService = AppContextUtil.getSpringBean(ItemTimeLoggingService.class);
-            Double billableHours = loggingService.getTotalHoursByCriteria(baseCriteria);
-            billableHoursLbl.setValue(FontAwesome.MONEY.getHtml() + " " + billableHours);
-
-            // Get Non billable hours
-            baseCriteria.setIsBillable(new BooleanSearchField(false));
-            Double nonBillableHours = loggingService.getTotalHoursByCriteria(baseCriteria);
-            nonBillableHoursLbl.setValue(FontAwesome.GIFT.getHtml() + " " + nonBillableHours);
-        }
-    };
-
-    public ProjectInfoComponent(final SimpleProject project) {
-        this.withMargin(true).withStyleName("project-info").withFullWidth();
+    public ProjectInfoComponent(SimpleProject project) {
+        this.withMargin(false).withFullWidth();
         Component projectIcon = ProjectAssetsUtil.buildProjectLogo(project.getShortname(), project.getId(), project.getAvatarid(), 64);
         this.with(projectIcon).withAlign(projectIcon, Alignment.TOP_LEFT);
-        ELabel headerLbl = ELabel.h2(project.getName());
-        headerLbl.setDescription(ProjectTooltipGenerator.generateToolTipProject(UserUIContext.getUserLocale(), MyCollabUI.getDateFormat(),
-                project, MyCollabUI.getSiteUrl(), UserUIContext.getUserTimeZone()));
-        headerLbl.addStyleName(UIConstants.TEXT_ELLIPSIS);
-        MVerticalLayout headerLayout = new MVerticalLayout().withMargin(new MarginInfo(false, true, false, true));
 
-        MHorizontalLayout footer = new MHorizontalLayout();
+        ProjectBreadcrumb breadCrumb = ViewManager.getCacheComponent(ProjectBreadcrumb.class);
+        breadCrumb.setProject(project);
+        MVerticalLayout headerLayout = new MVerticalLayout().withSpacing(false).withMargin(new MarginInfo(false, true, false, true));
+
+        MHorizontalLayout footer = new MHorizontalLayout().withStyleName(UIConstants.META_INFO, WebThemes.FLEX_DISPLAY);
         footer.setDefaultComponentAlignment(Alignment.MIDDLE_LEFT);
-        footer.addStyleName(UIConstants.META_INFO);
-        footer.addStyleName(WebUIConstants.FLEX_DISPLAY);
-
-        ELabel createdTimeLbl = ELabel.html(FontAwesome.CLOCK_O.getHtml() + " " + UserUIContext.formatPrettyTime(project
-                .getCreatedtime())).withDescription(UserUIContext.getMessage(GenericI18Enum.FORM_CREATED_TIME))
-                .withStyleName(ValoTheme.LABEL_SMALL).withWidthUndefined();
-        footer.addComponents(createdTimeLbl);
-
-        billableHoursLbl = ELabel.html(FontAwesome.MONEY.getHtml() + " " + NumberUtils.roundDouble(2, project.getTotalBillableHours()))
-                .withDescription(UserUIContext.getMessage(TimeTrackingI18nEnum.OPT_BILLABLE_HOURS))
-                .withStyleName(ValoTheme.LABEL_SMALL).withWidthUndefined();
-        footer.addComponents(billableHoursLbl);
-
-        nonBillableHoursLbl = ELabel.html(FontAwesome.GIFT.getHtml() + " " + project.getTotalNonBillableHours())
-                .withDescription(UserUIContext.getMessage(TimeTrackingI18nEnum.OPT_NON_BILLABLE_HOURS))
-                .withStyleName(ValoTheme.LABEL_SMALL).withWidthUndefined();
-        footer.addComponents(nonBillableHoursLbl);
+        headerLayout.with(breadCrumb, footer);
 
         if (project.getLead() != null) {
             Div leadAvatar = new DivLessFormatter().appendChild(new Img("", StorageFactory.getAvatarPath
-                    (project.getLeadAvatarId(), 16)), DivLessFormatter.EMPTY_SPACE(), new A(ProjectLinkBuilder
-                    .generateProjectMemberFullLink(project.getId(),
-                            project.getLead())).appendText(StringUtils.trim(project.getLeadFullName(), 30, true)))
+                            (project.getLeadAvatarId(), 16)).setCSSClass(UIConstants.CIRCLE_BOX), DivLessFormatter.EMPTY_SPACE(),
+                    new A(ProjectLinkBuilder.generateProjectMemberFullLink(project.getId(), project.getLead()))
+                            .appendText(StringUtils.trim(project.getLeadFullName(), 30, true)))
                     .setTitle(project.getLeadFullName());
             ELabel leadLbl = ELabel.html(UserUIContext.getMessage(ProjectI18nEnum.FORM_LEADER) + ": " + leadAvatar.write()).withWidthUndefined();
-            footer.addComponents(leadLbl);
+            footer.with(leadLbl);
         }
         if (project.getHomepage() != null) {
             ELabel homepageLbl = ELabel.html(FontAwesome.WECHAT.getHtml() + " " + new A(project.getHomepage())
                     .appendText(project.getHomepage()).setTarget("_blank").write())
                     .withStyleName(ValoTheme.LABEL_SMALL).withWidthUndefined();
             homepageLbl.setDescription(UserUIContext.getMessage(ProjectI18nEnum.FORM_HOME_PAGE));
-        }
-
-        if (project.getNumActiveMembers() > 0) {
-            ELabel activeMembersLbl = ELabel.html(FontAwesome.USERS.getHtml() + " " + project.getNumActiveMembers())
-                    .withDescription(UserUIContext.getMessage(ProjectMemberI18nEnum.OPT_ACTIVE_MEMBERS))
-                    .withStyleName(ValoTheme.LABEL_SMALL).withWidthUndefined();
-            footer.addComponents(activeMembersLbl);
         }
 
         if (project.getAccountid() != null && !SiteConfiguration.isCommunityEdition()) {
@@ -162,35 +114,33 @@ public class ProjectInfoComponent extends MHorizontalLayout {
                 clientDiv.appendChild(clientImg).appendChild(DivLessFormatter.EMPTY_SPACE());
             }
             clientDiv.appendChild(new A(ProjectLinkBuilder.generateClientPreviewFullLink(project.getAccountid()))
-                    .appendText(project.getClientName()));
-            ELabel accountBtn = ELabel.html(clientDiv.write()).withStyleName(WebUIConstants.BUTTON_LINK)
+                    .appendText(StringUtils.trim(project.getClientName(), 30, true)));
+            ELabel accountBtn = ELabel.html(clientDiv.write()).withStyleName(WebThemes.BUTTON_LINK)
                     .withWidthUndefined();
             footer.addComponents(accountBtn);
         }
 
         if (!SiteConfiguration.isCommunityEdition()) {
             MButton tagBtn = new MButton(UserUIContext.getMessage(ProjectCommonI18nEnum.VIEW_TAG), clickEvent -> EventBusFactory.getInstance().post(new ProjectEvent.GotoTagListView(this, null)))
-                    .withIcon(FontAwesome.TAGS).withStyleName(WebUIConstants.BUTTON_SMALL_PADDING, WebUIConstants.BUTTON_LINK);
+                    .withIcon(FontAwesome.TAGS).withStyleName(WebThemes.BUTTON_SMALL_PADDING, WebThemes.BUTTON_LINK);
             footer.addComponents(tagBtn);
 
             MButton favoriteBtn = new MButton(UserUIContext.getMessage(ProjectCommonI18nEnum.VIEW_FAVORITES),
                     clickEvent -> EventBusFactory.getInstance().post(new ProjectEvent.GotoFavoriteView(this, null)))
-                    .withIcon(FontAwesome.STAR).withStyleName(WebUIConstants.BUTTON_SMALL_PADDING, WebUIConstants.BUTTON_LINK);
+                    .withIcon(FontAwesome.STAR).withStyleName(WebThemes.BUTTON_SMALL_PADDING, WebThemes.BUTTON_LINK);
             footer.addComponents(favoriteBtn);
 
             MButton eventBtn = new MButton(UserUIContext.getMessage(ProjectCommonI18nEnum.VIEW_CALENDAR),
                     clickEvent -> EventBusFactory.getInstance().post(new ProjectEvent.GotoCalendarView(this)))
-                    .withIcon(FontAwesome.CALENDAR).withStyleName(WebUIConstants.BUTTON_SMALL_PADDING, WebUIConstants.BUTTON_LINK);
+                    .withIcon(FontAwesome.CALENDAR).withStyleName(WebThemes.BUTTON_SMALL_PADDING, WebThemes.BUTTON_LINK);
             footer.addComponents(eventBtn);
 
             MButton ganttChartBtn = new MButton(UserUIContext.getMessage(ProjectCommonI18nEnum.VIEW_GANTT_CHART),
                     clickEvent -> EventBusFactory.getInstance().post(new ProjectEvent.GotoGanttChart(this, null)))
-                    .withIcon(FontAwesome.BAR_CHART_O).withStyleName(WebUIConstants.BUTTON_SMALL_PADDING,
-                            WebUIConstants.BUTTON_LINK);
+                    .withIcon(FontAwesome.BAR_CHART_O).withStyleName(WebThemes.BUTTON_SMALL_PADDING,
+                            WebThemes.BUTTON_LINK);
             footer.addComponents(ganttChartBtn);
         }
-
-        headerLayout.with(headerLbl, footer);
 
         MHorizontalLayout topPanel = new MHorizontalLayout().withMargin(false);
         this.with(headerLayout, topPanel).expand(headerLayout).withAlign(topPanel, Alignment.TOP_RIGHT);
@@ -203,7 +153,7 @@ public class ProjectInfoComponent extends MHorizontalLayout {
 
                 PageActionChain chain = new PageActionChain(new ProjectScreenData.Goto(CurrentProjectVariables.getProjectId()));
                 EventBusFactory.getInstance().post(new ProjectEvent.GotoMyProject(this, chain));
-            }).withStyleName(WebUIConstants.BUTTON_ACTION);
+            }).withStyleName(WebThemes.BUTTON_ACTION);
             topPanel.with(activeProjectBtn).withAlign(activeProjectBtn, Alignment.MIDDLE_RIGHT);
         } else {
             SearchTextField searchField = new SearchTextField() {
@@ -221,60 +171,10 @@ public class ProjectInfoComponent extends MHorizontalLayout {
             };
 
             final PopupButton controlsBtn = new PopupButton();
-            controlsBtn.addStyleName(WebUIConstants.BOX);
+            controlsBtn.addStyleName(WebThemes.BOX);
             controlsBtn.setIcon(FontAwesome.ELLIPSIS_H);
 
             OptionPopupContent popupButtonsControl = new OptionPopupContent();
-
-            if (CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.MILESTONES)) {
-                MButton createPhaseBtn = new MButton(UserUIContext.getMessage(MilestoneI18nEnum.NEW), clickEvent -> {
-                    controlsBtn.setPopupVisible(false);
-                    EventBusFactory.getInstance().post(new MilestoneEvent.GotoAdd(ProjectInfoComponent.this, null));
-                }).withIcon(ProjectAssetsManager.getAsset(ProjectTypeConstants.MILESTONE));
-                popupButtonsControl.addOption(createPhaseBtn);
-            }
-
-            if (CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.TASKS)) {
-                MButton createTaskBtn = new MButton(UserUIContext.getMessage(TaskI18nEnum.NEW), clickEvent -> {
-                    controlsBtn.setPopupVisible(false);
-                    EventBusFactory.getInstance().post(new TaskEvent.GotoAdd(ProjectInfoComponent.this, null));
-                }).withIcon(ProjectAssetsManager.getAsset(ProjectTypeConstants.TASK));
-                popupButtonsControl.addOption(createTaskBtn);
-            }
-
-            if (CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.BUGS)) {
-                MButton createBugBtn = new MButton(UserUIContext.getMessage(BugI18nEnum.NEW), clickEvent -> {
-                    controlsBtn.setPopupVisible(false);
-                    EventBusFactory.getInstance().post(new BugEvent.GotoAdd(this, null));
-                }).withIcon(ProjectAssetsManager.getAsset(ProjectTypeConstants.BUG));
-                popupButtonsControl.addOption(createBugBtn);
-            }
-
-            if (CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.COMPONENTS)) {
-                MButton createComponentBtn = new MButton(UserUIContext.getMessage(ComponentI18nEnum.NEW), clickEvent -> {
-                    controlsBtn.setPopupVisible(false);
-                    EventBusFactory.getInstance().post(new BugComponentEvent.GotoAdd(this, null));
-                }).withIcon(ProjectAssetsManager.getAsset(ProjectTypeConstants.BUG_COMPONENT));
-                popupButtonsControl.addOption(createComponentBtn);
-            }
-
-            if (CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.VERSIONS)) {
-                MButton createVersionBtn = new MButton(UserUIContext.getMessage(VersionI18nEnum.NEW), clickEvent -> {
-                    controlsBtn.setPopupVisible(false);
-                    EventBusFactory.getInstance().post(new BugVersionEvent.GotoAdd(this, null));
-                }).withIcon(ProjectAssetsManager.getAsset(ProjectTypeConstants.BUG_VERSION));
-                popupButtonsControl.addOption(createVersionBtn);
-            }
-
-            if (!SiteConfiguration.isCommunityEdition() && CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.RISKS)) {
-                MButton createRiskBtn = new MButton(UserUIContext.getMessage(RiskI18nEnum.NEW), clickEvent -> {
-                    controlsBtn.setPopupVisible(false);
-                    EventBusFactory.getInstance().post(new RiskEvent.GotoAdd(this, null));
-                }).withIcon(ProjectAssetsManager.getAsset(ProjectTypeConstants.RISK));
-                popupButtonsControl.addOption(createRiskBtn);
-            }
-
-            popupButtonsControl.addSeparator();
 
             if (CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.USERS)) {
                 MButton inviteMemberBtn = new MButton(UserUIContext.getMessage(ProjectMemberI18nEnum.BUTTON_NEW_INVITEES), clickEvent -> {
@@ -372,17 +272,5 @@ public class ProjectInfoComponent extends MHorizontalLayout {
             topPanel.with(searchField, controlsBtn).withAlign(searchField, Alignment.TOP_RIGHT).withAlign(controlsBtn,
                     Alignment.TOP_RIGHT);
         }
-    }
-
-    @Override
-    public void attach() {
-        EventBusFactory.getInstance().register(timeLoggingChangedEventApplicationEventListener);
-        super.attach();
-    }
-
-    @Override
-    public void detach() {
-        EventBusFactory.getInstance().unregister(timeLoggingChangedEventApplicationEventListener);
-        super.detach();
     }
 }

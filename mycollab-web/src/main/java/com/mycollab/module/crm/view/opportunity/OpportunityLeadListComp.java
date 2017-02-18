@@ -27,6 +27,7 @@ import com.mycollab.module.crm.domain.OpportunityLead;
 import com.mycollab.module.crm.domain.SimpleLead;
 import com.mycollab.module.crm.domain.criteria.LeadSearchCriteria;
 import com.mycollab.module.crm.i18n.LeadI18nEnum;
+import com.mycollab.module.crm.i18n.OptionI18nEnum.LeadStatus;
 import com.mycollab.module.crm.service.LeadService;
 import com.mycollab.module.crm.service.OpportunityService;
 import com.mycollab.module.crm.ui.CrmAssetsManager;
@@ -36,10 +37,7 @@ import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.ELabel;
-import com.mycollab.vaadin.web.ui.ConfirmDialogExt;
-import com.mycollab.vaadin.web.ui.OptionPopupContent;
-import com.mycollab.vaadin.web.ui.SplitButton;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.*;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.*;
 import org.vaadin.viritin.button.MButton;
@@ -56,6 +54,7 @@ public class OpportunityLeadListComp extends RelatedListComp2<LeadService, LeadS
 
     public OpportunityLeadListComp() {
         super(AppContextUtil.getSpringBean(LeadService.class), 20);
+        setMargin(true);
         this.setBlockDisplayHandler(new OpportunityLeadBlockDisplay());
     }
 
@@ -66,19 +65,19 @@ public class OpportunityLeadListComp extends RelatedListComp2<LeadService, LeadS
 
         if (UserUIContext.canWrite(RolePermissionCollections.CRM_LEAD)) {
             final SplitButton controlsBtn = new SplitButton();
-            controlsBtn.addStyleName(WebUIConstants.BUTTON_ACTION);
+            controlsBtn.addStyleName(WebThemes.BUTTON_ACTION);
             controlsBtn.setCaption(UserUIContext.getMessage(LeadI18nEnum.NEW));
             controlsBtn.setIcon(FontAwesome.PLUS);
             controlsBtn.addClickListener(event -> fireNewRelatedItem(""));
-            final Button selectBtn = new Button(UserUIContext.getMessage(GenericI18Enum.BUTTON_SELECT), clickEvent -> {
+            MButton selectBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_SELECT), clickEvent -> {
                 final OpportunityLeadSelectionWindow leadsWindow = new OpportunityLeadSelectionWindow(OpportunityLeadListComp.this);
                 final LeadSearchCriteria criteria = new LeadSearchCriteria();
                 criteria.setSaccountid(new NumberSearchField(MyCollabUI.getAccountId()));
                 UI.getCurrent().addWindow(leadsWindow);
                 leadsWindow.setSearchCriteria(criteria);
                 controlsBtn.setPopupVisible(false);
-            });
-            selectBtn.setIcon(CrmAssetsManager.getAsset(CrmTypeConstants.LEAD));
+            }).withIcon(CrmAssetsManager.getAsset(CrmTypeConstants.LEAD));
+
             OptionPopupContent buttonControlLayout = new OptionPopupContent();
             buttonControlLayout.addOption(selectBtn);
             controlsBtn.setContent(buttonControlLayout);
@@ -90,7 +89,7 @@ public class OpportunityLeadListComp extends RelatedListComp2<LeadService, LeadS
         return controlsBtnWrap;
     }
 
-    public void displayLeads(final Opportunity opportunity) {
+    void displayLeads(final Opportunity opportunity) {
         this.opportunity = opportunity;
         loadLeads();
     }
@@ -107,7 +106,7 @@ public class OpportunityLeadListComp extends RelatedListComp2<LeadService, LeadS
         loadLeads();
     }
 
-    public class OpportunityLeadBlockDisplay implements BlockDisplayHandler<SimpleLead> {
+    private class OpportunityLeadBlockDisplay implements BlockDisplayHandler<SimpleLead> {
 
         @Override
         public Component generateBlock(final SimpleLead lead, int blockIndex) {
@@ -143,7 +142,7 @@ public class OpportunityLeadListComp extends RelatedListComp2<LeadService, LeadS
                                 OpportunityLeadListComp.this.refresh();
                             }
                         });
-            }).withIcon(FontAwesome.TRASH_O).withStyleName(WebUIConstants.BUTTON_ICON_ONLY);
+            }).withIcon(FontAwesome.TRASH_O).withStyleName(WebThemes.BUTTON_ICON_ONLY);
 
             blockContent.addComponent(btnDelete);
             blockContent.setComponentAlignment(btnDelete, Alignment.TOP_RIGHT);
@@ -153,7 +152,8 @@ public class OpportunityLeadListComp extends RelatedListComp2<LeadService, LeadS
 
             leadInfo.addComponent(leadName);
 
-            Label leadStatus = new Label(UserUIContext.getMessage(GenericI18Enum.FORM_STATUS) + ": " + MoreObjects.firstNonNull(lead.getStatus(), ""));
+            Label leadStatus = new Label(UserUIContext.getMessage(GenericI18Enum.FORM_STATUS) + ": " +
+                    UserUIContext.getMessage(LeadStatus.class, lead.getStatus()));
             leadInfo.addComponent(leadStatus);
 
             String email = MoreObjects.firstNonNull(lead.getEmail(), "");

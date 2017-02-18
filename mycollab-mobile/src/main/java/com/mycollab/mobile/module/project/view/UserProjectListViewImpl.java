@@ -16,9 +16,8 @@
  */
 package com.mycollab.mobile.module.project.view;
 
-import com.esofthead.vaadin.navigationbarquickmenu.NavigationBarQuickMenu;
 import com.mycollab.common.i18n.GenericI18Enum;
-import com.mycollab.common.i18n.OptionI18nEnum;
+import com.mycollab.common.i18n.OptionI18nEnum.StatusI18nEnum;
 import com.mycollab.db.arguments.SetSearchField;
 import com.mycollab.db.arguments.StringSearchField;
 import com.mycollab.eventmanager.EventBusFactory;
@@ -31,13 +30,13 @@ import com.mycollab.module.project.domain.SimpleProject;
 import com.mycollab.module.project.domain.criteria.ProjectSearchCriteria;
 import com.mycollab.module.project.i18n.ProjectCommonI18nEnum;
 import com.mycollab.module.project.i18n.ProjectI18nEnum;
+import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.mvp.ViewComponent;
+import com.mycollab.vaadin.ui.UIConstants;
 import com.vaadin.server.FontAwesome;
-import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import org.vaadin.viritin.button.MButton;
-import org.vaadin.viritin.layouts.MVerticalLayout;
 
 /**
  * @author MyCollab Ltd.
@@ -48,7 +47,7 @@ public class UserProjectListViewImpl extends AbstractListPageView<ProjectSearchC
     private static final long serialVersionUID = 664947871255886622L;
 
     public UserProjectListViewImpl() {
-        this.setCaption(UserUIContext.getMessage(ProjectCommonI18nEnum.M_VIEW_PROJECT_LIST));
+        this.setCaption(UserUIContext.getMessage(ProjectI18nEnum.LIST));
     }
 
     @Override
@@ -66,7 +65,7 @@ public class UserProjectListViewImpl extends AbstractListPageView<ProjectSearchC
         if (getPagedBeanTable().getSearchRequest() == null) {
             ProjectSearchCriteria criteria = new ProjectSearchCriteria();
             criteria.setInvolvedMember(StringSearchField.and(UserUIContext.getUsername()));
-            criteria.setProjectStatuses(new SetSearchField(OptionI18nEnum.StatusI18nEnum.Open.name()));
+            criteria.setProjectStatuses(new SetSearchField<>(StatusI18nEnum.Open.name()));
             getPagedBeanTable().setSearchCriteria(criteria);
         }
         getPagedBeanTable().refresh();
@@ -100,14 +99,13 @@ public class UserProjectListViewImpl extends AbstractListPageView<ProjectSearchC
 
     @Override
     protected Component buildRightComponent() {
-        NavigationBarQuickMenu menu = new NavigationBarQuickMenu();
-        menu.setButtonCaption("...");
-        MVerticalLayout content = new MVerticalLayout();
-        content.with(new Button(UserUIContext.getMessage(ProjectI18nEnum.NEW),
-                clickEvent -> EventBusFactory.getInstance().post(new ProjectEvent.GotoAdd(this, null))));
-        menu.setContent(content);
-        return menu;
+        return new MButton("", clickEvent -> EventBusFactory.getInstance().post(new ProjectEvent.GotoAdd(this, null)))
+                .withIcon(FontAwesome.PLUS).withStyleName(UIConstants.CIRCLE_BOX);
     }
 
-
+    @Override
+    public void onBecomingVisible() {
+        super.onBecomingVisible();
+        MyCollabUI.addFragment("project", UserUIContext.getMessage(ProjectI18nEnum.LIST));
+    }
 }

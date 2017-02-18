@@ -35,7 +35,7 @@ import com.mycollab.vaadin.events.HasMassItemActionHandler;
 import com.mycollab.vaadin.events.HasSearchHandlers;
 import com.mycollab.vaadin.events.HasSelectableItemHandlers;
 import com.mycollab.vaadin.events.HasSelectionOptionHandlers;
-import com.mycollab.vaadin.mvp.AbstractPageView;
+import com.mycollab.vaadin.mvp.AbstractVerticalPageView;
 import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.ui.DefaultMassItemActionHandlerContainer;
 import com.mycollab.vaadin.ui.ELabel;
@@ -53,7 +53,7 @@ import java.util.Arrays;
  * @since 1.0
  */
 @ViewComponent
-public class ComponentListViewImpl extends AbstractPageView implements ComponentListView {
+public class ComponentListViewImpl extends AbstractVerticalPageView implements ComponentListView {
     private static final long serialVersionUID = 1L;
 
     private ComponentSearchPanel componentSearchPanel;
@@ -79,11 +79,11 @@ public class ComponentListViewImpl extends AbstractPageView implements Component
         tableItem = new DefaultPagedBeanTable<>(AppContextUtil.getSpringBean(ComponentService.class),
                 SimpleComponent.class, new TableViewField(null, "selected", WebUIConstants.TABLE_CONTROL_WIDTH),
                 Arrays.asList(
-                        new TableViewField(GenericI18Enum.FORM_NAME, "componentname", WebUIConstants.TABLE_EX_LABEL_WIDTH),
+                        new TableViewField(GenericI18Enum.FORM_NAME, "name", WebUIConstants.TABLE_EX_LABEL_WIDTH),
                         new TableViewField(ComponentI18nEnum.FORM_LEAD, "userLeadFullName", WebUIConstants.TABLE_X_LABEL_WIDTH),
                         new TableViewField(GenericI18Enum.FORM_STATUS, "status", WebUIConstants.TABLE_M_LABEL_WIDTH),
                         new TableViewField(GenericI18Enum.FORM_DESCRIPTION, "description", 500),
-                        new TableViewField(GenericI18Enum.FORM_PROGRESS, "id", WebUIConstants.TABLE_EX_LABEL_WIDTH)));
+                        new TableViewField(GenericI18Enum.FORM_PROGRESS, "id", WebUIConstants.TABLE_M_LABEL_WIDTH)));
 
         tableItem.addGeneratedColumn("selected", (source, itemId, columnId) -> {
             final SimpleComponent component = tableItem.getBeanByIndex(itemId);
@@ -94,12 +94,12 @@ public class ComponentListViewImpl extends AbstractPageView implements Component
             return cb;
         });
 
-        tableItem.addGeneratedColumn("componentname", (source, itemId, columnId) -> {
+        tableItem.addGeneratedColumn("name", (source, itemId, columnId) -> {
             SimpleComponent bugComponent = tableItem.getBeanByIndex(itemId);
-            LabelLink b = new LabelLink(bugComponent.getComponentname(), ProjectLinkBuilder
+            LabelLink b = new LabelLink(bugComponent.getName(), ProjectLinkBuilder
                     .generateComponentPreviewFullLink(bugComponent.getProjectid(), bugComponent.getId()));
             if (bugComponent.getStatus() != null && bugComponent.getStatus().equals(StatusI18nEnum.Closed.name())) {
-                b.addStyleName(WebUIConstants.LINK_COMPLETED);
+                b.addStyleName(WebThemes.LINK_COMPLETED);
             }
             b.setDescription(ProjectTooltipGenerator.generateToolTipComponent(UserUIContext.getUserLocale(),
                     bugComponent, MyCollabUI.getSiteUrl(), UserUIContext.getUserTimeZone()));
@@ -142,7 +142,7 @@ public class ComponentListViewImpl extends AbstractPageView implements Component
         layoutWrapper.setWidth("100%");
 
         MHorizontalLayout layout = new MHorizontalLayout();
-        layoutWrapper.addStyleName(WebUIConstants.TABLE_ACTION_CONTROLS);
+        layoutWrapper.addStyleName(WebThemes.TABLE_ACTION_CONTROLS);
         layoutWrapper.addComponent(layout);
 
         this.selectOptionButton = new SelectionOptionButton(tableItem);

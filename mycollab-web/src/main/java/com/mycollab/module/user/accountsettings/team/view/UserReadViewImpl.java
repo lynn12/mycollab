@@ -34,7 +34,7 @@ import com.mycollab.security.RolePermissionCollections;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.events.HasPreviewFormHandlers;
-import com.mycollab.vaadin.mvp.AbstractPageView;
+import com.mycollab.vaadin.mvp.AbstractVerticalPageView;
 import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.ui.*;
 import com.mycollab.vaadin.ui.field.DateViewField;
@@ -42,7 +42,7 @@ import com.mycollab.vaadin.ui.field.DefaultViewField;
 import com.mycollab.vaadin.ui.field.EmailViewField;
 import com.mycollab.vaadin.ui.field.UrlLinkViewField;
 import com.mycollab.vaadin.web.ui.AdvancedPreviewBeanForm;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.mycollab.vaadin.web.ui.field.LinkViewField;
 import com.mycollab.vaadin.web.ui.grid.GridFormLayoutHelper;
 import com.vaadin.shared.ui.MarginInfo;
@@ -59,7 +59,7 @@ import static com.mycollab.module.user.ui.components.PreviewFormControlsGenerato
  * @since 1.0
  */
 @ViewComponent
-public class UserReadViewImpl extends AbstractPageView implements UserReadView {
+public class UserReadViewImpl extends AbstractVerticalPageView implements UserReadView {
     private static final long serialVersionUID = 1L;
 
     private AdvancedPreviewBeanForm<User> previewForm;
@@ -99,7 +99,7 @@ public class UserReadViewImpl extends AbstractPageView implements UserReadView {
         } else {
             userFormLayout = GridFormLayoutHelper.defaultFormLayoutHelper(1, 5).withCaptionWidth("140px");
         }
-        userFormLayout.getLayout().addStyleName(WebUIConstants.GRIDFORM_BORDERLESS);
+        userFormLayout.getLayout().addStyleName(WebThemes.GRIDFORM_BORDERLESS);
         basicLayout.addComponent(userFormLayout.getLayout());
 
         Node roleDiv;
@@ -128,7 +128,7 @@ public class UserReadViewImpl extends AbstractPageView implements UserReadView {
         if (UserUIContext.isAdmin()) {
             MButton btnChangePassword = new MButton(UserUIContext.getMessage(GenericI18Enum.ACTION_CHANGE),
                     clickEvent -> UI.getCurrent().addWindow(new PasswordChangeWindow(user)))
-                    .withStyleName(WebUIConstants.BUTTON_LINK);
+                    .withStyleName(WebThemes.BUTTON_LINK);
             userFormLayout.addComponent(new MHorizontalLayout(new Label("***********"), btnChangePassword),
                     UserUIContext.getMessage(ShellI18nEnum.FORM_PASSWORD), 0, 5);
         }
@@ -208,7 +208,7 @@ public class UserReadViewImpl extends AbstractPageView implements UserReadView {
             private GridFormLayoutHelper advancedInfoLayout = GridFormLayoutHelper.defaultFormLayoutHelper(1, 3);
 
             @Override
-            public ComponentContainer getLayout() {
+            public AbstractComponent getLayout() {
                 FormContainer layout = new FormContainer();
                 layout.addSection(UserUIContext.getMessage(UserI18nEnum.SECTION_CONTACT_INFORMATION), contactLayout.getLayout());
                 layout.addSection(UserUIContext.getMessage(UserI18nEnum.SECTION_ADVANCED_INFORMATION), advancedInfoLayout.getLayout());

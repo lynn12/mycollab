@@ -22,8 +22,9 @@ import com.mycollab.module.crm.service.AccountService;
 import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.ui.FieldSelection;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.vaadin.data.Property;
+import com.vaadin.data.Validator;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.*;
 import org.vaadin.viritin.button.MButton;
@@ -42,7 +43,6 @@ public class AccountSelectionField extends CustomField<Integer> implements Field
     private void clearValue() {
         accountName.setValue("");
         this.account = null;
-        this.setInternalValue(null);
     }
 
     @Override
@@ -57,22 +57,22 @@ public class AccountSelectionField extends CustomField<Integer> implements Field
     }
 
     @Override
-    public void setValue(Integer value) {
-        this.setAccountByVal(value);
-        super.setValue(value);
+    public void commit() throws SourceException, Validator.InvalidValueException {
+        if (account != null) {
+            setInternalValue(account.getId());
+        } else {
+            setInternalValue(null);
+        }
+        super.commit();
     }
 
     private void setAccountByVal(Integer accountId) {
         AccountService accountService = AppContextUtil.getSpringBean(AccountService.class);
         SimpleAccount account = accountService.findById(accountId, MyCollabUI.getAccountId());
         if (account != null) {
-            setInternalAccount(account);
+            this.account = account;
+            accountName.setValue(account.getAccountname());
         }
-    }
-
-    private void setInternalAccount(SimpleAccount account) {
-        this.account = account;
-        accountName.setValue(account.getAccountname());
     }
 
     public Account getAccount() {
@@ -101,10 +101,10 @@ public class AccountSelectionField extends CustomField<Integer> implements Field
             AccountSelectionWindow accountWindow = new AccountSelectionWindow(AccountSelectionField.this);
             UI.getCurrent().addWindow(accountWindow);
             accountWindow.show();
-        }).withIcon(FontAwesome.ELLIPSIS_H).withStyleName(WebUIConstants.BUTTON_OPTION, WebUIConstants.BUTTON_SMALL_PADDING);
+        }).withIcon(FontAwesome.ELLIPSIS_H).withStyleName(WebThemes.BUTTON_OPTION, WebThemes.BUTTON_SMALL_PADDING);
 
         MButton clearBtn = new MButton("", clickEvent -> clearValue()).withIcon(FontAwesome.TRASH_O)
-                .withStyleName(WebUIConstants.BUTTON_OPTION, WebUIConstants.BUTTON_SMALL_PADDING);
+                .withStyleName(WebThemes.BUTTON_OPTION, WebThemes.BUTTON_SMALL_PADDING);
 
         layout.with(accountName, browseBtn, clearBtn).expand(accountName);
         return layout;

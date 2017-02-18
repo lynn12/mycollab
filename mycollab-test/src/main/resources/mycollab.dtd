@@ -34,6 +34,8 @@
     m_form_custom_field_value*,
     m_form_section*,
     m_form_section_field*,
+    m_group*,
+    m_group_user*,
     m_monitor_item*,
     m_options*,
     m_prj_customize_view*,
@@ -64,7 +66,6 @@
     s_customer_feedback*,
     s_favorite*,
     s_relay_email_notification*,
-    s_relay_mail*,
     s_role_permission*,
     s_roles*,
     s_save_search_result*,
@@ -740,6 +741,25 @@
     isCustom CDATA #REQUIRED
 >
 
+<!ELEMENT m_group EMPTY>
+<!ATTLIST m_group
+    id CDATA #REQUIRED
+    name CDATA #REQUIRED
+    description CDATA #IMPLIED
+    sAccountId CDATA #REQUIRED
+    createdTime CDATA #REQUIRED
+    createdUser CDATA #IMPLIED
+>
+
+<!ELEMENT m_group_user EMPTY>
+<!ATTLIST m_group_user
+    id CDATA #REQUIRED
+    groupId CDATA #REQUIRED
+    user CDATA #REQUIRED
+    createdTime CDATA #IMPLIED
+    isOwner CDATA #REQUIRED
+>
+
 <!ELEMENT m_monitor_item EMPTY>
 <!ATTLIST m_monitor_item
     id CDATA #REQUIRED
@@ -775,14 +795,12 @@
     projectId CDATA #REQUIRED
     displayMessage CDATA #REQUIRED
     displayMilestone CDATA #REQUIRED
-    displayTask CDATA #REQUIRED
-    displayBug CDATA #REQUIRED
     displayStandup CDATA #REQUIRED
-    displayRisk CDATA #REQUIRED
     displayTimeLogging CDATA #REQUIRED
     displayPage CDATA #REQUIRED
     displayFile CDATA #REQUIRED
     displayInvoice CDATA #REQUIRED
+    displayTicket CDATA #IMPLIED
 >
 
 <!ELEMENT m_prj_invoice EMPTY>
@@ -852,19 +870,22 @@
     id CDATA #REQUIRED
     name CDATA #REQUIRED
     description CDATA #IMPLIED
-    startdate CDATA #IMPLIED
-    enddate CDATA #IMPLIED
-    owner CDATA #IMPLIED
+    startDate CDATA #IMPLIED
+    endDate CDATA #IMPLIED
+    assignUser CDATA #IMPLIED
     flag CDATA #IMPLIED
     projectId CDATA #REQUIRED
     createdTime CDATA #IMPLIED
     lastUpdatedTime CDATA #IMPLIED
     sAccountId CDATA #REQUIRED
     status CDATA #REQUIRED
-    createduser CDATA #IMPLIED
+    createdUser CDATA #IMPLIED
     prjKey CDATA #IMPLIED
-    deadline CDATA #IMPLIED
+    dueDate CDATA #IMPLIED
     ganttIndex CDATA #IMPLIED
+    orderIndex CDATA #IMPLIED
+    color CDATA #IMPLIED
+    priority CDATA #IMPLIED
 >
 
 <!ELEMENT m_prj_notifications EMPTY>
@@ -918,24 +939,24 @@
     ispublic CDATA #IMPLIED
     istemplate CDATA #IMPLIED
     lead CDATA #IMPLIED
+    color CDATA #IMPLIED
 >
 
 <!ELEMENT m_prj_risk EMPTY>
 <!ATTLIST m_prj_risk
     id CDATA #REQUIRED
-    riskname CDATA #REQUIRED
+    name CDATA #REQUIRED
     description CDATA #IMPLIED
     projectId CDATA #REQUIRED
-    raisedbyuser CDATA #IMPLIED
-    assigntouser CDATA #IMPLIED
+    createdUser CDATA #IMPLIED
+    assignUser CDATA #IMPLIED
     consequence CDATA #IMPLIED
     probalitity CDATA #IMPLIED
     status CDATA #IMPLIED
     dateraised CDATA #IMPLIED
-    datedue CDATA #IMPLIED
+    dueDate CDATA #IMPLIED
     response CDATA #IMPLIED
     resolution CDATA #IMPLIED
-    level CDATA #IMPLIED
     source CDATA #IMPLIED
     createdTime CDATA #IMPLIED
     lastUpdatedTime CDATA #IMPLIED
@@ -945,6 +966,9 @@
     milestoneId CDATA #IMPLIED
     ganttIndex CDATA #IMPLIED
     percentagecomplete CDATA #IMPLIED
+    priority CDATA #REQUIRED
+    remainEstimate CDATA #IMPLIED
+    originalEstimate CDATA #IMPLIED
 >
 
 <!ELEMENT m_prj_role EMPTY>
@@ -982,23 +1006,23 @@
 <!ELEMENT m_prj_task EMPTY>
 <!ATTLIST m_prj_task
     id CDATA #REQUIRED
-    taskname CDATA #REQUIRED
+    name CDATA #REQUIRED
     percentagecomplete CDATA #REQUIRED
-    startdate CDATA #IMPLIED
-    enddate CDATA #IMPLIED
-    priority CDATA #IMPLIED
+    startDate CDATA #IMPLIED
+    endDate CDATA #IMPLIED
+    priority CDATA #REQUIRED
     duration CDATA #IMPLIED
     isestimated CDATA #IMPLIED
     projectId CDATA #REQUIRED
-    deadline CDATA #IMPLIED
-    notes CDATA #IMPLIED
+    dueDate CDATA #IMPLIED
+    description CDATA #IMPLIED
     taskindex CDATA #IMPLIED
     createdTime CDATA #IMPLIED
     lastUpdatedTime CDATA #IMPLIED
     assignUser CDATA #IMPLIED
     sAccountId CDATA #REQUIRED
     status CDATA #IMPLIED
-    logBy CDATA #IMPLIED
+    createdUser CDATA #IMPLIED
     taskkey CDATA #IMPLIED
     originalEstimate CDATA #IMPLIED
     remainEstimate CDATA #IMPLIED
@@ -1028,16 +1052,16 @@
 <!ELEMENT m_tracker_bug EMPTY>
 <!ATTLIST m_tracker_bug
     id CDATA #REQUIRED
-    summary CDATA #REQUIRED
+    name CDATA #REQUIRED
     detail CDATA #IMPLIED
-    assignuser CDATA #IMPLIED
+    assignUser CDATA #IMPLIED
     createdTime CDATA #IMPLIED
-    logby CDATA #IMPLIED
+    createdUser CDATA #IMPLIED
     severity CDATA #IMPLIED
-    priority CDATA #IMPLIED
+    priority CDATA #REQUIRED
     lastUpdatedTime CDATA #IMPLIED
     status CDATA #REQUIRED
-    duedate CDATA #IMPLIED
+    dueDate CDATA #IMPLIED
     environment CDATA #IMPLIED
     resolution CDATA #IMPLIED
     cus_int_01 CDATA #IMPLIED
@@ -1065,14 +1089,14 @@
     projectId CDATA #REQUIRED
     resolveddate CDATA #IMPLIED
     description CDATA #IMPLIED
-    estimateTime CDATA #IMPLIED
-    estimateRemainTime CDATA #IMPLIED
+    originalEstimate CDATA #IMPLIED
+    remainEstimate CDATA #IMPLIED
     sAccountId CDATA #REQUIRED
     milestoneId CDATA #IMPLIED
     bugkey CDATA #IMPLIED
     bugIndex CDATA #IMPLIED
-    startdate CDATA #IMPLIED
-    enddate CDATA #IMPLIED
+    startDate CDATA #IMPLIED
+    endDate CDATA #IMPLIED
     ganttIndex CDATA #IMPLIED
     percentagecomplete CDATA #IMPLIED
 >
@@ -1089,7 +1113,7 @@
 <!ATTLIST m_tracker_component
     id CDATA #REQUIRED
     projectId CDATA #REQUIRED
-    componentname CDATA #REQUIRED
+    name CDATA #REQUIRED
     userlead CDATA #IMPLIED
     description CDATA #IMPLIED
     createdUser CDATA #IMPLIED
@@ -1115,7 +1139,7 @@
     projectId CDATA #REQUIRED
     description CDATA #IMPLIED
     duedate CDATA #IMPLIED
-    versionname CDATA #REQUIRED
+    name CDATA #REQUIRED
     createdUser CDATA #IMPLIED
     sAccountId CDATA #REQUIRED
     lastUpdatedTime CDATA #IMPLIED
@@ -1143,6 +1167,9 @@
     defaultMMDDFormat CDATA #IMPLIED
     defaultLanguageTag CDATA #IMPLIED
     displayEmailPublicly CDATA #IMPLIED
+    trialFrom CDATA #IMPLIED
+    trialTo CDATA #IMPLIED
+    paymentMethod CDATA #IMPLIED
 >
 
 <!ELEMENT s_account_theme EMPTY>
@@ -1191,6 +1218,8 @@
     description CDATA #IMPLIED
     shoppingUrl CDATA #IMPLIED
     productPath CDATA #IMPLIED
+    bankTransferPath CDATA #IMPLIED
+    yearlyShoppingUrl CDATA #IMPLIED
 >
 
 <!ELEMENT s_country EMPTY>
@@ -1234,17 +1263,6 @@
     extraTypeId CDATA #IMPLIED
 >
 
-<!ELEMENT s_relay_mail EMPTY>
-<!ATTLIST s_relay_mail
-    id CDATA #REQUIRED
-    bodyContent CDATA #REQUIRED
-    recipients CDATA #REQUIRED
-    subject CDATA #REQUIRED
-    sAccountId CDATA #REQUIRED
-    fromName CDATA #REQUIRED
-    fromEmail CDATA #REQUIRED
->
-
 <!ELEMENT s_role_permission EMPTY>
 <!ATTLIST s_role_permission
     id CDATA #REQUIRED
@@ -1259,6 +1277,7 @@
     sAccountId CDATA #REQUIRED
     id CDATA #REQUIRED
     isSystemRole CDATA #IMPLIED
+    isDefault CDATA #IMPLIED
 >
 
 <!ELEMENT s_save_search_result EMPTY>

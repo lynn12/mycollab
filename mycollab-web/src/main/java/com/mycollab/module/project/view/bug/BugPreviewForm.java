@@ -20,13 +20,14 @@ import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.core.utils.StringUtils;
 import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.module.project.ProjectTypeConstants;
-import com.mycollab.module.project.events.BugComponentEvent;
-import com.mycollab.module.project.events.BugVersionEvent;
+import com.mycollab.module.project.event.BugComponentEvent;
+import com.mycollab.module.project.event.BugVersionEvent;
 import com.mycollab.module.project.i18n.BugI18nEnum;
+import com.mycollab.module.project.i18n.MilestoneI18nEnum;
 import com.mycollab.module.project.i18n.OptionI18nEnum;
-import com.mycollab.module.project.i18n.OptionI18nEnum.BugPriority;
 import com.mycollab.module.project.i18n.OptionI18nEnum.BugResolution;
 import com.mycollab.module.project.i18n.OptionI18nEnum.BugSeverity;
+import com.mycollab.module.project.i18n.OptionI18nEnum.BugStatus;
 import com.mycollab.module.project.ui.ProjectAssetsManager;
 import com.mycollab.module.project.ui.form.ProjectFormAttachmentDisplayField;
 import com.mycollab.module.project.ui.form.ProjectItemViewField;
@@ -39,13 +40,13 @@ import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.AbstractBeanFieldGroupViewFieldFactory;
 import com.mycollab.vaadin.ui.AbstractFormLayoutFactory;
 import com.mycollab.vaadin.ui.GenericBeanForm;
+import com.mycollab.vaadin.ui.UIConstants;
 import com.mycollab.vaadin.ui.field.DateTimeOptionViewField;
 import com.mycollab.vaadin.ui.field.DefaultViewField;
 import com.mycollab.vaadin.ui.field.I18nFormViewField;
 import com.mycollab.vaadin.ui.field.RichTextViewField;
 import com.mycollab.vaadin.web.ui.AdvancedPreviewBeanForm;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
-import com.mycollab.vaadin.web.ui.field.*;
+import com.mycollab.vaadin.web.ui.field.ContainerViewField;
 import com.mycollab.vaadin.web.ui.grid.GridFormLayoutHelper;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
@@ -69,7 +70,6 @@ public class BugPreviewForm extends AdvancedPreviewBeanForm<SimpleBug> {
     }
 
     private static class FormLayoutFactory extends AbstractFormLayoutFactory {
-        private static final long serialVersionUID = 1L;
         private GridFormLayoutHelper informationLayout;
 
         @Override
@@ -82,8 +82,8 @@ public class BugPreviewForm extends AdvancedPreviewBeanForm<SimpleBug> {
                 return informationLayout.addComponent(field, UserUIContext.getMessage(GenericI18Enum.FORM_STATUS),
                         UserUIContext.getMessage(BugI18nEnum.FORM_STATUS_HELP), 0, 2);
             } else if (BugWithBLOBs.Field.priority.equalTo(propertyId)) {
-                return informationLayout.addComponent(field, UserUIContext.getMessage(BugI18nEnum.FORM_PRIORITY),
-                        UserUIContext.getMessage(BugI18nEnum.FORM_PRIORITY_HELP), 1, 2);
+                return informationLayout.addComponent(field, UserUIContext.getMessage(GenericI18Enum.FORM_PRIORITY),
+                        UserUIContext.getMessage(GenericI18Enum.FORM_PRIORITY_HELP), 1, 2);
             } else if (BugWithBLOBs.Field.startdate.equalTo(propertyId)) {
                 return informationLayout.addComponent(field, UserUIContext.getMessage(GenericI18Enum.FORM_START_DATE), 0, 3);
             } else if (BugWithBLOBs.Field.severity.equalTo(propertyId)) {
@@ -96,7 +96,7 @@ public class BugPreviewForm extends AdvancedPreviewBeanForm<SimpleBug> {
             } else if (BugWithBLOBs.Field.duedate.equalTo(propertyId)) {
                 return informationLayout.addComponent(field, UserUIContext.getMessage(GenericI18Enum.FORM_DUE_DATE), 0, 5);
             } else if (SimpleBug.Field.milestoneName.equalTo(propertyId)) {
-                informationLayout.addComponent(field, UserUIContext.getMessage(BugI18nEnum.FORM_PHASE), 1, 5);
+                informationLayout.addComponent(field, UserUIContext.getMessage(MilestoneI18nEnum.SINGLE), 1, 5);
             } else if (SimpleBug.Field.components.equalTo(propertyId)) {
                 return informationLayout.addComponent(field, UserUIContext.getMessage(BugI18nEnum.FORM_COMPONENTS), UserUIContext
                         .getMessage(BugI18nEnum.FORM_COMPONENTS_HELP), 0, 6, 2, "100%");
@@ -106,10 +106,10 @@ public class BugPreviewForm extends AdvancedPreviewBeanForm<SimpleBug> {
             } else if (SimpleBug.Field.fixedVersions.equalTo(propertyId)) {
                 return informationLayout.addComponent(field, UserUIContext.getMessage(BugI18nEnum.FORM_FIXED_VERSIONS),
                         UserUIContext.getMessage(BugI18nEnum.FORM_FIXED_VERSIONS_HELP), 0, 8, 2, "100%");
-            } else if (BugWithBLOBs.Field.estimatetime.equalTo(propertyId)) {
+            } else if (BugWithBLOBs.Field.originalestimate.equalTo(propertyId)) {
                 return informationLayout.addComponent(field, UserUIContext.getMessage(BugI18nEnum.FORM_ORIGINAL_ESTIMATE),
                         UserUIContext.getMessage(BugI18nEnum.FORM_ORIGINAL_ESTIMATE_HELP), 0, 9);
-            } else if (BugWithBLOBs.Field.estimateremaintime.equalTo(propertyId)) {
+            } else if (BugWithBLOBs.Field.remainestimate.equalTo(propertyId)) {
                 informationLayout.addComponent(field, UserUIContext.getMessage(BugI18nEnum.FORM_REMAIN_ESTIMATE),
                         UserUIContext.getMessage(BugI18nEnum.FORM_REMAIN_ESTIMATE_HELP), 1, 9);
             } else if (BugWithBLOBs.Field.id.equalTo(propertyId)) {
@@ -119,7 +119,7 @@ public class BugPreviewForm extends AdvancedPreviewBeanForm<SimpleBug> {
         }
 
         @Override
-        public ComponentContainer getLayout() {
+        public AbstractComponent getLayout() {
             final VerticalLayout layout = new VerticalLayout();
             informationLayout = GridFormLayoutHelper.defaultFormLayoutHelper(2, 11);
             layout.addComponent(informationLayout.getLayout());
@@ -148,7 +148,7 @@ public class BugPreviewForm extends AdvancedPreviewBeanForm<SimpleBug> {
                 return new ProjectUserFormLinkField(beanItem.getAssignuser(), beanItem.getAssignUserAvatarId(),
                         beanItem.getAssignuserFullName());
             } else if (SimpleBug.Field.loguserFullName.equalTo(propertyId)) {
-                return new ProjectUserFormLinkField(beanItem.getLogby(), beanItem.getLoguserAvatarId(), beanItem.getLoguserFullName());
+                return new ProjectUserFormLinkField(beanItem.getCreateduser(), beanItem.getLoguserAvatarId(), beanItem.getLoguserFullName());
             } else if (BugWithBLOBs.Field.id.equalTo(propertyId)) {
                 return new ProjectFormAttachmentDisplayField(
                         beanItem.getProjectid(), ProjectTypeConstants.BUG, beanItem.getId());
@@ -157,9 +157,9 @@ public class BugPreviewForm extends AdvancedPreviewBeanForm<SimpleBug> {
                 if (CollectionUtils.isNotEmpty(components)) {
                     ContainerViewField componentContainer = new ContainerViewField();
                     for (final Component component : beanItem.getComponents()) {
-                        MButton componentLink = new MButton(StringUtils.trim(component.getComponentname(), 25, true),
+                        MButton componentLink = new MButton(StringUtils.trim(component.getName(), 25, true),
                                 clickEvent -> EventBusFactory.getInstance().post(new BugComponentEvent.GotoRead(this, component.getId())))
-                                .withDescription(component.getComponentname()).withStyleName(WebUIConstants.BLOCK, ValoTheme.BUTTON_SMALL);
+                                .withDescription(component.getName()).withStyleName(UIConstants.BLOCK, ValoTheme.BUTTON_SMALL);
                         componentContainer.addComponentField(componentLink);
                     }
                     return componentContainer;
@@ -171,9 +171,9 @@ public class BugPreviewForm extends AdvancedPreviewBeanForm<SimpleBug> {
                 if (CollectionUtils.isNotEmpty(affectedVersions)) {
                     ContainerViewField componentContainer = new ContainerViewField();
                     for (final Version version : beanItem.getAffectedVersions()) {
-                        MButton versionLink = new MButton(StringUtils.trim(version.getVersionname(), 25, true),
+                        MButton versionLink = new MButton(StringUtils.trim(version.getName(), 25, true),
                                 clickEvent -> EventBusFactory.getInstance().post(new BugVersionEvent.GotoRead(this, version.getId())))
-                                .withDescription(version.getVersionname()).withStyleName(WebUIConstants.BLOCK, ValoTheme.BUTTON_SMALL);
+                                .withDescription(version.getName()).withStyleName(UIConstants.BLOCK, ValoTheme.BUTTON_SMALL);
                         componentContainer.addComponentField(versionLink);
                     }
                     return componentContainer;
@@ -185,9 +185,9 @@ public class BugPreviewForm extends AdvancedPreviewBeanForm<SimpleBug> {
                 if (CollectionUtils.isNotEmpty(fixedVersions)) {
                     ContainerViewField componentContainer = new ContainerViewField();
                     for (final Version version : beanItem.getFixedVersions()) {
-                        MButton versionLink = new MButton(StringUtils.trim(version.getVersionname(), 25, true),
+                        MButton versionLink = new MButton(StringUtils.trim(version.getName(), 25, true),
                                 clickEvent -> EventBusFactory.getInstance().post(new BugVersionEvent.GotoRead(this, version.getId())))
-                                .withDescription(version.getVersionname()).withStyleName(WebUIConstants.BLOCK, ValoTheme.BUTTON_SMALL);
+                                .withDescription(version.getName()).withStyleName(UIConstants.BLOCK, ValoTheme.BUTTON_SMALL);
                         componentContainer.addComponentField(versionLink);
                     }
                     return componentContainer;
@@ -203,14 +203,13 @@ public class BugPreviewForm extends AdvancedPreviewBeanForm<SimpleBug> {
             } else if (BugWithBLOBs.Field.description.equalTo(propertyId)) {
                 return new RichTextViewField(beanItem.getDescription());
             } else if (BugWithBLOBs.Field.status.equalTo(propertyId)) {
-                return new I18nFormViewField(beanItem.getStatus(), OptionI18nEnum.BugStatus.class).withStyleName
-                        (WebUIConstants.FIELD_NOTE);
+                return new I18nFormViewField(beanItem.getStatus(), BugStatus.class).withStyleName(UIConstants.FIELD_NOTE);
             } else if (BugWithBLOBs.Field.priority.equalTo(propertyId)) {
                 if (StringUtils.isNotBlank(beanItem.getPriority())) {
-                    String priorityLink = ProjectAssetsManager.getBugPriority(beanItem.getPriority()).getHtml() + " "
-                            + UserUIContext.getMessage(BugPriority.class, beanItem.getPriority());
+                    String priorityLink = ProjectAssetsManager.getPriority(beanItem.getPriority()).getHtml() + " "
+                            + UserUIContext.getMessage(OptionI18nEnum.Priority.class, beanItem.getPriority());
                     DefaultViewField field = new DefaultViewField(priorityLink, ContentMode.HTML);
-                    field.addStyleName("bug-" + beanItem.getPriority().toLowerCase());
+                    field.addStyleName("priority-" + beanItem.getPriority().toLowerCase());
                     return field;
                 }
             } else if (BugWithBLOBs.Field.severity.equalTo(propertyId)) {

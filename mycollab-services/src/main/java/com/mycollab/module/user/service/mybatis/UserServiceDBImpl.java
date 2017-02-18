@@ -191,7 +191,7 @@ public class UserServiceDBImpl extends DefaultService<String, User, UserSearchCr
         if ((record.getEmail()) != null && !record.getUsername().equals(record.getEmail())) {
             UserExample ex = new UserExample();
             ex.createCriteria().andUsernameEqualTo(record.getEmail());
-            int numUsers = userMapper.countByExample(ex);
+            Long numUsers = userMapper.countByExample(ex);
             if (numUsers > 0) {
                 throw new UserInvalidInputException(String.format("Email %s is already existed in system. Please choose another email.",
                         record.getEmail()));
@@ -223,7 +223,7 @@ public class UserServiceDBImpl extends DefaultService<String, User, UserSearchCr
         if (!record.getUsername().equals(record.getEmail())) {
             UserExample ex = new UserExample();
             ex.createCriteria().andUsernameEqualTo(record.getEmail());
-            int numUsers = userMapper.countByExample(ex);
+            Long numUsers = userMapper.countByExample(ex);
             if (numUsers > 0) {
                 throw new UserInvalidInputException(String.format("Email %s is already existed in system. Please choose another email.",
                         record.getEmail()));
@@ -275,7 +275,7 @@ public class UserServiceDBImpl extends DefaultService<String, User, UserSearchCr
             criteria.setSubdomain(StringSearchField.and(subDomain));
         }
 
-        List<SimpleUser> users = findPageableListByCriteria(new BasicSearchRequest<>(criteria, 0, Integer.MAX_VALUE));
+        List<SimpleUser> users = findPageableListByCriteria(new BasicSearchRequest<>(criteria));
         if (CollectionUtils.isEmpty(users)) {
             throw new UserInvalidInputException(String.format("User %s is not existed in this domain %s", username, subDomain));
         } else {

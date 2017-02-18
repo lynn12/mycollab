@@ -52,7 +52,7 @@ public class MeetingReadViewImpl extends AbstractPreviewItemComp<SimpleMeeting> 
     }
 
     @Override
-    protected String initFormTitle() {
+    protected String initFormHeader() {
         return beanItem.getSubject();
     }
 
@@ -81,4 +81,8 @@ public class MeetingReadViewImpl extends AbstractPreviewItemComp<SimpleMeeting> 
         return new MHorizontalLayout();
     }
 
+    @Override
+    protected String getType() {
+        return CrmTypeConstants.MEETING;
+    }
 }

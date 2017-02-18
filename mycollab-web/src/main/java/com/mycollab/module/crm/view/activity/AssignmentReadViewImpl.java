@@ -17,7 +17,7 @@
 package com.mycollab.module.crm.view.activity;
 
 import com.mycollab.module.crm.CrmTypeConstants;
-import com.mycollab.module.crm.domain.SimpleTask;
+import com.mycollab.module.crm.domain.SimpleCrmTask;
 import com.mycollab.module.crm.i18n.CrmCommonI18nEnum;
 import com.mycollab.module.crm.ui.CrmAssetsManager;
 import com.mycollab.module.crm.ui.components.*;
@@ -30,28 +30,26 @@ import com.mycollab.vaadin.ui.IFormLayoutFactory;
 import com.mycollab.vaadin.web.ui.AdvancedPreviewBeanForm;
 import com.mycollab.vaadin.web.ui.DefaultDynaFormLayout;
 import com.vaadin.ui.ComponentContainer;
-import com.vaadin.ui.CssLayout;
-import org.vaadin.viritin.layouts.MVerticalLayout;
 
 /**
  * @author MyCollab Ltd.
  * @since 2.0
  */
 @ViewComponent
-public class AssignmentReadViewImpl extends AbstractPreviewItemComp<SimpleTask> implements AssignmentReadView {
+public class AssignmentReadViewImpl extends AbstractPreviewItemComp<SimpleCrmTask> implements AssignmentReadView {
     private static final long serialVersionUID = 1L;
 
     private CrmActivityComponent activityComponent;
 
     private DateInfoComp dateInfoComp;
-    private CrmFollowersComp<SimpleTask> followersComp;
+    private CrmFollowersComp<SimpleCrmTask> followersComp;
 
     public AssignmentReadViewImpl() {
         super(CrmAssetsManager.getAsset(CrmTypeConstants.TASK));
     }
 
     @Override
-    protected AdvancedPreviewBeanForm<SimpleTask> initPreviewForm() {
+    protected AdvancedPreviewBeanForm<SimpleCrmTask> initPreviewForm() {
         return new AdvancedPreviewBeanForm<>();
     }
 
@@ -81,17 +79,13 @@ public class AssignmentReadViewImpl extends AbstractPreviewItemComp<SimpleTask> 
     protected void initRelatedComponents() {
         activityComponent = new CrmActivityComponent(CrmTypeConstants.TASK);
 
-        MVerticalLayout basicInfo = new MVerticalLayout().withFullWidth().withStyleName("basic-info");
-        CssLayout navigatorWrapper = previewItemContainer.getNavigatorWrapper();
         dateInfoComp = new DateInfoComp();
-        basicInfo.addComponent(dateInfoComp);
         followersComp = new CrmFollowersComp<>(CrmTypeConstants.TASK, RolePermissionCollections.CRM_TASK);
-        basicInfo.addComponent(followersComp);
+        addToSideBar(dateInfoComp, followersComp);
 
-        navigatorWrapper.addComponentAsFirst(basicInfo);
-
-        previewItemContainer.addTab(previewContent, CrmTypeConstants.DETAIL, UserUIContext.getMessage(CrmCommonI18nEnum.TAB_ABOUT));
-        previewItemContainer.selectTab(CrmTypeConstants.DETAIL);
+        tabSheet.addTab(previewLayout, CrmTypeConstants.DETAIL, UserUIContext.getMessage(CrmCommonI18nEnum.TAB_ABOUT),
+                CrmAssetsManager.getAsset(CrmTypeConstants.DETAIL));
+        tabSheet.selectTab(CrmTypeConstants.DETAIL);
     }
 
     @Override
@@ -100,17 +94,22 @@ public class AssignmentReadViewImpl extends AbstractPreviewItemComp<SimpleTask> 
     }
 
     @Override
-    protected AbstractBeanFieldGroupViewFieldFactory<SimpleTask> initBeanFormFieldFactory() {
+    protected AbstractBeanFieldGroupViewFieldFactory<SimpleCrmTask> initBeanFormFieldFactory() {
         return new AssignmentReadFormFieldFactory(previewForm);
     }
 
     @Override
-    public SimpleTask getItem() {
+    public SimpleCrmTask getItem() {
         return beanItem;
     }
 
     @Override
-    public HasPreviewFormHandlers<SimpleTask> getPreviewFormHandlers() {
+    public HasPreviewFormHandlers<SimpleCrmTask> getPreviewFormHandlers() {
         return previewForm;
+    }
+
+    @Override
+    protected String getType() {
+        return CrmTypeConstants.TASK;
     }
 }

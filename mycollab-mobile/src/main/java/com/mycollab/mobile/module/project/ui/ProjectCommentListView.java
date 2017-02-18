@@ -40,27 +40,30 @@ import java.util.List;
 public class ProjectCommentListView extends AbstractMobilePageView implements ReloadableComponent {
     private static final long serialVersionUID = 1L;
 
-    private final BeanList<CommentService, CommentSearchCriteria, SimpleComment> commentList;
+    private BeanList<CommentService, CommentSearchCriteria, SimpleComment> commentList;
     private String type;
     private String typeId;
+    private Integer extraTypeId;
+    private boolean isDisplayCommentInput;
 
     public ProjectCommentListView(String type, String typeId, Integer extraTypeId, boolean isDisplayCommentInput) {
         this.addStyleName("comment-list");
         this.type = type;
         this.typeId = typeId;
+        this.isDisplayCommentInput = isDisplayCommentInput;
+        this.extraTypeId = extraTypeId;
+    }
 
-        commentList = new BeanList<>(AppContextUtil.getSpringBean(CommentService.class), CommentRowDisplayHandler.class);
+    public void displayCommentList() {
+        if (type == null || typeId == null) {
+            return;
+        }
+
+        commentList = new BeanList<>(AppContextUtil.getSpringBean(CommentService.class), new CommentRowDisplayHandler());
         this.setContent(commentList);
         if (isDisplayCommentInput) {
             ProjectCommentRequestComp commentBox = new ProjectCommentRequestComp(type, typeId, extraTypeId);
             this.setToolbar(commentBox);
-        }
-        displayCommentList();
-    }
-
-    private void displayCommentList() {
-        if (type == null || typeId == null) {
-            return;
         }
 
         CommentSearchCriteria searchCriteria = new CommentSearchCriteria();
@@ -81,11 +84,10 @@ public class ProjectCommentListView extends AbstractMobilePageView implements Re
         displayCommentList();
     }
 
-    public static class CommentRowDisplayHandler extends BeanList.RowDisplayHandler<SimpleComment> {
-        private static final long serialVersionUID = 7604097872938029830L;
+    private static class CommentRowDisplayHandler implements IBeanList.RowDisplayHandler<SimpleComment> {
 
         @Override
-        public Component generateRow(SimpleComment comment, int rowIndex) {
+        public Component generateRow(IBeanList<SimpleComment> host, SimpleComment comment, int rowIndex) {
             MHorizontalLayout commentBlock = new MHorizontalLayout().withFullWidth().withStyleName("comment-block");
             Image userAvatarImg = UserAvatarControlFactory.createUserAvatarEmbeddedComponent(comment.getOwnerAvatarId(), 32);
             userAvatarImg.addStyleName(UIConstants.CIRCLE_BOX);

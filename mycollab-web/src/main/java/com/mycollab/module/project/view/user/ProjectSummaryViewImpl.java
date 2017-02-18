@@ -16,12 +16,9 @@
  */
 package com.mycollab.module.project.view.user;
 
-import com.mycollab.module.project.CurrentProjectVariables;
 import com.mycollab.module.project.view.milestone.MilestoneTimelineWidget;
 import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.mvp.view.AbstractLazyPageView;
-import com.mycollab.vaadin.ui.ELabel;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
 import com.vaadin.event.dd.DragAndDropEvent;
 import com.vaadin.event.dd.DropHandler;
 import com.vaadin.event.dd.acceptcriteria.AcceptCriterion;
@@ -32,7 +29,6 @@ import fi.jasoft.dragdroplayouts.DDVerticalLayout;
 import fi.jasoft.dragdroplayouts.client.ui.LayoutDragMode;
 import fi.jasoft.dragdroplayouts.events.HorizontalLocationIs;
 import fi.jasoft.dragdroplayouts.events.LayoutBoundTransferable;
-import org.vaadin.viritin.layouts.MCssLayout;
 import org.vaadin.viritin.layouts.MHorizontalLayout;
 
 /**
@@ -44,30 +40,12 @@ public class ProjectSummaryViewImpl extends AbstractLazyPageView implements Proj
 
     @Override
     protected void displayView() {
-        withMargin(new MarginInfo(true, true, false, true));
-
-        MCssLayout descLayout = new MCssLayout(ELabel.html(CurrentProjectVariables.getProject().getDescription()))
-                .withStyleName(WebUIConstants.BOX).withFullWidth();
-//        with(descLayout);
-        MHorizontalLayout layout = new MHorizontalLayout().withFullWidth();
+        MHorizontalLayout layout = new MHorizontalLayout().withMargin(true).withFullWidth();
         this.with(layout);
 
         DDVerticalLayout leftPanel = new DDVerticalLayout();
         leftPanel.setSpacing(true);
         leftPanel.setMargin(new MarginInfo(false, true, false, false));
-
-        MilestoneTimelineWidget milestoneTimelineWidget = new MilestoneTimelineWidget();
-        ProjectOverdueAssignmentsWidget taskOverdueWidget = new ProjectOverdueAssignmentsWidget();
-        ProjectUnresolvedAssignmentWidget unresolvedAssignmentThisWeekWidget = new ProjectUnresolvedAssignmentWidget();
-
-        ProjectUnresolvedAssignmentWidget unresolvedAssignmentNextWeekWidget = new ProjectUnresolvedAssignmentWidget();
-
-        leftPanel.addComponent(milestoneTimelineWidget);
-        leftPanel.addComponent(unresolvedAssignmentThisWeekWidget);
-        leftPanel.addComponent(unresolvedAssignmentNextWeekWidget);
-        leftPanel.addComponent(taskOverdueWidget);
-
-        leftPanel.setMargin(new MarginInfo(true, false, true, false));
         leftPanel.setComponentVerticalDropRatio(0.3f);
         leftPanel.setDragMode(LayoutDragMode.CLONE_OTHER);
         leftPanel.setDropHandler(new DropHandler() {
@@ -86,10 +64,21 @@ public class ProjectSummaryViewImpl extends AbstractLazyPageView implements Proj
             }
         });
 
+        MilestoneTimelineWidget milestoneTimelineWidget = new MilestoneTimelineWidget();
+        ProjectOverdueTicketsWidget taskOverdueWidget = new ProjectOverdueTicketsWidget();
+        ProjectUnresolvedTicketsWidget unresolvedAssignmentThisWeekWidget = new ProjectUnresolvedTicketsWidget();
+
+        ProjectUnresolvedTicketsWidget unresolvedAssignmentNextWeekWidget = new ProjectUnresolvedTicketsWidget();
+
+        leftPanel.addComponent(milestoneTimelineWidget);
+        leftPanel.addComponent(unresolvedAssignmentThisWeekWidget);
+        leftPanel.addComponent(unresolvedAssignmentNextWeekWidget);
+        leftPanel.addComponent(taskOverdueWidget);
+
+
         DDVerticalLayout rightPanel = new DDVerticalLayout();
         rightPanel.setWidth("500px");
         rightPanel.setSpacing(true);
-        rightPanel.setMargin(new MarginInfo(true, false, true, false));
         rightPanel.setComponentVerticalDropRatio(0.3f);
         rightPanel.setDragMode(LayoutDragMode.CLONE_OTHER);
         rightPanel.setDropHandler(new DropHandler() {
@@ -117,7 +106,7 @@ public class ProjectSummaryViewImpl extends AbstractLazyPageView implements Proj
         unresolvedAssignmentNextWeekWidget.displayUnresolvedAssignmentsNextWeek();
         activityPanel.showProjectFeeds();
         membersWidget.showInformation();
-        taskOverdueWidget.showOpenAssignments();
+        taskOverdueWidget.showOpenTickets();
 
         layout.with(leftPanel, rightPanel).expand(leftPanel);
     }

@@ -70,8 +70,7 @@ public abstract class SavedFilterComboBox extends CustomField<String> {
         searchCriteria.setSaccountid(new NumberSearchField(MyCollabUI.getAccountId()));
 
         SaveSearchResultService saveSearchResultService = AppContextUtil.getSpringBean(SaveSearchResultService.class);
-        List<SaveSearchResult> savedSearchResults = saveSearchResultService.findPageableListByCriteria(new
-                BasicSearchRequest<>(searchCriteria, 0, Integer.MAX_VALUE));
+        List<SaveSearchResult> savedSearchResults = saveSearchResultService.findPageableListByCriteria(new BasicSearchRequest<>(searchCriteria));
         savedQueries = new ArrayList<>();
         for (SaveSearchResult searchResultWithBLOBs : savedSearchResults) {
             try {
@@ -91,13 +90,15 @@ public abstract class SavedFilterComboBox extends CustomField<String> {
     }
 
     public void selectQueryInfo(String queryId) {
-        for (SearchQueryInfo queryInfo : sharedQueries) {
-            if (queryId.equals(queryInfo.getQueryId())) {
-                selectedQueryName = queryInfo.getQueryName();
-                updateQueryNameField(selectedQueryName);
-                fireEvent(new QuerySelectEvent(this, queryInfo.getSearchFieldInfos()));
-                EventBusFactory.getInstance().post(new ShellEvent.AddQueryParam(this, queryInfo.getSearchFieldInfos()));
-                componentPopupSelection.setPopupVisible(false);
+        if (sharedQueries != null) {
+            for (SearchQueryInfo queryInfo : sharedQueries) {
+                if (queryId.equals(queryInfo.getQueryId())) {
+                    selectedQueryName = queryInfo.getQueryName();
+                    updateQueryNameField(selectedQueryName);
+                    fireEvent(new QuerySelectEvent(this, queryInfo.getSearchFieldInfos()));
+                    EventBusFactory.getInstance().post(new ShellEvent.AddQueryParam(this, queryInfo.getSearchFieldInfos()));
+                    componentPopupSelection.setPopupVisible(false);
+                }
             }
         }
     }
@@ -110,18 +111,17 @@ public abstract class SavedFilterComboBox extends CustomField<String> {
         componentsText.addStyleName("noBorderRight");
         componentsText.setWidth("100%");
         componentPopupSelection = new PopupButton();
-        componentPopupSelection.addStyleName(WebUIConstants.MULTI_SELECT_BG);
+        componentPopupSelection.addStyleName(WebThemes.MULTI_SELECT_BG);
         componentPopupSelection.setDirection(Alignment.TOP_LEFT);
         componentPopupSelection.addClickListener(clickEvent -> initContentPopup());
 
         popupContent = new OptionPopupContent();
         componentPopupSelection.setContent(popupContent);
 
-        MHorizontalLayout content = new MHorizontalLayout().with(componentsText)
-                .withAlign(componentsText, Alignment.MIDDLE_LEFT);
+        MHorizontalLayout content = new MHorizontalLayout(componentsText).withAlign(componentsText, Alignment.MIDDLE_LEFT);
 
-        MHorizontalLayout multiSelectComp = new MHorizontalLayout().withSpacing(false).with(componentsText,
-                componentPopupSelection).expand(componentsText);
+        MHorizontalLayout multiSelectComp = new MHorizontalLayout(componentsText, componentPopupSelection)
+                .withSpacing(false).expand(componentsText);
         content.with(multiSelectComp);
         return content;
     }

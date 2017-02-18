@@ -19,7 +19,7 @@ package com.mycollab.schedule.jobs
 import com.mycollab.common.domain.LiveInstance
 import com.mycollab.common.service.AppPropertiesService
 import com.mycollab.configuration.SiteConfiguration
-import com.mycollab.core.MyCollabVersion
+import com.mycollab.core.Version
 import com.mycollab.module.project.dao.ProjectMapper
 import com.mycollab.module.project.domain.ProjectExample
 import com.mycollab.module.user.dao.UserMapper
@@ -45,11 +45,11 @@ class LiveInstanceMonitorJob extends GenericQuartzJobBean {
   @Autowired private val appPropertiesService: AppPropertiesService = null
 
   def executeJob(context: JobExecutionContext): Unit = {
-    val numProjects = projectMapper.countByExample(new ProjectExample)
-    val numUsers = userMapper.countByExample(new UserExample)
+    val numProjects = projectMapper.countByExample(new ProjectExample).toInt
+    val numUsers = userMapper.countByExample(new UserExample).toInt
 
     val liveInstance = new LiveInstance()
-    liveInstance.setAppversion(MyCollabVersion.getVersion)
+    liveInstance.setAppversion(Version.getVersion)
     liveInstance.setInstalleddate(new DateTime().toDate)
     liveInstance.setJavaversion(System.getProperty("java.version"))
     liveInstance.setSysid(appPropertiesService.getSysId)

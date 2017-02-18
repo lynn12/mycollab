@@ -58,7 +58,7 @@ public class AttachmentDisplayComponent extends CssLayout {
         attachments.forEach(this::addAttachmentRow);
     }
 
-    void addAttachmentRow(final Content attachment) {
+    private void addAttachmentRow(final Content attachment) {
         String docName = attachment.getPath();
         int lastIndex = docName.lastIndexOf("/");
         if (lastIndex != -1) {
@@ -113,8 +113,7 @@ public class AttachmentDisplayComponent extends CssLayout {
                     confirmDialog -> {
                         if (confirmDialog.isConfirmed()) {
                             ResourceService attachmentService = AppContextUtil.getSpringBean(ResourceService.class);
-                            attachmentService.removeResource(attachment.getPath(),
-                                    UserUIContext.getUsername(), MyCollabUI.getAccountId());
+                            attachmentService.removeResource(attachment.getPath(), UserUIContext.getUsername(), true, MyCollabUI.getAccountId());
                             ((ComponentContainer) attachmentLayout.getParent()).removeComponent(attachmentLayout);
                         }
                     });

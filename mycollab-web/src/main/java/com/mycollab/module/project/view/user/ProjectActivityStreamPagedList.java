@@ -30,6 +30,7 @@ import com.mycollab.db.arguments.BasicSearchRequest;
 import com.mycollab.html.DivLessFormatter;
 import com.mycollab.module.page.domain.Page;
 import com.mycollab.module.project.ProjectLinkBuilder;
+import com.mycollab.module.project.ProjectLinkGenerator;
 import com.mycollab.module.project.ProjectTypeConstants;
 import com.mycollab.module.project.domain.ProjectActivityStream;
 import com.mycollab.module.project.i18n.ProjectCommonI18nEnum;
@@ -43,7 +44,7 @@ import com.mycollab.vaadin.TooltipHelper;
 import com.mycollab.vaadin.ui.UIConstants;
 import com.mycollab.vaadin.ui.registry.AuditLogRegistry;
 import com.mycollab.vaadin.web.ui.AbstractBeanPagedList;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Alignment;
@@ -69,11 +70,11 @@ import static com.mycollab.vaadin.TooltipHelper.TOOLTIP_ID;
 public class ProjectActivityStreamPagedList extends AbstractBeanPagedList<ProjectActivityStream> {
     private static final long serialVersionUID = 1L;
 
-    protected final ProjectActivityStreamService projectActivityStreamService;
+    protected ProjectActivityStreamService projectActivityStreamService;
 
     public ProjectActivityStreamPagedList() {
         super(null, 20);
-        this.setStyleName("project-activity-list");
+        this.setStyleName("activity-list");
         projectActivityStreamService = AppContextUtil.getSpringBean(ProjectActivityStreamService.class);
     }
 
@@ -187,12 +188,12 @@ public class ProjectActivityStreamPagedList extends AbstractBeanPagedList<Projec
         A itemLink = new A().setId("tag" + TOOLTIP_ID);
         if (ProjectTypeConstants.TASK.equals(activityStream.getType())
                 || ProjectTypeConstants.BUG.equals(activityStream.getType())) {
-            itemLink.setHref(ProjectLinkBuilder.generateProjectItemLink(
+            itemLink.setHref(ProjectLinkGenerator.generateProjectItemLink(
                     activityStream.getProjectShortName(),
                     activityStream.getExtratypeid(), activityStream.getType(),
                     activityStream.getItemKey() + ""));
         } else {
-            itemLink.setHref(ProjectLinkBuilder.generateProjectItemLink(
+            itemLink.setHref(ProjectLinkGenerator.generateProjectItemLink(
                     activityStream.getProjectShortName(),
                     activityStream.getExtratypeid(), activityStream.getType(),
                     activityStream.getTypeid()));
@@ -202,6 +203,10 @@ public class ProjectActivityStreamPagedList extends AbstractBeanPagedList<Projec
                 activityStream.getTypeid()));
         itemLink.setAttribute("onmouseleave", TooltipHelper.itemMouseLeaveJsFunction());
         itemLink.appendText(StringUtils.trim(activityStream.getNamefield(), 50, true));
+
+        if (ActivityStreamConstants.ACTION_DELETE.equals(activityStream.getAction())) {
+            itemLink.setCSSClass(WebThemes.LINK_COMPLETED);
+        }
 
         div.appendChild(image, DivLessFormatter.EMPTY_SPACE(), itemLink);
         return div.write();
@@ -239,15 +244,15 @@ public class ProjectActivityStreamPagedList extends AbstractBeanPagedList<Projec
     protected MHorizontalLayout createPageControls() {
         this.controlBarWrapper = new MHorizontalLayout().withFullHeight().withStyleName("page-controls");
         ButtonGroup controlBtns = new ButtonGroup();
-        controlBtns.setStyleName(WebUIConstants.BUTTON_ACTION);
+        controlBtns.setStyleName(WebThemes.BUTTON_ACTION);
         MButton prevBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_NAV_NEWER), clickEvent -> pageChange(currentPage - 1))
-                .withWidth("64px").withStyleName(WebUIConstants.BUTTON_ACTION);
+                .withWidth("64px").withStyleName(WebThemes.BUTTON_ACTION);
         if (currentPage == 1) {
             prevBtn.setEnabled(false);
         }
 
         MButton nextBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_NAV_OLDER), clickEvent -> pageChange(currentPage + 1))
-                .withWidth("64px").withStyleName(WebUIConstants.BUTTON_ACTION);
+                .withWidth("64px").withStyleName(WebThemes.BUTTON_ACTION);
         if (currentPage == totalPage) {
             nextBtn.setEnabled(false);
         }

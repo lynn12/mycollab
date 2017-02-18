@@ -38,7 +38,6 @@ import java.util.*;
  * @since 2.0
  */
 public class DefaultDynaFormLayout implements IDynaFormLayout {
-    private static final long serialVersionUID = 1L;
 
     private DynaForm dynaForm;
 
@@ -67,7 +66,7 @@ public class DefaultDynaFormLayout implements IDynaFormLayout {
     }
 
     @Override
-    public ComponentContainer getLayout() {
+    public AbstractComponent getLayout() {
         FormContainer layout = new FormContainer();
         int sectionCount = dynaForm.getSectionCount();
         sectionMappings = new HashMap<>();
@@ -80,8 +79,8 @@ public class DefaultDynaFormLayout implements IDynaFormLayout {
 
             if (section.getHeader() != null) {
                 Label header = new Label(UserUIContext.getMessage(section.getHeader()));
-                MCssLayout formSection = new MCssLayout(header).withStyleName(WebUIConstants.FORM_SECTION).withFullWidth();
-                formSection.addStyleName(WebUIConstants.HOVER_EFFECT_NOT_BOX);
+                MCssLayout formSection = new MCssLayout(header).withStyleName(WebThemes.FORM_SECTION).withFullWidth();
+                formSection.addStyleName(WebThemes.HOVER_EFFECT_NOT_BOX);
                 layout.addComponent(formSection);
             }
 

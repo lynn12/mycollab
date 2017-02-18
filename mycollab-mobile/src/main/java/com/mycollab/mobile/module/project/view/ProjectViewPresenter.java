@@ -18,12 +18,11 @@ package com.mycollab.mobile.module.project.view;
 
 import com.mycollab.core.ResourceNotFoundException;
 import com.mycollab.core.utils.ClassUtils;
-import com.mycollab.mobile.module.project.view.bug.BugPresenter;
 import com.mycollab.mobile.module.project.view.message.MessagePresenter;
 import com.mycollab.mobile.module.project.view.milestone.MilestonePresenter;
 import com.mycollab.mobile.module.project.view.parameters.*;
 import com.mycollab.mobile.module.project.view.settings.ProjectUserPresenter;
-import com.mycollab.mobile.module.project.view.task.TaskPresenter;
+import com.mycollab.mobile.module.project.view.ticket.TicketPresenter;
 import com.mycollab.module.project.CurrentProjectVariables;
 import com.mycollab.module.project.domain.SimpleProject;
 import com.mycollab.module.project.service.ProjectService;
@@ -33,7 +32,7 @@ import com.mycollab.vaadin.mvp.IPresenter;
 import com.mycollab.vaadin.mvp.PageActionChain;
 import com.mycollab.vaadin.mvp.PresenterResolver;
 import com.mycollab.vaadin.mvp.ScreenData;
-import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.HasComponents;
 
 /**
  * @author MyCollab Ltd.
@@ -47,7 +46,7 @@ public class ProjectViewPresenter extends ProjectGenericPresenter<ProjectView> {
     }
 
     @Override
-    protected void onGo(ComponentContainer container, ScreenData<?> data) {
+    protected void onGo(HasComponents container, ScreenData<?> data) {
         if (data == null) {
             // do nothing
         }
@@ -64,7 +63,7 @@ public class ProjectViewPresenter extends ProjectGenericPresenter<ProjectView> {
     }
 
     @Override
-    protected void onHandleChain(ComponentContainer container, PageActionChain pageActionChain) {
+    protected void onHandleChain(HasComponents container, PageActionChain pageActionChain) {
         ScreenData<?> pageAction = pageActionChain.peek();
 
         IPresenter<?> presenter;
@@ -75,15 +74,14 @@ public class ProjectViewPresenter extends ProjectGenericPresenter<ProjectView> {
         } else if (ClassUtils.instanceOf(pageAction, MessageScreenData.Read.class, MessageScreenData.Search.class,
                 MessageScreenData.Add.class)) {
             presenter = PresenterResolver.getPresenter(MessagePresenter.class);
-        } else if (ClassUtils.instanceOf(pageAction, TaskScreenData.Search.class, TaskScreenData.Read.class,
-                TaskScreenData.Add.class, TaskScreenData.Edit.class)) {
-            presenter = PresenterResolver.getPresenter(TaskPresenter.class);
+        } else if (ClassUtils.instanceOf(pageAction, TaskScreenData.Read.class,
+                TaskScreenData.Add.class, TaskScreenData.Edit.class, BugScreenData.Add.class,
+                BugScreenData.Read.class, BugScreenData.Edit.class, TicketScreenData.GotoDashboard.class,
+                RiskScreenData.Add.class, RiskScreenData.Edit.class, RiskScreenData.Read.class)) {
+            presenter = PresenterResolver.getPresenter(TicketPresenter.class);
         } else if (ClassUtils.instanceOf(pageAction, MilestoneScreenData.Search.class,
                 MilestoneScreenData.Read.class, MilestoneScreenData.Add.class, MilestoneScreenData.Edit.class)) {
             presenter = PresenterResolver.getPresenter(MilestonePresenter.class);
-        } else if (ClassUtils.instanceOf(pageAction, BugScreenData.Search.class, BugScreenData.Add.class,
-                BugScreenData.Read.class, BugScreenData.Edit.class)) {
-            presenter = PresenterResolver.getPresenter(BugPresenter.class);
         } else if (ClassUtils.instanceOf(pageAction, ProjectMemberScreenData.Search.class,
                 ProjectMemberScreenData.InviteProjectMembers.class, ProjectMemberScreenData.Read.class, ProjectMemberScreenData.Edit.class)) {
             presenter = PresenterResolver.getPresenter(ProjectUserPresenter.class);

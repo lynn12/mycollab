@@ -32,7 +32,6 @@ import com.mycollab.vaadin.ui.*;
 import com.vaadin.data.util.BeanContainer;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.*;
 import org.apache.commons.collections.CollectionUtils;
@@ -49,23 +48,20 @@ import java.util.*;
  * @author MyCollab Ltd.
  * @since 4.0
  */
-public class BuildCriterionComponent<S extends SearchCriteria> extends MVerticalLayout {
+public class BuildCriterionComponent<S extends SearchCriteria> extends MVerticalLayout implements CriteriaBuilderComponent<S> {
     private static final long serialVersionUID = 1L;
-
     private static final Logger LOG = LoggerFactory.getLogger(BuildCriterionComponent.class);
 
-    private GenericSearchPanel.SearchLayout<S> hostSearchLayout;
+    private SearchLayout<S> hostSearchLayout;
     private Param[] paramFields;
     private String searchCategory;
-    private Class<S> type;
 
     private MHorizontalLayout filterBox;
     private MVerticalLayout searchContainer;
 
-    public BuildCriterionComponent(GenericSearchPanel.SearchLayout<S> searchLayout, Param[] paramFields, Class<S> type, String searchCategory) {
+    public BuildCriterionComponent(SearchLayout<S> searchLayout, Param[] paramFields, String searchCategory) {
         this.hostSearchLayout = searchLayout;
         this.paramFields = paramFields;
-        this.type = type;
         this.searchCategory = searchCategory;
 
         MHorizontalLayout headerBox = new MHorizontalLayout().withMargin(new MarginInfo(true, false, true, true));
@@ -83,16 +79,12 @@ public class BuildCriterionComponent<S extends SearchCriteria> extends MVertical
         searchContainer = new MVerticalLayout().withMargin(false);
         searchContainer.setDefaultComponentAlignment(Alignment.TOP_LEFT);
 
-        MHorizontalLayout controlsBtn = new MHorizontalLayout().withMargin(true);
-
         MButton addCriteriaBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_ADD_CRITERIA), clickEvent -> {
             CriteriaSelectionLayout newCriteriaBar = new CriteriaSelectionLayout(searchContainer.getComponentCount() + 1);
             searchContainer.addComponent(newCriteriaBar);
-        }).withIcon(FontAwesome.PLUS).withStyleName(WebUIConstants.BUTTON_ACTION);
+        }).withIcon(FontAwesome.PLUS).withStyleName(WebThemes.BUTTON_ACTION);
 
-        controlsBtn.with(addCriteriaBtn);
-
-        this.with(searchContainer, controlsBtn);
+        this.with(searchContainer, new MHorizontalLayout(addCriteriaBtn).withMargin(true));
     }
 
     private void buildFilterBox(String queryName) {
@@ -102,7 +94,7 @@ public class BuildCriterionComponent<S extends SearchCriteria> extends MVertical
         filterBox.addComponent(filterComboBox);
 
         MButton saveSearchBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_NEW_FILTER), clickEvent -> buildSaveFilterBox())
-                .withStyleName(WebUIConstants.BUTTON_ACTION).withIcon(FontAwesome.PLUS);
+                .withStyleName(WebThemes.BUTTON_ACTION).withIcon(FontAwesome.PLUS);
         filterBox.addComponent(saveSearchBtn);
     }
 
@@ -115,11 +107,11 @@ public class BuildCriterionComponent<S extends SearchCriteria> extends MVertical
         MButton saveBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_SAVE), clickEvent -> {
             String queryText = queryTextField.getValue();
             saveSearchCriteria(queryText);
-        }).withIcon(FontAwesome.SAVE).withStyleName(WebUIConstants.BUTTON_ACTION);
+        }).withIcon(FontAwesome.SAVE).withStyleName(WebThemes.BUTTON_ACTION);
         filterBox.addComponent(saveBtn);
 
         MButton cancelBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CANCEL), clickEvent -> buildFilterBox(null))
-                .withStyleName(WebUIConstants.BUTTON_OPTION);
+                .withStyleName(WebThemes.BUTTON_OPTION);
         filterBox.addComponent(cancelBtn);
     }
 
@@ -141,7 +133,8 @@ public class BuildCriterionComponent<S extends SearchCriteria> extends MVertical
         buildFilterBox(queryText);
     }
 
-    List<SearchFieldInfo> buildSearchFieldInfos() {
+    @Override
+    public List<SearchFieldInfo> buildSearchFieldInfos() {
         Iterator<Component> iterator = searchContainer.iterator();
         List<SearchFieldInfo> fieldInfos = new ArrayList<>();
         while (iterator.hasNext()) {
@@ -215,7 +208,7 @@ public class BuildCriterionComponent<S extends SearchCriteria> extends MVertical
                     CriteriaSelectionLayout searchCriteriaLayout = (CriteriaSelectionLayout) searchContainer.getComponent(i);
                     searchCriteriaLayout.updateIndex();
                 }
-            }).withIcon(FontAwesome.TRASH_O).withStyleName(WebUIConstants.BUTTON_ICON_ONLY);
+            }).withIcon(FontAwesome.TRASH_O).withStyleName(WebThemes.BUTTON_ICON_ONLY);
 
             this.addComponent(fieldSelectionBox, 2, 0);
             this.addComponent(compareSelectionBox, 3, 0);
@@ -228,9 +221,7 @@ public class BuildCriterionComponent<S extends SearchCriteria> extends MVertical
             indexLbl.setValue(index + "");
             if (index == 1) {
                 removeComponent(operatorSelectionBox);
-                Label placeHolder = new Label("&nbsp;", ContentMode.HTML);
-                placeHolder.setWidth("90px");
-                this.addComponent(placeHolder, 1, 0);
+                this.addComponent(ELabel.html("&nbsp;").withWidth("90px"), 1, 0);
             }
         }
 
@@ -278,7 +269,8 @@ public class BuildCriterionComponent<S extends SearchCriteria> extends MVertical
                     field.setWidth(width);
                     valueBox.addComponent(field);
                 }
-            } else if (param instanceof PropertyParam || param instanceof PropertyListParam || param instanceof CustomSqlParam) {
+            } else if (param instanceof PropertyParam || param instanceof PropertyListParam || param instanceof CustomSqlParam
+                    || param instanceof SearchCriteriaBridgeParam) {
                 Component comp = buildPropertySearchComp(param.getId());
                 if (comp != null) {
                     comp.setWidth(width);
@@ -298,13 +290,15 @@ public class BuildCriterionComponent<S extends SearchCriteria> extends MVertical
                 valueBox.addComponent(listSelect);
 
             } else if (param instanceof I18nStringListParam) {
-                I18nValueListSelect listSelect = new I18nValueListSelect();
-                listSelect.setCaption(null);
-                listSelect.loadData(((I18nStringListParam) param).getLstValues());
-                listSelect.setValue(searchFieldInfo.eval());
-                listSelect.setWidth(width);
-                valueBox.addComponent(listSelect);
-
+                List<? extends Enum<?>> values = ((I18nStringListParam) param).getValues();
+                if (CollectionUtils.isNotEmpty(values)) {
+                    I18nValueListSelect listSelect = new I18nValueListSelect();
+                    listSelect.setCaption(null);
+                    listSelect.loadData(((I18nStringListParam) param).getValues());
+                    listSelect.setValue(searchFieldInfo.eval());
+                    listSelect.setWidth(width);
+                    valueBox.addComponent(listSelect);
+                }
             } else if (param instanceof CompositionStringParam) {
                 TextField tempTextField = new TextField();
                 tempTextField.setValue(String.valueOf(searchFieldInfo.eval()));
@@ -337,7 +331,7 @@ public class BuildCriterionComponent<S extends SearchCriteria> extends MVertical
                         compareSelectionBox.loadData(DateParam.OPTIONS);
                     } else if (field instanceof PropertyParam) {
                         compareSelectionBox.loadData(Arrays.asList(PropertyParam.OPTIONS));
-                    } else if (field instanceof PropertyListParam || field instanceof CustomSqlParam) {
+                    } else if (field instanceof PropertyListParam || field instanceof CustomSqlParam || field instanceof SearchCriteriaBridgeParam) {
                         compareSelectionBox.loadData(Arrays.asList(PropertyListParam.OPTIONS));
                     } else if (field instanceof StringListParam) {
                         compareSelectionBox.loadData(Arrays.asList(StringListParam.OPTIONS));
@@ -348,8 +342,6 @@ public class BuildCriterionComponent<S extends SearchCriteria> extends MVertical
                     } else if (field instanceof ConcatStringParam) {
                         compareSelectionBox.loadData(Arrays.asList(ConcatStringParam.OPTIONS));
                     }
-
-                    displayAssociateInputField((Param) fieldSelectionBox.getValue());
                 }
             });
 
@@ -374,18 +366,15 @@ public class BuildCriterionComponent<S extends SearchCriteria> extends MVertical
                 valueBox.addComponent(tempTextField);
             } else if (field instanceof DateParam) {
                 if (DateParam.BETWEEN.equals(compareItem) || DateParam.NOT_BETWEEN.equals(compareItem)) {
-                    PopupDateFieldExt field1 = new PopupDateFieldExt();
-                    PopupDateFieldExt field2 = new PopupDateFieldExt();
-                    field1.setWidth(width);
-                    field2.setWidth(width);
-                    valueBox.addComponent(field1);
-                    valueBox.addComponent(field2);
+                    PopupDateFieldExt field1 = new PopupDateFieldExt().withWidth(width);
+                    PopupDateFieldExt field2 = new PopupDateFieldExt().withWidth(width);
+                    valueBox.with(field1, field2);
                 } else {
-                    PopupDateFieldExt tempDateField = new PopupDateFieldExt();
-                    tempDateField.setWidth(width);
+                    PopupDateFieldExt tempDateField = new PopupDateFieldExt().withWidth(width);
                     valueBox.addComponent(tempDateField);
                 }
-            } else if (field instanceof PropertyParam || field instanceof PropertyListParam || field instanceof CustomSqlParam) {
+            } else if (field instanceof PropertyParam || field instanceof PropertyListParam || field instanceof CustomSqlParam
+                    || field instanceof SearchCriteriaBridgeParam) {
                 Component comp = buildPropertySearchComp(field.getId());
                 if (comp != null) {
                     comp.setWidth(width);
@@ -400,7 +389,7 @@ public class BuildCriterionComponent<S extends SearchCriteria> extends MVertical
             } else if (field instanceof I18nStringListParam) {
                 I18nValueListSelect listSelect = new I18nValueListSelect();
                 listSelect.setCaption(null);
-                listSelect.loadData(((I18nStringListParam) field).getLstValues());
+                listSelect.loadData(((I18nStringListParam) field).getValues());
                 listSelect.setWidth(width);
                 valueBox.addComponent(listSelect);
             } else if (field instanceof CompositionStringParam) {
@@ -477,7 +466,7 @@ public class BuildCriterionComponent<S extends SearchCriteria> extends MVertical
                             data.setSaccountid(MyCollabUI.getAccountId());
                             data.setQuerytext(QueryAnalyzer.toQueryParams(fieldInfos));
                             saveSearchResultService.updateWithSession(data, UserUIContext.getUsername());
-                        }).withIcon(FontAwesome.REFRESH).withStyleName(WebUIConstants.BUTTON_ACTION);
+                        }).withIcon(FontAwesome.REFRESH).withStyleName(WebThemes.BUTTON_ACTION);
 
                         MButton deleteBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_DELETE), clickEvent -> {
                             SaveSearchResultService saveSearchResultService = AppContextUtil.getSpringBean(SaveSearchResultService.class);
@@ -487,7 +476,7 @@ public class BuildCriterionComponent<S extends SearchCriteria> extends MVertical
                                 filterBox.removeComponent(filterBox.getComponent(1));
                             }
                             buildQuerySelectComponent();
-                        }).withIcon(FontAwesome.TRASH_O).withStyleName(WebUIConstants.BUTTON_DANGER);
+                        }).withIcon(FontAwesome.TRASH_O).withStyleName(WebThemes.BUTTON_DANGER);
 
                         filterBox.addComponent(deleteBtn, 1);
                         filterBox.addComponent(updateBtn, 1);
@@ -496,6 +485,7 @@ public class BuildCriterionComponent<S extends SearchCriteria> extends MVertical
                 } else {
                     searchContainer.removeAllComponents();
                     if (filterBox.getComponentCount() > 3) {
+                        filterBox.removeComponent(filterBox.getComponent(1));
                         filterBox.removeComponent(filterBox.getComponent(1));
                     }
                 }

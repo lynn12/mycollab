@@ -21,11 +21,12 @@ import com.mycollab.module.crm.CrmTooltipGenerator;
 import com.mycollab.module.crm.domain.Account;
 import com.mycollab.module.crm.domain.SimpleAccount;
 import com.mycollab.module.crm.domain.criteria.AccountSearchCriteria;
+import com.mycollab.module.crm.fielddef.AccountTableFieldDef;
 import com.mycollab.module.crm.i18n.AccountI18nEnum;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.FieldSelection;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 import org.vaadin.viritin.layouts.MWindow;
@@ -45,24 +46,20 @@ public class AccountSelectionWindow extends MWindow {
     public AccountSelectionWindow(FieldSelection<Account> fieldSelection) {
         super(UserUIContext.getMessage(GenericI18Enum.ACTION_SELECT_VALUE, UserUIContext.getMessage(AccountI18nEnum.SINGLE)));
         this.fieldSelection = fieldSelection;
-        this.withModal(true).withResizable(false).withWidth("900px");
+        this.withModal(true).withResizable(false).withWidth("900px").withCenter();
     }
 
     public void show() {
         createAccountList();
 
-        AccountSearchPanel accountSimpleSearchPanel = new AccountSearchPanel();
-        accountSimpleSearchPanel.addSearchHandler(criteria -> tableItem.setSearchCriteria(criteria));
-        MVerticalLayout layout = new MVerticalLayout(accountSimpleSearchPanel, tableItem);
-        this.setContent(layout);
-
+        AccountSearchPanel searchPanel = new AccountSearchPanel(false);
+        searchPanel.addSearchHandler(criteria -> tableItem.setSearchCriteria(criteria));
+        this.setContent(new MVerticalLayout(searchPanel, tableItem));
         tableItem.setSearchCriteria(new AccountSearchCriteria());
-        center();
     }
 
     private void createAccountList() {
-        tableItem = new AccountTableDisplay(Arrays.asList(
-                AccountTableFieldDef.accountname(), AccountTableFieldDef.city(),
+        tableItem = new AccountTableDisplay(Arrays.asList(AccountTableFieldDef.accountname(), AccountTableFieldDef.city(),
                 AccountTableFieldDef.assignUser()));
 
         tableItem.setWidth("100%");
@@ -74,7 +71,7 @@ public class AccountSelectionWindow extends MWindow {
             return new MButton(account.getAccountname(), clickEvent -> {
                 fieldSelection.fireValueChange(account);
                 close();
-            }).withStyleName(WebUIConstants.BUTTON_LINK).withDescription(CrmTooltipGenerator.generateToolTipAccount(
+            }).withStyleName(WebThemes.BUTTON_LINK).withDescription(CrmTooltipGenerator.generateToolTipAccount(
                     UserUIContext.getUserLocale(), account, MyCollabUI.getSiteUrl()));
         });
     }

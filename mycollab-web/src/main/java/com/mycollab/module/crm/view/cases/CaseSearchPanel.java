@@ -25,7 +25,7 @@ import com.mycollab.db.query.Param;
 import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.module.crm.CrmTypeConstants;
 import com.mycollab.module.crm.domain.criteria.CaseSearchCriteria;
-import com.mycollab.module.crm.events.CaseEvent;
+import com.mycollab.module.crm.event.CaseEvent;
 import com.mycollab.module.crm.i18n.CaseI18nEnum;
 import com.mycollab.module.crm.ui.components.ComponentUtils;
 import com.mycollab.module.crm.view.account.AccountSelectionField;
@@ -34,9 +34,7 @@ import com.mycollab.security.RolePermissionCollections;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.HeaderWithFontAwesome;
-import com.mycollab.vaadin.web.ui.DefaultGenericSearchPanel;
-import com.mycollab.vaadin.web.ui.DynamicQueryParamLayout;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.*;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.*;
 import org.vaadin.viritin.button.MButton;
@@ -50,6 +48,8 @@ import org.vaadin.viritin.layouts.MHorizontalLayout;
 public class CaseSearchPanel extends DefaultGenericSearchPanel<CaseSearchCriteria> {
     private static final long serialVersionUID = 1L;
 
+    private boolean canCreateCase;
+
     private static Param[] paramFields = new Param[]{
             CaseSearchCriteria.p_account, CaseSearchCriteria.p_priority,
             CaseSearchCriteria.p_status, CaseSearchCriteria.p_email,
@@ -58,6 +58,10 @@ public class CaseSearchPanel extends DefaultGenericSearchPanel<CaseSearchCriteri
             CaseSearchCriteria.p_createdtime,
             CaseSearchCriteria.p_lastupdatedtime};
 
+    public CaseSearchPanel(boolean canCreateCase) {
+        this.canCreateCase = canCreateCase;
+    }
+
     @Override
     protected HeaderWithFontAwesome buildSearchTitle() {
         return ComponentUtils.header(CrmTypeConstants.CASE, UserUIContext.getMessage(CaseI18nEnum.LIST));
@@ -65,11 +69,10 @@ public class CaseSearchPanel extends DefaultGenericSearchPanel<CaseSearchCriteri
 
     @Override
     protected Component buildExtraControls() {
-        MButton newBtn = new MButton(UserUIContext.getMessage(CaseI18nEnum.NEW),
+        return (canCreateCase) ? new MButton(UserUIContext.getMessage(CaseI18nEnum.NEW),
                 clickEvent -> EventBusFactory.getInstance().post(new CaseEvent.GotoAdd(this, null)))
-                .withIcon(FontAwesome.PLUS).withStyleName(WebUIConstants.BUTTON_ACTION)
-                .withVisible(UserUIContext.canWrite(RolePermissionCollections.CRM_CASE));
-        return newBtn;
+                .withIcon(FontAwesome.PLUS).withStyleName(WebThemes.BUTTON_ACTION)
+                .withVisible(UserUIContext.canWrite(RolePermissionCollections.CRM_CASE)) : null;
     }
 
     @SuppressWarnings("unchecked")
@@ -86,13 +89,8 @@ public class CaseSearchPanel extends DefaultGenericSearchPanel<CaseSearchCriteri
     private class CaseAdvancedSearchLayout extends DynamicQueryParamLayout<CaseSearchCriteria> {
         private static final long serialVersionUID = 1L;
 
-        public CaseAdvancedSearchLayout() {
+        CaseAdvancedSearchLayout() {
             super(CaseSearchPanel.this, CrmTypeConstants.CASE);
-        }
-
-        @Override
-        public ComponentContainer constructHeader() {
-            return CaseSearchPanel.this.constructHeader();
         }
 
         @Override
@@ -121,13 +119,8 @@ public class CaseSearchPanel extends DefaultGenericSearchPanel<CaseSearchCriteri
         private TextField subjectField;
         private CheckBox myItemCheckbox;
 
-        public CaseBasicSearchLayout() {
+        CaseBasicSearchLayout() {
             super(CaseSearchPanel.this);
-        }
-
-        @Override
-        public ComponentContainer constructHeader() {
-            return CaseSearchPanel.this.constructHeader();
         }
 
         @Override
@@ -142,16 +135,16 @@ public class CaseSearchPanel extends DefaultGenericSearchPanel<CaseSearchCriteri
             basicSearchBody.with(myItemCheckbox).withAlign(myItemCheckbox, Alignment.MIDDLE_CENTER);
 
             MButton searchBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_SEARCH), clickEvent -> callSearchAction())
-                    .withIcon(FontAwesome.SEARCH).withStyleName(WebUIConstants.BUTTON_ACTION);
+                    .withIcon(FontAwesome.SEARCH).withStyleName(WebThemes.BUTTON_ACTION);
 
             basicSearchBody.with(searchBtn).withAlign(searchBtn, Alignment.MIDDLE_LEFT);
 
             MButton cancelBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CLEAR), clickEvent -> subjectField.setValue(""))
-                    .withStyleName(WebUIConstants.BUTTON_OPTION);
+                    .withStyleName(WebThemes.BUTTON_OPTION);
             basicSearchBody.with(cancelBtn).withAlign(cancelBtn, Alignment.MIDDLE_CENTER);
 
             MButton advancedSearchBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_ADVANCED_SEARCH),
-                    clickEvent -> moveToAdvancedSearchLayout()).withStyleName(WebUIConstants.BUTTON_LINK);
+                    clickEvent -> moveToAdvancedSearchLayout()).withStyleName(WebThemes.BUTTON_LINK);
             basicSearchBody.with(advancedSearchBtn).withAlign(advancedSearchBtn, Alignment.MIDDLE_CENTER);
             return basicSearchBody;
         }

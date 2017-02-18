@@ -27,14 +27,14 @@ import com.mycollab.core.utils.DateTimeUtils;
 import com.mycollab.core.utils.NumberUtils;
 import com.mycollab.db.arguments.*;
 import com.mycollab.module.project.*;
-import com.mycollab.module.project.domain.ProjectGenericTask;
+import com.mycollab.module.project.domain.ProjectTicket;
 import com.mycollab.module.project.domain.SimpleProjectMember;
-import com.mycollab.module.project.domain.criteria.ProjectGenericTaskSearchCriteria;
+import com.mycollab.module.project.domain.criteria.ProjectTicketSearchCriteria;
 import com.mycollab.module.project.i18n.ProjectCommonI18nEnum;
 import com.mycollab.module.project.i18n.ProjectMemberI18nEnum;
 import com.mycollab.module.project.i18n.ProjectRoleI18nEnum;
 import com.mycollab.module.project.i18n.TimeTrackingI18nEnum;
-import com.mycollab.module.project.service.ProjectGenericTaskService;
+import com.mycollab.module.project.service.ProjectTicketService;
 import com.mycollab.module.project.ui.ProjectAssetsManager;
 import com.mycollab.module.project.view.AbstractProjectPageView;
 import com.mycollab.module.project.view.settings.component.NotificationSettingWindow;
@@ -42,8 +42,8 @@ import com.mycollab.module.project.view.user.ProjectActivityStreamPagedList;
 import com.mycollab.module.user.accountsettings.localization.UserI18nEnum;
 import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.MyCollabUI;
-import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.TooltipHelper;
+import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.events.HasPreviewFormHandlers;
 import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.ui.*;
@@ -157,7 +157,7 @@ public class ProjectMemberReadViewImpl extends AbstractProjectPageView implement
         private static final long serialVersionUID = 8833593761607165873L;
 
         @Override
-        public ComponentContainer getLayout() {
+        public AbstractComponent getLayout() {
             HorizontalLayout blockContent = new HorizontalLayout();
             blockContent.addStyleName("member-block");
             Image memberAvatar = UserAvatarControlFactory.createUserAvatarEmbeddedComponent(beanItem.getMemberAvatarId(), 100);
@@ -169,7 +169,8 @@ public class ProjectMemberReadViewImpl extends AbstractProjectPageView implement
             ELabel memberLink = ELabel.h3(beanItem.getMemberFullName()).withWidthUndefined();
             MButton editNotificationBtn = new MButton(UserUIContext.getMessage(ProjectCommonI18nEnum
                     .ACTION_EDIT_NOTIFICATION), clickEvent -> UI.getCurrent().addWindow(new NotificationSettingWindow(beanItem)))
-                    .withStyleName(WebUIConstants.BUTTON_LINK);
+                    .withStyleName(WebThemes.BUTTON_LINK).withVisible(CurrentProjectVariables.canAccess
+                            (ProjectRolePermissionCollections.USERS));
             memberInfo.addComponent(new MHorizontalLayout(memberLink, editNotificationBtn).alignAll(Alignment.MIDDLE_LEFT));
 
             String memberRoleLinkPrefix = String.format("<a href=\"%s%s%s\"", MyCollabUI.getSiteUrl(), GenericLinkUtils.URL_PREFIX_PARAM,
@@ -252,8 +253,8 @@ public class ProjectMemberReadViewImpl extends AbstractProjectPageView implement
     private class UserAssignmentWidget extends Depot {
         private static final long serialVersionUID = 1L;
 
-        private ProjectGenericTaskSearchCriteria searchCriteria;
-        private final DefaultBeanPagedList<ProjectGenericTaskService, ProjectGenericTaskSearchCriteria, ProjectGenericTask> taskList;
+        private ProjectTicketSearchCriteria searchCriteria;
+        private final DefaultBeanPagedList<ProjectTicketService, ProjectTicketSearchCriteria, ProjectTicket> taskList;
 
         UserAssignmentWidget() {
             super(UserUIContext.getMessage(ProjectCommonI18nEnum.OPT_ASSIGNMENT_VALUE, 0), new CssLayout());
@@ -284,13 +285,13 @@ public class ProjectMemberReadViewImpl extends AbstractProjectPageView implement
             addHeaderElement(overdueSelection);
             addHeaderElement(isOpenSelection);
 
-            taskList = new DefaultBeanPagedList<>(AppContextUtil.getSpringBean(ProjectGenericTaskService.class),
+            taskList = new DefaultBeanPagedList<>(AppContextUtil.getSpringBean(ProjectTicketService.class),
                     new TaskRowDisplayHandler(), 10);
             bodyContent.addComponent(taskList);
         }
 
         private void showOpenAssignments() {
-            searchCriteria = new ProjectGenericTaskSearchCriteria();
+            searchCriteria = new ProjectTicketSearchCriteria();
             searchCriteria.setProjectIds(new SetSearchField<>(CurrentProjectVariables.getProjectId()));
             searchCriteria.setAssignUser(StringSearchField.and(beanItem.getUsername()));
             searchCriteria.setIsOpenned(new SearchField());
@@ -303,10 +304,10 @@ public class ProjectMemberReadViewImpl extends AbstractProjectPageView implement
         }
     }
 
-    public static class TaskRowDisplayHandler implements DefaultBeanPagedList.RowDisplayHandler<ProjectGenericTask> {
+    private static class TaskRowDisplayHandler implements IBeanList.RowDisplayHandler<ProjectTicket> {
 
         @Override
-        public Component generateRow(AbstractBeanPagedList host, ProjectGenericTask genericTask, int rowIndex) {
+        public Component generateRow(IBeanList<ProjectTicket> host, ProjectTicket genericTask, int rowIndex) {
             MHorizontalLayout rowComp = new MHorizontalLayout().withStyleName("list-row").withFullWidth();
             rowComp.setDefaultComponentAlignment(Alignment.TOP_LEFT);
 
@@ -315,14 +316,14 @@ public class ProjectMemberReadViewImpl extends AbstractProjectPageView implement
             taskLink.setAttribute("onmouseleave", TooltipHelper.itemMouseLeaveJsFunction());
             if (ProjectTypeConstants.BUG.equals(genericTask.getType()) || ProjectTypeConstants.TASK.equals(genericTask.getType())) {
                 taskLink.appendText(String.format("[#%d] - %s", genericTask.getExtraTypeId(), genericTask.getName()));
-                taskLink.setHref(ProjectLinkBuilder.generateProjectItemLink(genericTask.getProjectShortName(),
+                taskLink.setHref(ProjectLinkGenerator.generateProjectItemLink(genericTask.getProjectShortName(),
                         genericTask.getProjectId(), genericTask.getType(), genericTask.getExtraTypeId() + ""));
             } else {
                 taskLink.appendText(genericTask.getName());
-                taskLink.setHref(ProjectLinkBuilder.generateProjectItemLink(genericTask.getProjectShortName(),
+                taskLink.setHref(ProjectLinkGenerator.generateProjectItemLink(genericTask.getProjectShortName(),
                         genericTask.getProjectId(), genericTask.getType(), genericTask.getTypeId() + ""));
             }
-            Label issueLbl = new Label(taskLink.write(), ContentMode.HTML);
+            Label issueLbl = ELabel.html(taskLink.write());
             if (genericTask.isClosed()) {
                 issueLbl.addStyleName("completed");
             } else if (genericTask.isOverdue()) {

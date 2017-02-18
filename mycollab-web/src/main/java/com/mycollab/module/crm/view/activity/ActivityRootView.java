@@ -23,15 +23,12 @@ import com.mycollab.module.crm.i18n.ActivityI18nEnum;
 import com.mycollab.module.crm.view.parameters.ActivityScreenData;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
-import com.mycollab.vaadin.mvp.AbstractPageView;
+import com.mycollab.vaadin.mvp.AbstractVerticalPageView;
 import com.mycollab.vaadin.mvp.PresenterResolver;
 import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.web.ui.VerticalTabsheet;
 import com.vaadin.server.ExternalResource;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentContainer;
-import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.*;
 import com.vaadin.ui.TabSheet.Tab;
 
 /**
@@ -39,7 +36,7 @@ import com.vaadin.ui.TabSheet.Tab;
  * @since 2.0
  */
 @ViewComponent
-public class ActivityRootView extends AbstractPageView {
+public class ActivityRootView extends AbstractVerticalPageView {
     private static final long serialVersionUID = 1L;
 
     private final VerticalTabsheet activityTabs;
@@ -63,7 +60,6 @@ public class ActivityRootView extends AbstractPageView {
         activityTabs.setSizeFull();
         activityTabs.setNavigatorWidth("170px");
         activityTabs.setNavigatorStyleName("sidebar-menu");
-        activityTabs.setContainerStyleName("tab-content");
         activityTabs.setHeight(null);
 
         root.addComponent(activityTabs);
@@ -95,7 +91,7 @@ public class ActivityRootView extends AbstractPageView {
         });
     }
 
-    private ComponentContainer constructCalendarView() {
+    private HasComponents constructCalendarView() {
         calendarPresenter = PresenterResolver.getPresenter(ActivityCalendarPresenter.class);
         return calendarPresenter.getView();
     }

@@ -20,13 +20,12 @@ import com.hp.gagawa.java.elements.A;
 import com.hp.gagawa.java.elements.Div;
 import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.common.i18n.ShellI18nEnum;
-import com.mycollab.configuration.SiteConfiguration;
 import com.mycollab.core.IgnoreException;
 import com.mycollab.server.ServerInstance;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.ELabel;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Label;
@@ -79,12 +78,12 @@ public class UpgradeConfirmWindow extends MWindow {
         content.with(new Label(releaseNoteLink.write(), ContentMode.HTML));
 
         MButton skipBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.ACTION_SKIP), clickEvent -> close())
-                .withStyleName(WebUIConstants.BUTTON_OPTION);
+                .withStyleName(WebThemes.BUTTON_OPTION);
 
         MButton autoUpgradeBtn = new MButton(UserUIContext.getMessage(ShellI18nEnum.ACTION_AUTO_UPGRADE), clickEvent -> {
             close();
             navigateToWaitingUpgradePage();
-        }).withStyleName(WebUIConstants.BUTTON_ACTION);
+        }).withStyleName(WebThemes.BUTTON_ACTION);
         if (installerFilePath == null) {
             autoUpgradeBtn.setEnabled(false);
         }
@@ -99,7 +98,7 @@ public class UpgradeConfirmWindow extends MWindow {
             if (installerFile.exists()) {
                 new Thread(() -> {
                     ServerInstance.getInstance().preUpgrade();
-                    final String locUrl = SiteConfiguration.getSiteUrl(MyCollabUI.getSubDomain()) + "it/upgrade";
+                    final String locUrl = MyCollabUI.getSiteUrl() + "it/upgrade";
                     Future<Void> access = currentUI.access(() -> {
                         LOG.info("Redirect to the upgrade page " + locUrl);
                         currentUI.getPage().setLocation(locUrl);

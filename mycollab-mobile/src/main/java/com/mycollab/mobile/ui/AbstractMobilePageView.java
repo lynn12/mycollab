@@ -33,18 +33,21 @@ import java.io.Serializable;
  * @author MyCollab Ltd
  * @since 5.2.5
  */
-public abstract class AbstractMobilePageView extends NavigationView implements PageView, Serializable {
-    private static final long serialVersionUID = 1L;
+public abstract class AbstractMobilePageView extends NavigationView implements PageView {
 
     public AbstractMobilePageView() {
         super();
         if (this.getLeftComponent() != null && this.getLeftComponent() instanceof NavigationButton) {
-            this.getLeftComponent().setCaption(UserUIContext.getMessage(GenericI18Enum.M_BUTTON_BACK));
+            this.getLeftComponent().setCaption(getBackTitle());
         }
 
         if (this.getLeftComponent() == null) {
             this.setLeftComponent(new ELabel("").withWidth("72px"));
         }
+    }
+
+    private String getBackTitle() {
+        return UserUIContext.getMessage(GenericI18Enum.M_BUTTON_BACK);
     }
 
     @Override

@@ -25,6 +25,7 @@ import com.mycollab.form.view.builder.type.DynaSection;
 import com.mycollab.form.view.builder.type.DynaSection.LayoutType;
 import com.mycollab.module.project.domain.SimpleTask;
 import com.mycollab.module.project.domain.Task;
+import com.mycollab.module.project.i18n.MilestoneI18nEnum;
 import com.mycollab.module.project.i18n.TaskI18nEnum;
 
 /**
@@ -38,7 +39,7 @@ public class TaskDefaultFormLayoutFactory {
 
         DynaSection mainSection = new DynaSectionBuilder().layoutType(LayoutType.TWO_COLUMN).build();
 
-        mainSection.fields(new TextDynaFieldBuilder().fieldName(Task.Field.taskname)
+        mainSection.fields(new TextDynaFieldBuilder().fieldName(Task.Field.name)
                 .displayName(GenericI18Enum.FORM_NAME)
                 .fieldIndex(0).mandatory(true).required(true)
                 .colSpan(true).build());
@@ -51,13 +52,13 @@ public class TaskDefaultFormLayoutFactory {
                 .displayName(GenericI18Enum.FORM_END_DATE)
                 .fieldIndex(2).build());
 
-        mainSection.fields(new TextDynaFieldBuilder().fieldName(Task.Field.deadline)
+        mainSection.fields(new TextDynaFieldBuilder().fieldName(Task.Field.duedate)
                 .displayName(GenericI18Enum.FORM_DUE_DATE)
                 .fieldIndex(3).build());
 
         mainSection.fields(new TextDynaFieldBuilder().fieldName(Task.Field.priority)
-                .displayName(TaskI18nEnum.FORM_PRIORITY)
-                .contextHelp(TaskI18nEnum.FORM_PRIORITY_HELP)
+                .displayName(GenericI18Enum.FORM_PRIORITY)
+                .contextHelp(GenericI18Enum.FORM_PRIORITY_HELP)
                 .fieldIndex(4).build());
 
         mainSection.fields(new TextDynaFieldBuilder().fieldName(Task.Field.duration)
@@ -74,7 +75,7 @@ public class TaskDefaultFormLayoutFactory {
                 .fieldIndex(7).build());
 
         mainSection.fields(new TextDynaFieldBuilder().fieldName(Task.Field.milestoneid).required(true)
-                .displayName(TaskI18nEnum.FORM_PHASE)
+                .displayName(MilestoneI18nEnum.SINGLE)
                 .fieldIndex(8).build());
 
         mainSection.fields(new TextDynaFieldBuilder().fieldName(Task.Field.percentagecomplete)
@@ -93,8 +94,8 @@ public class TaskDefaultFormLayoutFactory {
                 .displayName(TaskI18nEnum.FORM_REMAIN_ESTIMATE)
                 .contextHelp(TaskI18nEnum.FORM_REMAIN_ESTIMATE_HELP).fieldIndex(12).build());
 
-        mainSection.fields(new TextDynaFieldBuilder().fieldName(Task.Field.notes)
-                .displayName(TaskI18nEnum.FORM_NOTES)
+        mainSection.fields(new TextDynaFieldBuilder().fieldName(Task.Field.description)
+                .displayName(GenericI18Enum.FORM_DESCRIPTION)
                 .colSpan(true).fieldIndex(13).build());
 
         mainSection.fields(new TextDynaFieldBuilder().fieldName(Task.Field.id)

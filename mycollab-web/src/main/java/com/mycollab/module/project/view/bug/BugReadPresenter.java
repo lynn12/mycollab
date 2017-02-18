@@ -26,7 +26,8 @@ import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.module.project.CurrentProjectVariables;
 import com.mycollab.module.project.ProjectRolePermissionCollections;
 import com.mycollab.module.project.ProjectTypeConstants;
-import com.mycollab.module.project.events.BugEvent;
+import com.mycollab.module.project.event.BugEvent;
+import com.mycollab.module.project.event.TicketEvent;
 import com.mycollab.module.project.view.ProjectBreadcrumb;
 import com.mycollab.module.project.view.ProjectGenericPresenter;
 import com.mycollab.module.tracker.domain.BugWithBLOBs;
@@ -45,7 +46,7 @@ import com.mycollab.vaadin.mvp.ViewManager;
 import com.mycollab.vaadin.mvp.ViewScope;
 import com.mycollab.vaadin.ui.NotificationUtil;
 import com.mycollab.vaadin.web.ui.ConfirmDialogExt;
-import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.UI;
 
 /**
@@ -84,7 +85,7 @@ public class BugReadPresenter extends ProjectGenericPresenter<BugReadView> {
                             if (confirmDialog.isConfirmed()) {
                                 BugService bugService = AppContextUtil.getSpringBean(BugService.class);
                                 bugService.removeWithSession(data, UserUIContext.getUsername(), MyCollabUI.getAccountId());
-                                EventBusFactory.getInstance().post(new BugEvent.GotoList(this, null));
+                                EventBusFactory.getInstance().post(new TicketEvent.GotoDashboard(this, null));
                             }
                         });
             }
@@ -92,7 +93,7 @@ public class BugReadPresenter extends ProjectGenericPresenter<BugReadView> {
             @Override
             public void onPrint(Object source, SimpleBug data) {
                 PrintButton btn = (PrintButton) source;
-                btn.doPrint(data, new FormReportLayout(ProjectTypeConstants.BUG, BugWithBLOBs.Field.summary.name(),
+                btn.doPrint(data, new FormReportLayout(ProjectTypeConstants.BUG, BugWithBLOBs.Field.name.name(),
                         BugDefaultFormLayoutFactory.getForm(), SimpleBug.Field.components.name(), SimpleBug.Field
                         .affectedVersions.name(), SimpleBug.Field.fixedVersions.name(), BugWithBLOBs.Field.id.name(),
                         SimpleBug.Field.selected.name()));
@@ -127,7 +128,7 @@ public class BugReadPresenter extends ProjectGenericPresenter<BugReadView> {
                 searchCriteria.setProjectId(NumberSearchField.equal(data.getProjectid()));
                 searchCriteria.addExtraField(BugSearchCriteria.p_bugkey.buildSearchField(SearchField.AND, NumberI18nEnum.LESS_THAN.name(),
                         data.getBugkey()));
-                Integer previousId = bugService.getNextItemKey(searchCriteria);
+                Integer previousId = bugService.getPreviousItemKey(searchCriteria);
                 if (previousId != null) {
                     EventBusFactory.getInstance().post(new BugEvent.GotoRead(this, previousId));
                 } else {
@@ -137,13 +138,13 @@ public class BugReadPresenter extends ProjectGenericPresenter<BugReadView> {
 
             @Override
             public void onCancel() {
-                EventBusFactory.getInstance().post(new BugEvent.GotoList(this, null));
+                EventBusFactory.getInstance().post(new TicketEvent.GotoDashboard(this, null));
             }
         });
     }
 
     @Override
-    protected void onGo(ComponentContainer container, ScreenData<?> data) {
+    protected void onGo(HasComponents container, ScreenData<?> data) {
         if (CurrentProjectVariables.canRead(ProjectRolePermissionCollections.BUGS)) {
             if (data.getParams() instanceof Integer) {
                 BugService bugService = AppContextUtil.getSpringBean(BugService.class);

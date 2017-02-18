@@ -28,14 +28,16 @@ import com.mycollab.i18n.LocalizationHelper;
 import com.mycollab.module.user.events.UserEvent;
 import com.mycollab.shell.events.ShellEvent;
 import com.mycollab.vaadin.MyCollabUI;
-import com.mycollab.vaadin.mvp.AbstractPageView;
+import com.mycollab.vaadin.mvp.AbstractVerticalPageView;
 import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.mvp.ViewEvent;
+import com.mycollab.vaadin.ui.AccountAssetsResolver;
 import com.mycollab.vaadin.ui.ELabel;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.mycollab.web.CustomLayoutExt;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.event.ShortcutAction;
+import com.vaadin.server.Resource;
 import com.vaadin.ui.*;
 import org.vaadin.viritin.button.MButton;
 
@@ -44,7 +46,7 @@ import org.vaadin.viritin.button.MButton;
  * @since 1.0
  */
 @ViewComponent
-public class LoginViewImpl extends AbstractPageView implements LoginView {
+public class LoginViewImpl extends AbstractVerticalPageView implements LoginView {
     private static final long serialVersionUID = 1L;
 
     public LoginViewImpl() {
@@ -67,23 +69,28 @@ public class LoginViewImpl extends AbstractPageView implements LoginView {
         @Override
         protected Component createContent(TextField usernameField, PasswordField passwordField, Button loginBtn) {
             custom = CustomLayoutExt.createLayout("loginForm");
+            Resource logoResource = AccountAssetsResolver.createLogoResource(MyCollabUI.getBillingAccount().getLogopath(), 150);
+            custom.addComponent(new Image(null, logoResource), "logo-here");
+            custom.addComponent(ELabel.h1(LocalizationHelper.getMessage(MyCollabUI.getDefaultLocale(), ShellI18nEnum.BUTTON_LOG_IN))
+                    .withWidthUndefined(), "form-header");
             custom.addStyleName("customLoginForm");
             custom.addComponent(usernameField, "usernameField");
-            StringLengthValidator passwordValidator = new StringLengthValidator(
-                    "Password length must be greater than 6", 6, Integer.MAX_VALUE, false);
+            StringLengthValidator passwordValidator = new StringLengthValidator("Password length must be greater than 6", 6,
+                    Integer.MAX_VALUE, false);
             passwordField.addValidator(passwordValidator);
             custom.addComponent(passwordField, "passwordField");
 
-            rememberMe = new CheckBox(LocalizationHelper.getMessage(MyCollabUI.getDefaultLocale(), ShellI18nEnum.OPT_REMEMBER_PASSWORD), false);
+            rememberMe = new CheckBox(LocalizationHelper.getMessage(MyCollabUI.getDefaultLocale(), ShellI18nEnum.OPT_REMEMBER_PASSWORD),
+                    false);
             custom.addComponent(rememberMe, "rememberMe");
 
-            loginBtn.setStyleName(WebUIConstants.BUTTON_ACTION);
+            loginBtn.setStyleName(WebThemes.BUTTON_ACTION);
             loginBtn.setClickShortcut(ShortcutAction.KeyCode.ENTER);
             custom.addComponent(loginBtn, "loginButton");
 
             MButton forgotPasswordBtn = new MButton(LocalizationHelper.getMessage(MyCollabUI.getDefaultLocale(),
                     ShellI18nEnum.BUTTON_FORGOT_PASSWORD), clickEvent -> EventBusFactory.getInstance().post(new ShellEvent.GotoForgotPasswordPage(this, null)))
-                    .withStyleName(WebUIConstants.BUTTON_LINK);
+                    .withStyleName(WebThemes.BUTTON_LINK);
             custom.addComponent(forgotPasswordBtn, "forgotLink");
 
             custom.addComponent(ELabel.html(LocalizationHelper.getMessage(MyCollabUI.getDefaultLocale(), ShellI18nEnum.OPT_REMEMBER_PASSWORD,
@@ -103,6 +110,10 @@ public class LoginViewImpl extends AbstractPageView implements LoginView {
         @Override
         protected String getPasswordFieldCaption() {
             return LocalizationHelper.getMessage(MyCollabUI.getDefaultLocale(), ShellI18nEnum.FORM_PASSWORD);
+        }
+
+        protected String getLoginButtonCaption() {
+            return LocalizationHelper.getMessage(MyCollabUI.getDefaultLocale(), ShellI18nEnum.BUTTON_LOG_IN);
         }
 
         // You can also override this method to handle the login directly, instead of using the event mechanism

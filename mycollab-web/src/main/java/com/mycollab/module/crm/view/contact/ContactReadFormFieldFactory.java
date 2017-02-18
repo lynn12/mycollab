@@ -19,7 +19,7 @@ package com.mycollab.module.crm.view.contact;
 import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.core.MyCollabException;
 import com.mycollab.module.crm.CrmTypeConstants;
-import com.mycollab.module.crm.data.CrmLinkBuilder;
+import com.mycollab.module.crm.CrmLinkBuilder;
 import com.mycollab.module.crm.domain.Contact;
 import com.mycollab.module.crm.domain.SimpleContact;
 import com.mycollab.module.crm.i18n.OptionI18nEnum.OpportunityLeadSource;
@@ -29,8 +29,9 @@ import com.mycollab.vaadin.resources.LazyStreamSource;
 import com.mycollab.vaadin.resources.OnDemandFileDownloader;
 import com.mycollab.vaadin.ui.AbstractBeanFieldGroupViewFieldFactory;
 import com.mycollab.vaadin.ui.GenericBeanForm;
+import com.mycollab.vaadin.ui.UIConstants;
 import com.mycollab.vaadin.ui.field.*;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.mycollab.vaadin.web.ui.field.*;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.StreamResource.StreamSource;
@@ -91,14 +92,14 @@ public class ContactReadFormFieldFactory extends AbstractBeanFieldGroupViewField
             downloaderExt.extend(vcardDownloadBtn);
 
             vcardDownloadBtn.setIcon(FontAwesome.CREDIT_CARD);
-            vcardDownloadBtn.setStyleName(WebUIConstants.BUTTON_ICON_ONLY);
+            vcardDownloadBtn.setStyleName(WebThemes.BUTTON_ICON_ONLY);
             containerField.addComponentField(vcardDownloadBtn);
             containerField.getLayout().setComponentAlignment(vcardDownloadBtn, Alignment.TOP_RIGHT);
             return containerField;
         } else if (propertyId.equals("description")) {
             return new RichTextViewField(contact.getDescription());
         } else if (Contact.Field.leadsource.equalTo(propertyId)) {
-            return new I18nFormViewField(contact.getLeadsource(), OpportunityLeadSource.class);
+            return new I18nFormViewField(contact.getLeadsource(), OpportunityLeadSource.class).withStyleName(UIConstants.FIELD_NOTE);
         } else if (Contact.Field.primcountry.equalTo(propertyId)) {
             return new CountryViewField(contact.getPrimcountry());
         } else if (Contact.Field.othercountry.equalTo(propertyId)) {

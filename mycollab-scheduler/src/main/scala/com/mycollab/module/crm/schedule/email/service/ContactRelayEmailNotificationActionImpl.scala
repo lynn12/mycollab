@@ -81,7 +81,7 @@ class ContactRelayEmailNotificationActionImpl extends CrmDefaultSendingRelayEmai
     }
     
     contentGenerator.putVariable("actionHeading", context.getMessage(actionEnum, makeChangeUser))
-    contentGenerator.putVariable("summary", summary)
+    contentGenerator.putVariable("name", summary)
     contentGenerator.putVariable("summaryLink", summaryLink)
   }
   
@@ -172,7 +172,7 @@ class ContactRelayEmailNotificationActionImpl extends CrmDefaultSendingRelayEmai
     
     def formatField(context: MailContext[_], value: String): String = {
       if (StringUtils.isBlank(value)) {
-        new Span().write
+        return new Span().write
       }
       try {
         val accountId = value.toInt

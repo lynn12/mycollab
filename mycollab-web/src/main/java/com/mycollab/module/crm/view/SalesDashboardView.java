@@ -20,14 +20,13 @@ package com.mycollab.module.crm.view;
 import com.mycollab.db.arguments.NumberSearchField;
 import com.mycollab.module.crm.domain.criteria.OpportunitySearchCriteria;
 import com.mycollab.module.crm.i18n.OpportunityI18nEnum;
-import com.mycollab.module.crm.view.opportunity.IOpportunityLeadSourceDashboard;
-import com.mycollab.module.crm.view.opportunity.IOpportunitySalesStageDashboard;
+import com.mycollab.module.crm.view.opportunity.OpportunityLeadSourceDashboard;
+import com.mycollab.module.crm.view.opportunity.OpportunitySalesStageDashboard;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
-import com.mycollab.vaadin.mvp.ViewManager;
 import com.mycollab.vaadin.web.ui.Depot;
 import com.mycollab.vaadin.web.ui.OptionPopupContent;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
@@ -50,7 +49,7 @@ public class SalesDashboardView extends Depot {
         this.setContentBorder(true);
     }
 
-    public void displayReport() {
+    void displayReport() {
         final String reportName = this.reportDashboard[this.currentReportIndex];
 
         final VerticalLayout bodyContent = (VerticalLayout) this.bodyContent;
@@ -59,7 +58,7 @@ public class SalesDashboardView extends Depot {
 
         if ("OpportunitySalesStage".equals(reportName)) {
             this.setTitle(UserUIContext.getMessage(OpportunityI18nEnum.OPT_SALES_STAGE));
-            IOpportunitySalesStageDashboard salesStageDashboard = ViewManager.getCacheComponent(IOpportunitySalesStageDashboard.class);
+            OpportunitySalesStageDashboard salesStageDashboard = new OpportunitySalesStageDashboard();
             bodyContent.addComponent(salesStageDashboard);
 
             final OpportunitySearchCriteria criteria = new OpportunitySearchCriteria();
@@ -67,7 +66,7 @@ public class SalesDashboardView extends Depot {
             salesStageDashboard.displayChart(criteria);
         } else if ("OpportunityLeadSource".equals(reportName)) {
             this.setTitle(UserUIContext.getMessage(OpportunityI18nEnum.OPT_LEAD_SOURCES));
-            IOpportunityLeadSourceDashboard leadSourceDashboard = ViewManager.getCacheComponent(IOpportunityLeadSourceDashboard.class);
+            OpportunityLeadSourceDashboard leadSourceDashboard = new OpportunityLeadSourceDashboard();
             bodyContent.addComponent(leadSourceDashboard);
 
             final OpportunitySearchCriteria criteria = new OpportunitySearchCriteria();
@@ -79,7 +78,7 @@ public class SalesDashboardView extends Depot {
     private void initUI() {
         final PopupButton saleChartPopup = new PopupButton("");
         saleChartPopup.setIcon(FontAwesome.CARET_SQUARE_O_DOWN);
-        saleChartPopup.setStyleName(WebUIConstants.BUTTON_ICON_ONLY);
+        saleChartPopup.setStyleName(WebThemes.BUTTON_ICON_ONLY);
 
         final OptionPopupContent filterBtnLayout = new OptionPopupContent();
 

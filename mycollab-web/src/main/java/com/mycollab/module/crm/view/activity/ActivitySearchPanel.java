@@ -21,7 +21,7 @@ import com.mycollab.db.arguments.NumberSearchField;
 import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.module.crm.CrmTypeConstants;
 import com.mycollab.module.crm.domain.criteria.ActivitySearchCriteria;
-import com.mycollab.module.crm.events.ActivityEvent;
+import com.mycollab.module.crm.event.ActivityEvent;
 import com.mycollab.module.crm.i18n.CallI18nEnum;
 import com.mycollab.module.crm.i18n.MeetingI18nEnum;
 import com.mycollab.module.crm.i18n.TaskI18nEnum;
@@ -30,10 +30,7 @@ import com.mycollab.security.RolePermissionCollections;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.HeaderWithFontAwesome;
-import com.mycollab.vaadin.web.ui.DefaultGenericSearchPanel;
-import com.mycollab.vaadin.web.ui.OptionPopupContent;
-import com.mycollab.vaadin.web.ui.SplitButton;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.*;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.*;
@@ -64,7 +61,7 @@ public class ActivitySearchPanel extends DefaultGenericSearchPanel<ActivitySearc
         final SplitButton splitBtn = new SplitButton();
         splitBtn.setSizeUndefined();
         splitBtn.setEnabled(UserUIContext.canWrite(RolePermissionCollections.CRM_CALL) || UserUIContext.canWrite(RolePermissionCollections.CRM_MEETING));
-        splitBtn.addStyleName(WebUIConstants.BUTTON_ACTION);
+        splitBtn.addStyleName(WebThemes.BUTTON_ACTION);
         splitBtn.setIcon(FontAwesome.PLUS);
         splitBtn.setCaption(UserUIContext.getMessage(TaskI18nEnum.NEW));
         splitBtn.addClickListener(event -> EventBusFactory.getInstance().post(new ActivityEvent.TaskAdd(this, null)));
@@ -88,12 +85,12 @@ public class ActivitySearchPanel extends DefaultGenericSearchPanel<ActivitySearc
         ButtonGroup viewSwitcher = new ButtonGroup();
 
         Button calendarViewBtn = new Button("Calendar", clickEvent -> EventBusFactory.getInstance().post(new ActivityEvent.GotoCalendar(this, null)));
-        calendarViewBtn.addStyleName(WebUIConstants.BUTTON_ACTION);
+        calendarViewBtn.addStyleName(WebThemes.BUTTON_ACTION);
         viewSwitcher.addButton(calendarViewBtn);
 
         Button activityListBtn = new Button("Activities");
         activityListBtn.setStyleName("selected");
-        activityListBtn.addStyleName(WebUIConstants.BUTTON_ACTION);
+        activityListBtn.addStyleName(WebThemes.BUTTON_ACTION);
         viewSwitcher.addButton(activityListBtn);
 
         return new MHorizontalLayout(splitBtn, viewSwitcher);
@@ -114,11 +111,6 @@ public class ActivitySearchPanel extends DefaultGenericSearchPanel<ActivitySearc
         }
 
         @Override
-        public ComponentContainer constructHeader() {
-            return ActivitySearchPanel.this.constructHeader();
-        }
-
-        @Override
         public ComponentContainer constructBody() {
             MHorizontalLayout basicSearchBody = new MHorizontalLayout().withMargin(true);
 
@@ -130,12 +122,12 @@ public class ActivitySearchPanel extends DefaultGenericSearchPanel<ActivitySearc
             basicSearchBody.with(myItemCheckbox).withAlign(myItemCheckbox, Alignment.MIDDLE_CENTER);
 
             MButton searchBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_SEARCH), clickEvent -> callSearchAction())
-                    .withIcon(FontAwesome.SEARCH).withStyleName(WebUIConstants.BUTTON_ACTION)
+                    .withIcon(FontAwesome.SEARCH).withStyleName(WebThemes.BUTTON_ACTION)
                     .withClickShortcut(ShortcutAction.KeyCode.ENTER);
             basicSearchBody.with(searchBtn).withAlign(searchBtn, Alignment.MIDDLE_LEFT);
 
             MButton clearBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CLEAR), clickEvent -> nameField.setValue(""))
-                    .withStyleName(WebUIConstants.BUTTON_OPTION);
+                    .withStyleName(WebThemes.BUTTON_OPTION);
             basicSearchBody.with(clearBtn).withAlign(clearBtn, Alignment.MIDDLE_LEFT);
             return basicSearchBody;
         }

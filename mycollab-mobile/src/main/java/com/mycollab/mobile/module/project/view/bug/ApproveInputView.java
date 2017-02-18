@@ -21,7 +21,7 @@ import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.common.service.CommentService;
 import com.mycollab.core.utils.StringUtils;
 import com.mycollab.eventmanager.EventBusFactory;
-import com.mycollab.mobile.module.project.view.settings.ProjectMemberSelectionField;
+import com.mycollab.mobile.module.project.view.settings.ProjectMemberListSelect;
 import com.mycollab.mobile.shell.events.ShellEvent;
 import com.mycollab.mobile.ui.AbstractMobilePageView;
 import com.mycollab.mobile.ui.grid.GridFormLayoutHelper;
@@ -36,9 +36,9 @@ import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.AbstractBeanFieldGroupEditFieldFactory;
+import com.mycollab.vaadin.ui.AbstractFormLayoutFactory;
 import com.mycollab.vaadin.ui.AdvancedEditBeanForm;
 import com.mycollab.vaadin.ui.GenericBeanForm;
-import com.mycollab.vaadin.ui.AbstractFormLayoutFactory;
 import com.vaadin.ui.*;
 
 import java.util.GregorianCalendar;
@@ -54,7 +54,7 @@ class ApproveInputView extends AbstractMobilePageView {
     private final BugReadView callbackForm;
 
     ApproveInputView(final BugReadView callbackForm, final SimpleBug bug) {
-        this.setCaption(UserUIContext.getMessage(BugI18nEnum.OPT_APPROVE_BUG, bug.getSummary()));
+        this.setCaption(UserUIContext.getMessage(BugI18nEnum.OPT_APPROVE_BUG, bug.getName()));
         this.bug = bug;
         this.callbackForm = callbackForm;
 
@@ -110,17 +110,17 @@ class ApproveInputView extends AbstractMobilePageView {
             private GridFormLayoutHelper informationLayout;
 
             @Override
-            public ComponentContainer getLayout() {
+            public AbstractComponent getLayout() {
                 informationLayout = GridFormLayoutHelper.defaultFormLayoutHelper(1, 2);
                 return informationLayout.getLayout();
             }
 
             @Override
             public Component onAttachField(Object propertyId, final Field<?> field) {
-                if (propertyId.equals("assignuser")) {
+                if (BugWithBLOBs.Field.assignuser.equalTo(propertyId)) {
                     return informationLayout.addComponent(field, UserUIContext.getMessage(GenericI18Enum.FORM_ASSIGNEE), 0, 0);
                 } else if (propertyId.equals("comment")) {
-                    return informationLayout.addComponent(field, "Comments", 0, 1);
+                    return informationLayout.addComponent(field, UserUIContext.getMessage(GenericI18Enum.OPT_COMMENTS), 0, 1);
                 }
                 return null;
             }
@@ -135,8 +135,8 @@ class ApproveInputView extends AbstractMobilePageView {
 
             @Override
             protected Field<?> onCreateField(final Object propertyId) {
-                if (propertyId.equals("assignuser")) {
-                    return new ProjectMemberSelectionField();
+                if (BugWithBLOBs.Field.assignuser.equalTo(propertyId)) {
+                    return new ProjectMemberListSelect();
                 } else if (propertyId.equals("comment")) {
                     commentArea = new TextArea();
                     commentArea.setNullRepresentation("");

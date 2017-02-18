@@ -23,12 +23,11 @@ import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.module.project.CurrentProjectVariables;
 import com.mycollab.module.project.ProjectRolePermissionCollections;
 import com.mycollab.module.project.domain.criteria.ProjectRoleSearchCriteria;
-import com.mycollab.module.project.events.ProjectRoleEvent;
+import com.mycollab.module.project.event.ProjectRoleEvent;
 import com.mycollab.module.project.i18n.ProjectRoleI18nEnum;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.HeaderWithFontAwesome;
-import com.mycollab.vaadin.web.ui.DefaultGenericSearchPanel;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.*;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.*;
@@ -62,7 +61,7 @@ public class ProjectRoleSearchPanel extends DefaultGenericSearchPanel<ProjectRol
     protected Component buildExtraControls() {
         MButton createBtn = new MButton(UserUIContext.getMessage(ProjectRoleI18nEnum.NEW),
                 clickEvent -> EventBusFactory.getInstance().post(new ProjectRoleEvent.GotoAdd(this, null)))
-                .withIcon(FontAwesome.PLUS).withStyleName(WebUIConstants.BUTTON_ACTION);
+                .withIcon(FontAwesome.PLUS).withStyleName(WebThemes.BUTTON_ACTION);
         createBtn.setVisible(CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.ROLES));
         return createBtn;
     }
@@ -76,11 +75,6 @@ public class ProjectRoleSearchPanel extends DefaultGenericSearchPanel<ProjectRol
         }
 
         @Override
-        public ComponentContainer constructHeader() {
-            return ProjectRoleSearchPanel.this.constructHeader();
-        }
-
-        @Override
         public ComponentContainer constructBody() {
             MHorizontalLayout basicSearchBody = new MHorizontalLayout().withMargin(true);
             basicSearchBody.setDefaultComponentAlignment(Alignment.MIDDLE_LEFT);
@@ -90,12 +84,12 @@ public class ProjectRoleSearchPanel extends DefaultGenericSearchPanel<ProjectRol
             basicSearchBody.addComponent(nameField);
 
             MButton searchBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_SEARCH), clickEvent -> callSearchAction())
-                    .withIcon(FontAwesome.SEARCH).withStyleName(WebUIConstants.BUTTON_ACTION)
+                    .withIcon(FontAwesome.SEARCH).withStyleName(WebThemes.BUTTON_ACTION)
                     .withClickShortcut(ShortcutAction.KeyCode.ENTER);
             basicSearchBody.addComponent(searchBtn);
 
             MButton clearBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CLEAR), clickEvent -> nameField.setValue(""))
-                    .withStyleName(WebUIConstants.BUTTON_OPTION);
+                    .withStyleName(WebThemes.BUTTON_OPTION);
             basicSearchBody.addComponent(clearBtn);
             return basicSearchBody;
         }

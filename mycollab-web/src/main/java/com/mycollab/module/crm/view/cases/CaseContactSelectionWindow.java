@@ -17,16 +17,19 @@
 package com.mycollab.module.crm.view.cases;
 
 import com.mycollab.common.i18n.GenericI18Enum;
+import com.mycollab.module.crm.CrmTooltipGenerator;
 import com.mycollab.module.crm.domain.SimpleContact;
 import com.mycollab.module.crm.domain.criteria.ContactSearchCriteria;
+import com.mycollab.module.crm.fielddef.ContactTableFieldDef;
 import com.mycollab.module.crm.i18n.ContactI18nEnum;
 import com.mycollab.module.crm.ui.components.RelatedItemSelectionWindow;
 import com.mycollab.module.crm.view.contact.ContactSearchPanel;
 import com.mycollab.module.crm.view.contact.ContactTableDisplay;
-import com.mycollab.module.crm.view.contact.ContactTableFieldDef;
+import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
-import com.vaadin.ui.Button;
+import com.mycollab.vaadin.ui.ELabel;
+import com.mycollab.vaadin.web.ui.WebThemes;
+import org.vaadin.viritin.button.MButton;
 
 import java.util.Arrays;
 
@@ -47,8 +50,16 @@ public class CaseContactSelectionWindow extends RelatedItemSelectionWindow<Simpl
                 Arrays.asList(ContactTableFieldDef.name(), ContactTableFieldDef.email(),
                         ContactTableFieldDef.phoneOffice(), ContactTableFieldDef.account()));
 
-        Button selectBtn = new Button(UserUIContext.getMessage(GenericI18Enum.BUTTON_SELECT), clickEvent -> close());
-        selectBtn.setStyleName(WebUIConstants.BUTTON_ACTION);
+        tableItem.addGeneratedColumn("contactName", (source, itemId, columnId) -> {
+            final SimpleContact contact = tableItem.getBeanByIndex(itemId);
+
+            return new ELabel(contact.getContactName()).withStyleName(WebThemes.BUTTON_LINK)
+                    .withDescription(CrmTooltipGenerator.generateToolTipContact(UserUIContext.getUserLocale(), MyCollabUI.getDateFormat(),
+                            contact, MyCollabUI.getSiteUrl(), UserUIContext.getUserTimeZone()));
+        });
+
+        MButton selectBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_SELECT), clickEvent -> close())
+                .withStyleName(WebThemes.BUTTON_ACTION);
 
         ContactSearchPanel searchPanel = new ContactSearchPanel();
         searchPanel.addSearchHandler(criteria -> tableItem.setSearchCriteria(criteria));

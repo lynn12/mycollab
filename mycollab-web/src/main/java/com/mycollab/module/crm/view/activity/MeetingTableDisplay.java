@@ -18,7 +18,7 @@
 package com.mycollab.module.crm.view.activity;
 
 import com.mycollab.common.TableViewField;
-import com.mycollab.module.crm.data.CrmLinkBuilder;
+import com.mycollab.module.crm.CrmLinkBuilder;
 import com.mycollab.module.crm.domain.SimpleMeeting;
 import com.mycollab.module.crm.domain.criteria.MeetingSearchCriteria;
 import com.mycollab.module.crm.i18n.OptionI18nEnum.CallStatus;
@@ -27,7 +27,7 @@ import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.ELabel;
 import com.mycollab.vaadin.web.ui.LabelLink;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.mycollab.vaadin.web.ui.table.DefaultPagedBeanTable;
 import com.vaadin.ui.Label;
 
@@ -48,13 +48,13 @@ public class MeetingTableDisplay extends DefaultPagedBeanTable<MeetingService, M
             final SimpleMeeting meeting = getBeanByIndex(itemId);
 
             LabelLink b = new LabelLink(meeting.getSubject(), CrmLinkBuilder.generateMeetingPreviewLinkFull(meeting.getId()));
-            b.addStyleName(WebUIConstants.LINK_COMPLETED);
+            b.addStyleName(WebThemes.LINK_COMPLETED);
 
             if (CallStatus.Held.name().equals(meeting.getStatus())) {
-                b.addStyleName(WebUIConstants.LINK_COMPLETED);
+                b.addStyleName(WebThemes.LINK_COMPLETED);
             } else {
                 if (meeting.getEnddate() != null && (meeting.getEnddate().before(new GregorianCalendar().getTime()))) {
-                    b.addStyleName(WebUIConstants.LINK_OVERDUE);
+                    b.addStyleName(WebThemes.LINK_OVERDUE);
                 }
             }
             return b;

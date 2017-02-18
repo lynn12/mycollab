@@ -18,7 +18,7 @@ package com.mycollab.db.query;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.mycollab.common.i18n.QueryI18nEnum;
+import com.mycollab.common.i18n.QueryI18nEnum.CollectionI18nEnum;
 import com.mycollab.core.MyCollabException;
 import com.mycollab.core.utils.BeanUtility;
 import com.mycollab.core.utils.StringUtils;
@@ -38,7 +38,7 @@ import static com.mycollab.common.i18n.QueryI18nEnum.CollectionI18nEnum.valueOf;
  * @author MyCollab Ltd.
  * @since 4.0
  */
-public class SearchFieldInfo implements Serializable {
+public class SearchFieldInfo<S extends SearchCriteria> implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String prefixOper;
@@ -60,11 +60,15 @@ public class SearchFieldInfo implements Serializable {
     }
 
     public static SearchFieldInfo inCollection(PropertyListParam param, VariableInjector value) {
-        return new SearchFieldInfo(SearchField.AND, param, QueryI18nEnum.CollectionI18nEnum.IN.name(), value);
+        return new SearchFieldInfo(SearchField.AND, param, CollectionI18nEnum.IN.name(), value);
     }
 
     public static SearchFieldInfo inCollection(I18nStringListParam param, VariableInjector value) {
-        return new SearchFieldInfo(SearchField.AND, param, QueryI18nEnum.CollectionI18nEnum.IN.name(), value);
+        return new SearchFieldInfo(SearchField.AND, param, CollectionI18nEnum.IN.name(), value);
+    }
+
+    public static SearchFieldInfo notInCollection(I18nStringListParam param, VariableInjector value) {
+        return new SearchFieldInfo(SearchField.AND, param, CollectionI18nEnum.NOT_IN.name(), value);
     }
 
     public static SearchFieldInfo inCollection(StringListParam param, VariableInjector value) {
@@ -114,7 +118,7 @@ public class SearchFieldInfo implements Serializable {
         return variableInjector.eval();
     }
 
-    public SearchField buildSearchField() {
+    public SearchField buildSearchField(S searchCriteria) {
         if (param instanceof StringParam) {
             StringParam wrapParam = (StringParam) param;
             return wrapParam.buildSearchField(prefixOper, compareOper, (String) this.eval());
@@ -127,7 +131,7 @@ public class SearchFieldInfo implements Serializable {
             }
         } else if (param instanceof I18nStringListParam) {
             I18nStringListParam wrapParam = (I18nStringListParam) param;
-            QueryI18nEnum.CollectionI18nEnum compareValue = valueOf(compareOper);
+            CollectionI18nEnum compareValue = valueOf(compareOper);
             switch (compareValue) {
                 case IN:
                     return wrapParam.buildStringParamInList(prefixOper, (Collection<String>) this.eval());
@@ -149,7 +153,7 @@ public class SearchFieldInfo implements Serializable {
             return null;
         } else if (param instanceof PropertyListParam) {
             PropertyListParam wrapParam = (PropertyListParam) param;
-            QueryI18nEnum.CollectionI18nEnum compareValue = QueryI18nEnum.CollectionI18nEnum.valueOf(compareOper);
+            CollectionI18nEnum compareValue = CollectionI18nEnum.valueOf(compareOper);
             switch (compareValue) {
                 case IN:
                     return wrapParam.buildPropertyParamInList(prefixOper, (Collection<?>) this.eval());
@@ -160,12 +164,25 @@ public class SearchFieldInfo implements Serializable {
             }
         } else if (param instanceof CustomSqlParam) {
             CustomSqlParam wrapParam = (CustomSqlParam) param;
-            QueryI18nEnum.CollectionI18nEnum compareValue = QueryI18nEnum.CollectionI18nEnum.valueOf(compareOper);
+            CollectionI18nEnum compareValue = CollectionI18nEnum.valueOf(compareOper);
             switch (compareValue) {
                 case IN:
                     return wrapParam.buildPropertyParamInList(prefixOper, (Collection<?>) this.eval());
                 case NOT_IN:
                     return wrapParam.buildPropertyParamNotInList(prefixOper, (Collection<?>) this.eval());
+                default:
+                    throw new MyCollabException("Not support yet");
+            }
+        } else if (param instanceof SearchCriteriaBridgeParam) {
+            SearchCriteriaBridgeParam wrapParam = (SearchCriteriaBridgeParam) param;
+            CollectionI18nEnum compareValue = CollectionI18nEnum.valueOf(compareOper);
+            switch (compareValue) {
+                case IN:
+                    wrapParam.injectCriteriaInList(searchCriteria, prefixOper, (Collection<?>) this.eval());
+                    return null;
+                case NOT_IN:
+                    wrapParam.injectCriteriaNotInList(searchCriteria, prefixOper, (Collection<?>) this.eval());
+                    return null;
                 default:
                     throw new MyCollabException("Not support yet");
             }
@@ -195,14 +212,14 @@ public class SearchFieldInfo implements Serializable {
 
     public static <S extends SearchCriteria> S buildSearchCriteria(Class<S> cls, List<SearchFieldInfo> fieldInfos) {
         try {
-            S obj = cls.newInstance();
+            S searchCriteria = cls.newInstance();
             for (SearchFieldInfo info : fieldInfos) {
-                SearchField searchField = info.buildSearchField();
+                SearchField searchField = info.buildSearchField(searchCriteria);
                 if (searchField != null) {
-                    obj.addExtraField(searchField);
+                    searchCriteria.addExtraField(searchField);
                 }
             }
-            return obj;
+            return searchCriteria;
         } catch (Exception e) {
             throw new MyCollabException(e);
         }
@@ -210,14 +227,14 @@ public class SearchFieldInfo implements Serializable {
 
     public static <S extends SearchCriteria> S buildSearchCriteria(S searchCriteria, List<SearchFieldInfo> fieldInfos) {
         try {
-            S obj = BeanUtility.deepClone(searchCriteria);
+            S tmpSearchCriteria = BeanUtility.deepClone(searchCriteria);
             for (SearchFieldInfo info : fieldInfos) {
-                SearchField searchField = info.buildSearchField();
+                SearchField searchField = info.buildSearchField(tmpSearchCriteria);
                 if (searchField != null) {
-                    obj.addExtraField(searchField);
+                    tmpSearchCriteria.addExtraField(searchField);
                 }
             }
-            return obj;
+            return tmpSearchCriteria;
         } catch (Exception e) {
             throw new MyCollabException(e);
         }

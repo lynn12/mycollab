@@ -14,10 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with mycollab-web.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package com.mycollab.module.project.view.user;
 
-import com.mycollab.vaadin.mvp.AbstractPageView;
+import com.mycollab.vaadin.mvp.AbstractSingleContainerPageView;
 import com.mycollab.vaadin.mvp.ViewComponent;
 
 /**
@@ -25,6 +24,6 @@ import com.mycollab.vaadin.mvp.ViewComponent;
  * @since 1.0
  */
 @ViewComponent
-public class ProjectDashboardContainer extends AbstractPageView {
+public class ProjectDashboardContainer extends AbstractSingleContainerPageView {
     private static final long serialVersionUID = 1L;
 }

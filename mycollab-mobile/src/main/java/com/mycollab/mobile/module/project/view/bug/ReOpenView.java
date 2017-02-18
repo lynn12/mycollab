@@ -20,7 +20,7 @@ import com.mycollab.common.domain.CommentWithBLOBs;
 import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.common.service.CommentService;
 import com.mycollab.eventmanager.EventBusFactory;
-import com.mycollab.mobile.module.project.view.settings.ProjectMemberSelectionField;
+import com.mycollab.mobile.module.project.view.settings.ProjectMemberListSelect;
 import com.mycollab.mobile.shell.events.ShellEvent;
 import com.mycollab.mobile.ui.AbstractMobilePageView;
 import com.mycollab.mobile.ui.grid.GridFormLayoutHelper;
@@ -52,7 +52,7 @@ class ReOpenView extends AbstractMobilePageView {
     private final BugReadView callbackForm;
 
     ReOpenView(final BugReadView callbackForm, final SimpleBug bug) {
-        this.setCaption(UserUIContext.getMessage(BugI18nEnum.OPT_REOPEN_BUG, bug.getSummary()));
+        this.setCaption(bug.getName());
         this.bug = bug;
         this.callbackForm = callbackForm;
 
@@ -69,11 +69,11 @@ class ReOpenView extends AbstractMobilePageView {
 
         final Button reOpenBtn = new Button(UserUIContext.getMessage(GenericI18Enum.BUTTON_REOPEN), clickEvent -> {
             if (editForm.validateForm()) {
-                ReOpenView.this.bug.setStatus(BugStatus.ReOpen.name());
+                bug.setStatus(BugStatus.ReOpen.name());
 
                 // Save bug status and assignee
                 final BugService bugService = AppContextUtil.getSpringBean(BugService.class);
-                bugService.updateSelectiveWithSession(ReOpenView.this.bug, UserUIContext.getUsername());
+                bugService.updateSelectiveWithSession(bug, UserUIContext.getUsername());
 
                 // Save comment
                 final String commentValue = editForm.commentArea.getValue();
@@ -114,7 +114,7 @@ class ReOpenView extends AbstractMobilePageView {
             private GridFormLayoutHelper informationLayout;
 
             @Override
-            public ComponentContainer getLayout() {
+            public AbstractComponent getLayout() {
                 informationLayout = GridFormLayoutHelper.defaultFormLayoutHelper(1, 3);
                 return informationLayout.getLayout();
             }
@@ -141,10 +141,8 @@ class ReOpenView extends AbstractMobilePageView {
 
             @Override
             protected Field<?> onCreateField(final Object propertyId) {
-                if (propertyId.equals("resolution")) {
-                    return BugResolutionComboBox.getInstanceForValidBugWindow();
-                } else if (propertyId.equals("assignuser")) {
-                    return new ProjectMemberSelectionField();
+                if (BugWithBLOBs.Field.assignuser.equalTo(propertyId)) {
+                    return new ProjectMemberListSelect();
                 } else if (propertyId.equals("comment")) {
                     commentArea = new TextArea();
                     commentArea.setNullRepresentation("");

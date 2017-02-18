@@ -23,7 +23,6 @@ import com.mycollab.mobile.module.project.view.AbstractProjectPresenter;
 import com.mycollab.mobile.shell.events.ShellEvent;
 import com.mycollab.mobile.ui.ConfirmDialog;
 import com.mycollab.module.project.CurrentProjectVariables;
-import com.mycollab.module.project.ProjectLinkGenerator;
 import com.mycollab.module.project.ProjectRolePermissionCollections;
 import com.mycollab.module.project.domain.SimpleTask;
 import com.mycollab.module.project.domain.Task;
@@ -34,7 +33,7 @@ import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.events.DefaultPreviewFormHandler;
 import com.mycollab.vaadin.mvp.ScreenData;
 import com.mycollab.vaadin.ui.NotificationUtil;
-import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.UI;
 
 /**
@@ -51,11 +50,6 @@ public class TaskReadPresenter extends AbstractProjectPresenter<TaskReadView> {
     @Override
     protected void postInitView() {
         this.view.getPreviewFormHandlers().addFormHandler(new DefaultPreviewFormHandler<SimpleTask>() {
-
-            @Override
-            public void onEdit(final SimpleTask data) {
-                EventBusFactory.getInstance().post(new TaskEvent.GotoEdit(this, data));
-            }
 
             @Override
             public void onDelete(final SimpleTask data) {
@@ -82,18 +76,15 @@ public class TaskReadPresenter extends AbstractProjectPresenter<TaskReadView> {
     }
 
     @Override
-    protected void onGo(final ComponentContainer container, final ScreenData<?> data) {
+    protected void onGo(final HasComponents container, final ScreenData<?> data) {
         if (CurrentProjectVariables.canRead(ProjectRolePermissionCollections.TASKS)) {
             if (data.getParams() instanceof Integer) {
                 ProjectTaskService taskService = AppContextUtil.getSpringBean(ProjectTaskService.class);
                 SimpleTask task = taskService.findById((Integer) data.getParams(), MyCollabUI.getAccountId());
 
                 if (task != null) {
-                    this.view.previewItem(task);
+                    view.previewItem(task);
                     super.onGo(container, data);
-
-                    MyCollabUI.addFragment(ProjectLinkGenerator.generateTaskPreviewLink(task.getTaskkey(),
-                            task.getProjectShortname()), task.getTaskname());
                 } else {
                     NotificationUtil.showRecordNotExistNotification();
                 }

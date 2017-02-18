@@ -36,7 +36,7 @@ import com.mycollab.vaadin.ui.ELabel;
 import com.mycollab.vaadin.web.ui.ConfirmDialogExt;
 import com.mycollab.vaadin.web.ui.OptionPopupContent;
 import com.mycollab.vaadin.web.ui.SplitButton;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.*;
@@ -54,6 +54,7 @@ public class AccountContactListComp extends RelatedListComp2<ContactService, Con
 
     public AccountContactListComp() {
         super(AppContextUtil.getSpringBean(ContactService.class), 20);
+        setMargin(true);
         this.setBlockDisplayHandler(new AccountContactBlockDisplay());
     }
 
@@ -64,7 +65,7 @@ public class AccountContactListComp extends RelatedListComp2<ContactService, Con
 
         if (UserUIContext.canWrite(RolePermissionCollections.CRM_CONTACT)) {
             final SplitButton controlsBtn = new SplitButton();
-            controlsBtn.addStyleName(WebUIConstants.BUTTON_ACTION);
+            controlsBtn.addStyleName(WebThemes.BUTTON_ACTION);
             controlsBtn.setCaption(UserUIContext.getMessage(ContactI18nEnum.NEW));
             controlsBtn.setIcon(FontAwesome.PLUS);
             controlsBtn.addClickListener(event -> fireNewRelatedItem(""));
@@ -88,7 +89,7 @@ public class AccountContactListComp extends RelatedListComp2<ContactService, Con
         return controlsBtnWrap;
     }
 
-    public void displayContacts(final Account account) {
+    void displayContacts(Account account) {
         this.account = account;
         loadContacts();
     }
@@ -139,13 +140,13 @@ public class AccountContactListComp extends RelatedListComp2<ContactService, Con
                                 AccountContactListComp.this.refresh();
                             }
                         });
-            }).withIcon(FontAwesome.TRASH_O).withStyleName(WebUIConstants.BUTTON_ICON_ONLY);
+            }).withIcon(FontAwesome.TRASH_O).withStyleName(WebThemes.BUTTON_ICON_ONLY);
 
             blockContent.addComponent(btnDelete);
             blockContent.setComponentAlignment(btnDelete, Alignment.TOP_RIGHT);
 
-            Label contactName = new Label(String.format("Name: <a href='%s%s'>%s</a>", MyCollabUI.getSiteUrl(), CrmLinkGenerator.generateCrmItemLink(
-                    CrmTypeConstants.CONTACT, contact.getId()), contact.getContactName()), ContentMode.HTML);
+            ELabel contactName = ELabel.html(String.format("Name: <a href='%s'>%s</a>", CrmLinkGenerator.generateCrmItemLink(
+                    CrmTypeConstants.CONTACT, contact.getId()), contact.getContactName()));
             contactInfo.addComponent(contactName);
 
             Label contactTitle = new Label("Title: " + MoreObjects.firstNonNull(contact.getTitle(), ""));
@@ -155,7 +156,8 @@ public class AccountContactListComp extends RelatedListComp2<ContactService, Con
                     String.format("<a href='mailto:%s'>%s</a>", contact.getEmail(), contact.getEmail())), ContentMode.HTML);
             contactInfo.addComponent(contactEmail);
 
-            Label contactOfficePhone = new Label(String.format("Office Phone: %s", MoreObjects.firstNonNull(contact.getOfficephone(), "")));
+            Label contactOfficePhone = new Label(String.format("Office Phone: %s",
+                    MoreObjects.firstNonNull(contact.getOfficephone(), "")));
             contactInfo.addComponent(contactOfficePhone);
 
             blockTop.addComponent(contactInfo);

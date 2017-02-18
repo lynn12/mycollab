@@ -16,43 +16,33 @@
  */
 package com.mycollab.module.project.view.milestone;
 
-import com.mycollab.common.i18n.GenericI18Enum;
-import com.mycollab.common.i18n.OptionI18nEnum;
+import com.mycollab.common.i18n.OptionI18nEnum.StatusI18nEnum;
 import com.mycollab.configuration.SiteConfiguration;
 import com.mycollab.core.arguments.ValuedBean;
 import com.mycollab.core.utils.BeanUtility;
-import com.mycollab.db.arguments.NumberSearchField;
-import com.mycollab.db.arguments.SearchField;
-import com.mycollab.db.arguments.SetSearchField;
 import com.mycollab.module.project.CurrentProjectVariables;
 import com.mycollab.module.project.ProjectRolePermissionCollections;
 import com.mycollab.module.project.ProjectTypeConstants;
-import com.mycollab.module.project.domain.Milestone;
 import com.mycollab.module.project.domain.SimpleMilestone;
-import com.mycollab.module.project.domain.criteria.ProjectGenericTaskSearchCriteria;
 import com.mycollab.module.project.i18n.MilestoneI18nEnum;
-import com.mycollab.module.project.i18n.OptionI18nEnum.MilestoneStatus;
 import com.mycollab.module.project.i18n.ProjectCommonI18nEnum;
-import com.mycollab.module.project.service.MilestoneService;
-import com.mycollab.module.project.service.ProjectGenericTaskService;
 import com.mycollab.module.project.ui.ProjectAssetsManager;
 import com.mycollab.module.project.ui.components.*;
-import com.mycollab.spring.AppContextUtil;
-import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.events.HasPreviewFormHandlers;
 import com.mycollab.vaadin.mvp.ViewComponent;
-import com.mycollab.vaadin.ui.UIConstants;
+import com.mycollab.vaadin.ui.ELabel;
 import com.mycollab.vaadin.web.ui.*;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.shared.ui.label.ContentMode;
-import com.vaadin.ui.*;
+import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.GridLayout;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.themes.ValoTheme;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 
 /**
@@ -137,39 +127,6 @@ public class MilestoneReadViewImpl extends AbstractPreviewItemComp<SimpleMilesto
         activityComponent.loadActivities("" + beanItem.getId());
         dateInfoComp.displayEntryDateTime(beanItem);
         peopleInfoComp.displayEntryPeople(beanItem);
-
-        if (!beanItem.isClosed() && CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.MILESTONES)) {
-            MButton closeBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CLOSE)).withIcon
-                    (FontAwesome.ARCHIVE).withStyleName(WebUIConstants.BUTTON_ACTION);
-            closeBtn.addClickListener(clickEvent -> {
-                beanItem.setStatus(MilestoneStatus.Closed.name());
-                MilestoneService milestoneService = AppContextUtil.getSpringBean(MilestoneService.class);
-                milestoneService.updateSelectiveWithSession(beanItem, UserUIContext.getUsername());
-                addLayoutStyleName(WebUIConstants.LINK_COMPLETED);
-                ProjectGenericTaskSearchCriteria searchCriteria = new ProjectGenericTaskSearchCriteria();
-                searchCriteria.setProjectIds(new SetSearchField<>(CurrentProjectVariables.getProjectId()));
-                searchCriteria.setTypes(new SetSearchField<>(ProjectTypeConstants.BUG, ProjectTypeConstants.RISK,
-                        ProjectTypeConstants.TASK));
-                searchCriteria.setMilestoneId(NumberSearchField.equal(beanItem.getId()));
-                searchCriteria.setIsOpenned(new SearchField());
-                ProjectGenericTaskService genericTaskService = AppContextUtil.getSpringBean(ProjectGenericTaskService.class);
-                int openAssignmentsCount = genericTaskService.getTotalCount(searchCriteria);
-                if (openAssignmentsCount > 0) {
-                    ConfirmDialogExt.show(UI.getCurrent(),
-                            UserUIContext.getMessage(GenericI18Enum.OPT_QUESTION, MyCollabUI.getSiteName()),
-                            UserUIContext.getMessage(ProjectCommonI18nEnum.OPT_CLOSE_SUB_ASSIGNMENTS),
-                            UserUIContext.getMessage(GenericI18Enum.BUTTON_YES),
-                            UserUIContext.getMessage(GenericI18Enum.BUTTON_NO),
-                            confirmDialog -> {
-                                if (confirmDialog.isConfirmed()) {
-                                    genericTaskService.closeSubAssignmentOfMilestone(beanItem.getId());
-                                }
-                            });
-                }
-                actionControls.removeComponent(closeBtn);
-            });
-            actionControls.addComponent(closeBtn, 0);
-        }
     }
 
     @Override
@@ -186,13 +143,13 @@ public class MilestoneReadViewImpl extends AbstractPreviewItemComp<SimpleMilesto
         private ToggleMilestoneSummaryField toggleMilestoneSummaryField;
 
         void displayHeader(SimpleMilestone milestone) {
-            toggleMilestoneSummaryField = new ToggleMilestoneSummaryField(milestone);
+            toggleMilestoneSummaryField = new ToggleMilestoneSummaryField(milestone, true, false);
             toggleMilestoneSummaryField.addLabelStyleName(ValoTheme.LABEL_H3);
             toggleMilestoneSummaryField.addLabelStyleName(ValoTheme.LABEL_NO_MARGIN);
-            if (OptionI18nEnum.StatusI18nEnum.Closed.name().equals(milestone.getStatus())) {
-                toggleMilestoneSummaryField.addLabelStyleName(WebUIConstants.LINK_COMPLETED);
+            if (StatusI18nEnum.Closed.name().equals(milestone.getStatus())) {
+                toggleMilestoneSummaryField.addLabelStyleName(WebThemes.LINK_COMPLETED);
             } else {
-                toggleMilestoneSummaryField.removeLabelStyleName(WebUIConstants.LINK_COMPLETED);
+                toggleMilestoneSummaryField.removeLabelStyleName(WebThemes.LINK_COMPLETED);
             }
             this.addHeader(toggleMilestoneSummaryField);
         }
@@ -215,9 +172,8 @@ public class MilestoneReadViewImpl extends AbstractPreviewItemComp<SimpleMilesto
             this.removeAllComponents();
             this.withMargin(false);
 
-            Label peopleInfoHeader = new Label(FontAwesome.USER.getHtml() + " " +
-                    UserUIContext.getMessage(ProjectCommonI18nEnum.SUB_INFO_PEOPLE), ContentMode.HTML);
-            peopleInfoHeader.setStyleName("info-hdr");
+            ELabel peopleInfoHeader = ELabel.html(FontAwesome.USER.getHtml() + " " +
+                    UserUIContext.getMessage(ProjectCommonI18nEnum.SUB_INFO_PEOPLE)).withStyleName("info-hdr");
             this.addComponent(peopleInfoHeader);
 
             GridLayout layout = new GridLayout(2, 2);
@@ -233,15 +189,14 @@ public class MilestoneReadViewImpl extends AbstractPreviewItemComp<SimpleMilesto
                 String createdUserAvatarId = (String) PropertyUtils.getProperty(bean, "createdUserAvatarId");
                 String createdUserDisplayName = (String) PropertyUtils.getProperty(bean, "createdUserFullName");
 
-                ProjectMemberLink createdUserLink = new ProjectMemberLink(createdUserName,
-                        createdUserAvatarId, createdUserDisplayName);
+                ProjectMemberLink createdUserLink = new ProjectMemberLink(createdUserName, createdUserAvatarId, createdUserDisplayName);
                 layout.addComponent(createdUserLink, 1, 0);
                 layout.setColumnExpandRatio(1, 1.0f);
 
-                Label assigneeLbl = new Label(UserUIContext.getMessage(ProjectCommonI18nEnum.ITEM_ASSIGN_PEOPLE));
-                assigneeLbl.setSizeUndefined();
+                ELabel assigneeLbl = new ELabel(UserUIContext.getMessage(ProjectCommonI18nEnum.ITEM_ASSIGN_PEOPLE))
+                        .withWidthUndefined();
                 layout.addComponent(assigneeLbl, 0, 1);
-                String assignUserName = (String) PropertyUtils.getProperty(bean, "owner");
+                String assignUserName = (String) PropertyUtils.getProperty(bean, "assignuser");
                 String assignUserAvatarId = (String) PropertyUtils.getProperty(bean, "ownerAvatarId");
                 String assignUserDisplayName = (String) PropertyUtils.getProperty(bean, "ownerFullName");
 

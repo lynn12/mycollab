@@ -32,32 +32,31 @@ import com.mycollab.module.project.ProjectRolePermissionCollections;
 import com.mycollab.module.project.ProjectTypeConstants;
 import com.mycollab.module.project.domain.SimpleTask;
 import com.mycollab.module.project.domain.criteria.TaskSearchCriteria;
-import com.mycollab.module.project.events.TaskEvent;
+import com.mycollab.module.project.event.TaskEvent;
+import com.mycollab.module.project.event.TicketEvent;
 import com.mycollab.module.project.i18n.ProjectCommonI18nEnum;
 import com.mycollab.module.project.i18n.TaskI18nEnum;
 import com.mycollab.module.project.service.ProjectTaskService;
+import com.mycollab.module.project.ui.components.BlockRowRender;
+import com.mycollab.module.project.ui.components.IBlockContainer;
 import com.mycollab.module.project.view.ProjectView;
 import com.mycollab.module.project.view.kanban.AddNewColumnWindow;
 import com.mycollab.module.project.view.kanban.DeleteColumnWindow;
-import com.mycollab.module.project.view.task.components.TaskSavedFilterComboBox;
-import com.mycollab.module.project.view.task.components.TaskSearchPanel;
-import com.mycollab.module.project.view.task.components.ToggleTaskSummaryField;
+import com.mycollab.module.project.view.service.TaskComponentFactory;
 import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.AsyncInvoker;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.events.HasSearchHandlers;
-import com.mycollab.vaadin.mvp.AbstractPageView;
+import com.mycollab.vaadin.mvp.AbstractVerticalPageView;
 import com.mycollab.vaadin.mvp.ViewComponent;
-import com.mycollab.vaadin.mvp.ViewManager;
 import com.mycollab.vaadin.ui.ELabel;
 import com.mycollab.vaadin.ui.NotificationUtil;
+import com.mycollab.vaadin.ui.UIConstants;
 import com.mycollab.vaadin.ui.UIUtils;
-import com.mycollab.vaadin.web.ui.ConfirmDialogExt;
-import com.mycollab.vaadin.web.ui.OptionPopupContent;
-import com.mycollab.vaadin.web.ui.ToggleButtonGroup;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.*;
 import com.mycollab.vaadin.web.ui.grid.GridFormLayoutHelper;
+import com.vaadin.event.ShortcutAction;
 import com.vaadin.event.dd.DragAndDropEvent;
 import com.vaadin.event.dd.DropHandler;
 import com.vaadin.event.dd.acceptcriteria.AcceptCriterion;
@@ -90,7 +89,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 5.1.1
  */
 @ViewComponent
-public class TaskKanbanBoardViewImpl extends AbstractPageView implements TaskKanbanBoardView {
+public class TaskKanbanBoardViewImpl extends AbstractVerticalPageView implements TaskKanbanBoardView {
 
     private ProjectTaskService taskService = AppContextUtil.getSpringBean(ProjectTaskService.class);
     private OptionValService optionValService = AppContextUtil.getSpringBean(OptionValService.class);
@@ -99,7 +98,7 @@ public class TaskKanbanBoardViewImpl extends AbstractPageView implements TaskKan
     private DDHorizontalLayout kanbanLayout;
     private Map<String, KanbanBlock> kanbanBlocks;
     private ComponentContainer newTaskComp = null;
-    private MButton toggleShowColumsBtn;
+    private MButton toggleShowColumnsBtn;
     private boolean displayHiddenColumns = false;
     private TaskSearchCriteria baseCriteria;
 
@@ -125,28 +124,28 @@ public class TaskKanbanBoardViewImpl extends AbstractPageView implements TaskKan
         groupWrapLayout.setDefaultComponentAlignment(Alignment.MIDDLE_LEFT);
         searchPanel.addHeaderRight(groupWrapLayout);
 
-        toggleShowColumsBtn = new MButton("", clickEvent -> {
+        toggleShowColumnsBtn = new MButton("", clickEvent -> {
             displayHiddenColumns = !displayHiddenColumns;
             reload();
             toggleShowButton();
-        }).withStyleName(WebUIConstants.BUTTON_LINK);
-        groupWrapLayout.addComponent(toggleShowColumsBtn);
+        }).withStyleName(WebThemes.BUTTON_LINK);
+        groupWrapLayout.addComponent(toggleShowColumnsBtn);
         toggleShowButton();
 
         if (CurrentProjectVariables.canAccess(ProjectRolePermissionCollections.TASKS)) {
             MButton addNewColumnBtn = new MButton(UserUIContext.getMessage(TaskI18nEnum.ACTION_NEW_COLUMN),
                     clickEvent -> UI.getCurrent().addWindow(new AddNewColumnWindow(this, ProjectTypeConstants.TASK, "status")))
-                    .withIcon(FontAwesome.PLUS).withStyleName(WebUIConstants.BUTTON_ACTION);
+                    .withIcon(FontAwesome.PLUS).withStyleName(WebThemes.BUTTON_ACTION);
             groupWrapLayout.addComponent(addNewColumnBtn);
         }
 
         MButton deleteColumnBtn = new MButton(UserUIContext.getMessage(TaskI18nEnum.ACTION_DELETE_COLUMNS),
                 clickEvent -> UI.getCurrent().addWindow(new DeleteColumnWindow(this, ProjectTypeConstants.TASK)))
-                .withIcon(FontAwesome.TRASH_O).withStyleName(WebUIConstants.BUTTON_DANGER);
+                .withIcon(FontAwesome.TRASH_O).withStyleName(WebThemes.BUTTON_DANGER);
         deleteColumnBtn.setVisible(CurrentProjectVariables.canAccess(ProjectRolePermissionCollections.TASKS));
 
         MButton advanceDisplayBtn = new MButton(UserUIContext.getMessage(ProjectCommonI18nEnum.OPT_LIST),
-                clickEvent -> EventBusFactory.getInstance().post(new TaskEvent.GotoDashboard(this, null)))
+                clickEvent -> EventBusFactory.getInstance().post(new TicketEvent.GotoDashboard(this, null)))
                 .withIcon(FontAwesome.NAVICON).withWidth("100px");
 
         MButton kanbanBtn = new MButton(UserUIContext.getMessage(ProjectCommonI18nEnum.OPT_KANBAN)).withIcon(FontAwesome.TH)
@@ -212,9 +211,9 @@ public class TaskKanbanBoardViewImpl extends AbstractPageView implements TaskKan
 
     private void toggleShowButton() {
         if (displayHiddenColumns) {
-            toggleShowColumsBtn.setCaption(UserUIContext.getMessage(TaskI18nEnum.ACTION_HIDE_COLUMNS));
+            toggleShowColumnsBtn.setCaption(UserUIContext.getMessage(TaskI18nEnum.ACTION_HIDE_COLUMNS));
         } else {
-            toggleShowColumsBtn.setCaption(UserUIContext.getMessage(TaskI18nEnum.ACTION_SHOW_COLUMNS));
+            toggleShowColumnsBtn.setCaption(UserUIContext.getMessage(TaskI18nEnum.ACTION_SHOW_COLUMNS));
         }
     }
 
@@ -310,24 +309,22 @@ public class TaskKanbanBoardViewImpl extends AbstractPageView implements TaskKan
         });
     }
 
-    private static class KanbanTaskBlockItem extends CustomComponent {
+    private static class KanbanTaskBlockItem extends BlockRowRender {
         private SimpleTask task;
 
-        KanbanTaskBlockItem(final SimpleTask task) {
+        private KanbanTaskBlockItem(final SimpleTask task) {
             this.task = task;
-            MVerticalLayout root = new MVerticalLayout();
-            root.addStyleName("kanban-item");
-            this.setCompositionRoot(root);
+            this.addStyleName("kanban-item");
 
-            TaskPopupFieldFactory popupFieldFactory = ViewManager.getCacheComponent(TaskPopupFieldFactory.class);
+            TaskComponentFactory popupFieldFactory = AppContextUtil.getSpringBean(TaskComponentFactory.class);
 
             MHorizontalLayout headerLayout = new MHorizontalLayout();
 
-            ToggleTaskSummaryField toggleTaskSummaryField = new ToggleTaskSummaryField(task, 70);
+            ToggleTaskSummaryField toggleTaskSummaryField = new ToggleTaskSummaryField(task, 70, false, true);
             AbstractComponent priorityField = popupFieldFactory.createPriorityPopupField(task);
             headerLayout.with(priorityField, toggleTaskSummaryField).expand(toggleTaskSummaryField);
 
-            root.with(headerLayout);
+            this.with(headerLayout);
 
             CssLayout footer = new CssLayout();
 
@@ -338,11 +335,11 @@ public class TaskKanbanBoardViewImpl extends AbstractPageView implements TaskKan
             footer.addComponent(popupFieldFactory.createDeadlinePopupField(task));
             footer.addComponent(popupFieldFactory.createAssigneePopupField(task));
 
-            root.addComponent(footer);
+            this.addComponent(footer);
         }
     }
 
-    private class KanbanBlock extends MVerticalLayout {
+    private class KanbanBlock extends MVerticalLayout implements IBlockContainer {
         private OptionVal optionVal;
         private DDVerticalLayout dragLayoutContainer;
         private MHorizontalLayout buttonControls;
@@ -383,12 +380,12 @@ public class TaskKanbanBoardViewImpl extends AbstractPageView implements TaskKan
                         task.setStatus(optionVal.getTypeval());
                         ProjectTaskService taskService = AppContextUtil.getSpringBean(ProjectTaskService.class);
                         taskService.updateSelectiveWithSession(task, UserUIContext.getUsername());
-                        updateComponentCount();
+                        refresh();
 
                         Component sourceComponent = transferable.getSourceComponent();
                         KanbanBlock sourceKanban = UIUtils.getRoot(sourceComponent, KanbanBlock.class);
                         if (sourceKanban != null && sourceKanban != KanbanBlock.this) {
-                            sourceKanban.updateComponentCount();
+                            sourceKanban.refresh();
                         }
 
                         //Update task index
@@ -414,14 +411,15 @@ public class TaskKanbanBoardViewImpl extends AbstractPageView implements TaskKan
                     return new Not(VerticalLocationIs.MIDDLE);
                 }
             });
-            new Restrain(dragLayoutContainer).setMinHeight("50px").setMaxHeight((UIUtils.getBrowserHeight() - 450) + "px");
+            new Restrain(dragLayoutContainer).setMinHeight("50px").setMaxHeight((UIUtils.getBrowserHeight() - 390) +
+                    "px");
 
             MHorizontalLayout headerLayout = new MHorizontalLayout().withSpacing(false).withFullWidth().withStyleName("header");
             header = new Label(UserUIContext.getMessage(StatusI18nEnum.class, optionVal.getTypeval()));
             headerLayout.with(header).expand(header);
 
             final PopupButton controlsBtn = new PopupButton();
-            controlsBtn.addStyleName(WebUIConstants.BUTTON_LINK);
+            controlsBtn.addStyleName(WebThemes.BUTTON_LINK);
             headerLayout.with(controlsBtn);
 
             String typeVal = optionVal.getTypeval();
@@ -507,7 +505,7 @@ public class TaskKanbanBoardViewImpl extends AbstractPageView implements TaskKan
 
             if (CurrentProjectVariables.canWrite(ProjectRolePermissionCollections.TASKS)) {
                 MButton addNewBtn = new MButton(UserUIContext.getMessage(TaskI18nEnum.NEW), clickEvent -> addNewTaskComp())
-                        .withIcon(FontAwesome.PLUS).withStyleName(WebUIConstants.BUTTON_ACTION);
+                        .withIcon(FontAwesome.PLUS).withStyleName(WebThemes.BUTTON_ACTION);
                 buttonControls = new MHorizontalLayout(addNewBtn).withAlign(addNewBtn, Alignment.MIDDLE_RIGHT).withFullWidth();
                 this.with(headerLayout, dragLayoutContainer, buttonControls);
             } else {
@@ -521,7 +519,7 @@ public class TaskKanbanBoardViewImpl extends AbstractPageView implements TaskKan
                 if (Boolean.FALSE.equals(optionVal.getIsshow())) {
                     hideColumnBtn.setCaption(UserUIContext.getMessage(TaskI18nEnum.ACTION_SHOW_COLUMN));
                     hideColumnBtn.setIcon(FontAwesome.TOGGLE_UP);
-                    ELabel invisibleLbl = new ELabel("Inv").withWidthUndefined().withStyleName(WebUIConstants.FIELD_NOTE)
+                    ELabel invisibleLbl = new ELabel("Inv").withWidthUndefined().withStyleName(UIConstants.FIELD_NOTE)
                             .withDescription(UserUIContext.getMessage(TaskI18nEnum.OPT_INVISIBLE_COLUMN_DESCRIPTION));
                     buttonControls.addComponent(invisibleLbl, 0);
                     buttonControls.withAlign(invisibleLbl, Alignment.MIDDLE_LEFT);
@@ -537,7 +535,7 @@ public class TaskKanbanBoardViewImpl extends AbstractPageView implements TaskKan
 
         void addBlockItem(KanbanTaskBlockItem comp) {
             dragLayoutContainer.addComponent(comp);
-            updateComponentCount();
+            refresh();
         }
 
         private int getTaskComponentCount() {
@@ -549,7 +547,8 @@ public class TaskKanbanBoardViewImpl extends AbstractPageView implements TaskKan
             }
         }
 
-        private void updateComponentCount() {
+        @Override
+        public void refresh() {
             header.setValue(String.format("%s (%d)", optionVal.getTypeval(), getTaskComponentCount()));
         }
 
@@ -568,25 +567,26 @@ public class TaskKanbanBoardViewImpl extends AbstractPageView implements TaskKan
                 taskNameField.focus();
                 taskNameField.setWidth("100%");
                 layout.with(taskNameField);
-                MHorizontalLayout controlsBtn = new MHorizontalLayout();
+
                 MButton saveBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_ADD), clickEvent -> {
                     String taskName = taskNameField.getValue();
                     if (StringUtils.isNotBlank(taskName)) {
-                        task.setTaskname(taskName);
+                        task.setName(taskName);
                         ProjectTaskService taskService = AppContextUtil.getSpringBean(ProjectTaskService.class);
                         taskService.saveWithSession(task, UserUIContext.getUsername());
                         dragLayoutContainer.removeComponent(layout);
                         KanbanTaskBlockItem kanbanTaskBlockItem = new KanbanTaskBlockItem(task);
                         dragLayoutContainer.addComponent(kanbanTaskBlockItem, 0);
-                        updateComponentCount();
+                        refresh();
                     }
-                }).withStyleName(WebUIConstants.BUTTON_ACTION);
+                }).withStyleName(WebThemes.BUTTON_ACTION);
 
                 MButton cancelBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CANCEL), clickEvent -> {
                     dragLayoutContainer.removeComponent(layout);
                     newTaskComp = null;
-                }).withStyleName(WebUIConstants.BUTTON_OPTION);
-                controlsBtn.with(cancelBtn, saveBtn);
+                }).withStyleName(WebThemes.BUTTON_OPTION);
+
+                MHorizontalLayout controlsBtn = new MHorizontalLayout(cancelBtn, saveBtn);
                 layout.with(controlsBtn).withAlign(controlsBtn, Alignment.MIDDLE_RIGHT);
                 if (newTaskComp != null && newTaskComp.getParent() != null) {
                     ((ComponentContainer) newTaskComp.getParent()).removeComponent(newTaskComp);
@@ -612,7 +612,7 @@ public class TaskKanbanBoardViewImpl extends AbstractPageView implements TaskKan
                 gridFormLayoutHelper.addComponent(columnNameField, "Column name", 0, 0);
 
                 MButton cancelBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CANCEL), clickEvent -> close())
-                        .withStyleName(WebUIConstants.BUTTON_OPTION);
+                        .withStyleName(WebThemes.BUTTON_OPTION);
 
                 MButton saveBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_SAVE), clickEvent -> {
                     if (StringUtils.isNotBlank(columnNameField.getValue())) {
@@ -625,14 +625,14 @@ public class TaskKanbanBoardViewImpl extends AbstractPageView implements TaskKan
                                     MyCollabUI.getAccountId());
                             optionVal.setTypeval(columnNameField.getValue());
                             optionValService.updateWithSession(optionVal, UserUIContext.getUsername());
-                            KanbanBlock.this.updateComponentCount();
+                            KanbanBlock.this.refresh();
                         }
                     } else {
                         NotificationUtil.showErrorNotification(UserUIContext.getMessage(TaskI18nEnum.ERROR_COLUMN_NAME_NOT_NULL));
                     }
 
                     close();
-                }).withIcon(FontAwesome.SAVE).withStyleName(WebUIConstants.BUTTON_ACTION);
+                }).withIcon(FontAwesome.SAVE).withStyleName(WebThemes.BUTTON_ACTION).withClickShortcut(ShortcutAction.KeyCode.ENTER);
 
                 MHorizontalLayout buttonControls = new MHorizontalLayout().withMargin(new MarginInfo(false, true, true, false))
                         .with(cancelBtn, saveBtn);

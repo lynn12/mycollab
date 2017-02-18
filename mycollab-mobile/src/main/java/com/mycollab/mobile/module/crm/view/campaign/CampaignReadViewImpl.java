@@ -78,7 +78,7 @@ public class CampaignReadViewImpl extends AbstractPreviewItemComp<SimpleCampaign
     }
 
     @Override
-    protected String initFormTitle() {
+    protected String initFormHeader() {
         return beanItem.getCampaignname();
     }
 
@@ -174,4 +174,8 @@ public class CampaignReadViewImpl extends AbstractPreviewItemComp<SimpleCampaign
         return associateLeads;
     }
 
+    @Override
+    protected String getType() {
+        return CrmTypeConstants.CAMPAIGN;
+    }
 }

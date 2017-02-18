@@ -16,13 +16,12 @@
  */
 package com.mycollab.module.crm.view.account;
 
-import com.google.common.base.MoreObjects;
 import com.hp.gagawa.java.elements.A;
 import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.db.arguments.NumberSearchField;
 import com.mycollab.module.crm.CrmDataTypeFactory;
 import com.mycollab.module.crm.CrmTypeConstants;
-import com.mycollab.module.crm.data.CrmLinkBuilder;
+import com.mycollab.module.crm.CrmLinkBuilder;
 import com.mycollab.module.crm.domain.Account;
 import com.mycollab.module.crm.domain.SimpleOpportunity;
 import com.mycollab.module.crm.domain.criteria.OpportunitySearchCriteria;
@@ -37,7 +36,7 @@ import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.ELabel;
 import com.mycollab.vaadin.web.ui.AbstractBeanBlockList;
 import com.mycollab.vaadin.web.ui.ConfirmDialogExt;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.*;
 import org.vaadin.viritin.button.MButton;
@@ -72,6 +71,7 @@ public class AccountOpportunityListComp extends RelatedListComp2<OpportunityServ
 
     public AccountOpportunityListComp() {
         super(AppContextUtil.getSpringBean(OpportunityService.class), 20);
+        setMargin(true);
         this.setBlockDisplayHandler(new AccountOpportunityBlockDisplay());
     }
 
@@ -81,7 +81,7 @@ public class AccountOpportunityListComp extends RelatedListComp2<OpportunityServ
 
         MHorizontalLayout notesWrap = new MHorizontalLayout().withFullWidth();
         ELabel noteLbl = new ELabel(UserUIContext.getMessage(GenericI18Enum.OPT_NOTE))
-                .withWidthUndefined().withStyleName("list-note-lbl");
+                .withWidthUndefined();
         notesWrap.addComponent(noteLbl);
 
         CssLayout noteBlock = new CssLayout();
@@ -97,7 +97,7 @@ public class AccountOpportunityListComp extends RelatedListComp2<OpportunityServ
 
         if (UserUIContext.canWrite(RolePermissionCollections.CRM_OPPORTUNITY)) {
             MButton createBtn = new MButton(UserUIContext.getMessage(OpportunityI18nEnum.NEW), clickEvent -> fireNewRelatedItem(""))
-                    .withIcon(FontAwesome.PLUS).withStyleName(WebUIConstants.BUTTON_ACTION);
+                    .withIcon(FontAwesome.PLUS).withStyleName(WebThemes.BUTTON_ACTION);
 
             controlsBtnWrap.with(createBtn).withAlign(createBtn, Alignment.TOP_RIGHT);
         }
@@ -105,7 +105,7 @@ public class AccountOpportunityListComp extends RelatedListComp2<OpportunityServ
         return controlsBtnWrap;
     }
 
-    public void displayOpportunities(final Account account) {
+    void displayOpportunities(final Account account) {
         this.account = account;
         loadOpportunities();
     }
@@ -140,21 +140,21 @@ public class AccountOpportunityListComp extends RelatedListComp2<OpportunityServ
             VerticalLayout opportunityInfo = new VerticalLayout();
             opportunityInfo.setSpacing(true);
 
-            MButton btnDelete = new MButton("", clickEvent -> {
-                ConfirmDialogExt.show(UI.getCurrent(),
-                        UserUIContext.getMessage(GenericI18Enum.DIALOG_DELETE_TITLE, MyCollabUI.getSiteName()),
-                        UserUIContext.getMessage(GenericI18Enum.DIALOG_DELETE_SINGLE_ITEM_MESSAGE),
-                        UserUIContext.getMessage(GenericI18Enum.BUTTON_YES),
-                        UserUIContext.getMessage(GenericI18Enum.BUTTON_NO),
-                        confirmDialog -> {
-                            if (confirmDialog.isConfirmed()) {
-                                OpportunityService opportunityService = AppContextUtil.getSpringBean(OpportunityService.class);
-                                opportunityService.removeWithSession(opportunity,
-                                        UserUIContext.getUsername(), MyCollabUI.getAccountId());
-                                AccountOpportunityListComp.this.refresh();
-                            }
-                        });
-            }).withIcon(FontAwesome.TRASH_O).withStyleName(WebUIConstants.BUTTON_ICON_ONLY);
+            MButton btnDelete = new MButton("", clickEvent ->
+                    ConfirmDialogExt.show(UI.getCurrent(),
+                            UserUIContext.getMessage(GenericI18Enum.DIALOG_DELETE_TITLE, MyCollabUI.getSiteName()),
+                            UserUIContext.getMessage(GenericI18Enum.DIALOG_DELETE_SINGLE_ITEM_MESSAGE),
+                            UserUIContext.getMessage(GenericI18Enum.BUTTON_YES),
+                            UserUIContext.getMessage(GenericI18Enum.BUTTON_NO),
+                            confirmDialog -> {
+                                if (confirmDialog.isConfirmed()) {
+                                    OpportunityService opportunityService = AppContextUtil.getSpringBean(OpportunityService.class);
+                                    opportunityService.removeWithSession(opportunity,
+                                            UserUIContext.getUsername(), MyCollabUI.getAccountId());
+                                    AccountOpportunityListComp.this.refresh();
+                                }
+                            })
+            ).withIcon(FontAwesome.TRASH_O).withStyleName(WebThemes.BUTTON_ICON_ONLY);
 
             VerticalLayout blockContent = new VerticalLayout();
             blockContent.addComponent(btnDelete);
@@ -172,7 +172,7 @@ public class AccountOpportunityListComp extends RelatedListComp2<OpportunityServ
             opportunityInfo.addComponent(opportunityAmount);
 
             Label opportunitySaleStage = new Label(UserUIContext.getMessage(OpportunityI18nEnum.FORM_SALE_STAGE) + ": " +
-                    MoreObjects.firstNonNull(opportunity.getSalesstage(), ""));
+                    UserUIContext.getMessage(OpportunitySalesStage.class, opportunity.getSalesstage()));
             opportunityInfo.addComponent(opportunitySaleStage);
 
             if (opportunity.getSalesstage() != null) {
@@ -192,5 +192,4 @@ public class AccountOpportunityListComp extends RelatedListComp2<OpportunityServ
             return beanBlock;
         }
     }
-
 }

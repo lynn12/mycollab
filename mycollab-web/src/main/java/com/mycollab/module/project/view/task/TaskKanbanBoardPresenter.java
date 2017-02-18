@@ -23,12 +23,12 @@ import com.mycollab.module.project.ProjectTypeConstants;
 import com.mycollab.module.project.domain.criteria.TaskSearchCriteria;
 import com.mycollab.module.project.view.ProjectBreadcrumb;
 import com.mycollab.module.project.view.ProjectGenericPresenter;
-import com.mycollab.vaadin.events.SearchHandler;
+import com.mycollab.module.project.view.ticket.TicketContainer;
 import com.mycollab.vaadin.mvp.LoadPolicy;
 import com.mycollab.vaadin.mvp.ScreenData;
 import com.mycollab.vaadin.mvp.ViewManager;
 import com.mycollab.vaadin.mvp.ViewScope;
-import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.HasComponents;
 
 /**
  * @author MyCollab Ltd
@@ -43,21 +43,15 @@ public class TaskKanbanBoardPresenter extends ProjectGenericPresenter<TaskKanban
 
     @Override
     protected void postInitView() {
-        view.getSearchHandlers().addSearchHandler(new SearchHandler<TaskSearchCriteria>() {
-            @Override
-            public void onSearch(TaskSearchCriteria criteria) {
-                doSearch(criteria);
-            }
-        });
+        view.getSearchHandlers().addSearchHandler(this::doSearch);
     }
 
     @Override
-    protected void onGo(ComponentContainer container, ScreenData<?> data) {
+    protected void onGo(HasComponents container, ScreenData<?> data) {
         if (CurrentProjectVariables.canRead(ProjectRolePermissionCollections.TASKS)) {
-            TaskContainer taskContainer = (TaskContainer) container;
-            taskContainer.navigateToContainer(ProjectTypeConstants.TASK);
-            taskContainer.removeAllComponents();
-            taskContainer.addComponent(view);
+            TicketContainer ticketContainer = (TicketContainer) container;
+            ticketContainer.navigateToContainer(ProjectTypeConstants.TASK);
+            ticketContainer.setContent(view);
             view.display();
 
             ProjectBreadcrumb breadCrumb = ViewManager.getCacheComponent(ProjectBreadcrumb.class);

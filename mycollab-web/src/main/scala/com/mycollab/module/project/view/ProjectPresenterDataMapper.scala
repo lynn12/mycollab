@@ -24,7 +24,7 @@ import com.mycollab.module.project.view.page.PagePresenter
 import com.mycollab.module.project.view.parameters._
 import com.mycollab.module.project.view.risk.IRiskPresenter
 import com.mycollab.module.project.view.settings.UserSettingPresenter
-import com.mycollab.module.project.view.task.TaskPresenter
+import com.mycollab.module.project.view.ticket.TicketPresenter
 import com.mycollab.module.project.view.time.IFinancePresenter
 import com.mycollab.module.project.view.user.ProjectDashboardPresenter
 import com.mycollab.vaadin.mvp.{IPresenter, ScreenData}
@@ -55,22 +55,19 @@ object ProjectPresenterDataMapper {
   val riskMapper = Map[Class[_ <: ScreenData[_]], Class[_ <: IPresenter[_]]](
     classOf[RiskScreenData.Add] -> classOf[IRiskPresenter],
     classOf[RiskScreenData.Edit] -> classOf[IRiskPresenter],
-    classOf[RiskScreenData.Read] -> classOf[IRiskPresenter],
-    classOf[RiskScreenData.Search] -> classOf[IRiskPresenter])
+    classOf[RiskScreenData.Read] -> classOf[IRiskPresenter])
 
   val taskMapper = Map[Class[_ <: ScreenData[_]], Class[_ <: IPresenter[_]]](
-    classOf[TaskScreenData.Add] -> classOf[TaskPresenter],
-    classOf[TaskScreenData.Edit] -> classOf[TaskPresenter],
-    classOf[TaskScreenData.Read] -> classOf[TaskPresenter],
-    classOf[TaskScreenData.GotoDashboard] -> classOf[TaskPresenter],
-    classOf[TaskScreenData.GotoKanbanView] -> classOf[TaskPresenter])
+    classOf[TaskScreenData.Add] -> classOf[TicketPresenter],
+    classOf[TaskScreenData.Edit] -> classOf[TicketPresenter],
+    classOf[TaskScreenData.Read] -> classOf[TicketPresenter],
+    classOf[TicketScreenData.GotoDashboard] -> classOf[TicketPresenter],
+    classOf[TaskScreenData.GotoKanbanView] -> classOf[TicketPresenter])
 
   val trackerMapper = Map[Class[_ <: ScreenData[_]], Class[_ <: IPresenter[_]]](
     classOf[BugScreenData.Read] -> classOf[BugPresenter],
     classOf[BugScreenData.Add] -> classOf[BugPresenter],
-    classOf[BugScreenData.Edit] -> classOf[BugPresenter],
-    classOf[BugScreenData.GotoList] -> classOf[BugPresenter],
-    classOf[BugScreenData.GotoKanbanView] -> classOf[BugPresenter])
+    classOf[BugScreenData.Edit] -> classOf[BugPresenter])
 
   val standupMapper = Map[Class[_ <: ScreenData[_]], Class[_ <: IPresenter[_]]](
     classOf[StandupScreenData.Search] -> classOf[ProjectDashboardPresenter])

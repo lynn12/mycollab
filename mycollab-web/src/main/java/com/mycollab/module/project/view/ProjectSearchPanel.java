@@ -26,9 +26,7 @@ import com.mycollab.module.project.ui.components.ComponentUtils;
 import com.mycollab.security.RolePermissionCollections;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.mvp.ViewManager;
-import com.mycollab.vaadin.web.ui.DefaultGenericSearchPanel;
-import com.mycollab.vaadin.web.ui.DynamicQueryParamLayout;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.*;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.*;
@@ -65,7 +63,7 @@ public class ProjectSearchPanel extends DefaultGenericSearchPanel<ProjectSearchC
     protected Component buildExtraControls() {
         MButton createBtn = new MButton(UserUIContext.getMessage(ProjectI18nEnum.NEW),
                 clickEvent -> UI.getCurrent().addWindow(ViewManager.getCacheComponent(AbstractProjectAddWindow.class)))
-                .withStyleName(WebUIConstants.BUTTON_ACTION).withIcon(FontAwesome.PLUS);
+                .withStyleName(WebThemes.BUTTON_ACTION).withIcon(FontAwesome.PLUS);
         createBtn.setVisible(UserUIContext.canBeYes(RolePermissionCollections.CREATE_NEW_PROJECT));
         return createBtn;
     }
@@ -88,16 +86,16 @@ public class ProjectSearchPanel extends DefaultGenericSearchPanel<ProjectSearchC
             basicSearchBody.with(nameField).withAlign(nameField, Alignment.MIDDLE_CENTER);
 
             MButton searchBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_SEARCH), clickEvent ->
-                    callSearchAction()).withIcon(FontAwesome.SEARCH).withStyleName(WebUIConstants.BUTTON_ACTION)
+                    callSearchAction()).withIcon(FontAwesome.SEARCH).withStyleName(WebThemes.BUTTON_ACTION)
                     .withClickShortcut(ShortcutAction.KeyCode.ENTER);
             basicSearchBody.with(searchBtn).withAlign(searchBtn, Alignment.MIDDLE_LEFT);
 
             MButton cancelBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CLEAR),
-                    clickEvent -> nameField.setValue("")).withStyleName(WebUIConstants.BUTTON_OPTION);
+                    clickEvent -> nameField.setValue("")).withStyleName(WebThemes.BUTTON_OPTION);
             basicSearchBody.with(cancelBtn).withAlign(cancelBtn, Alignment.MIDDLE_CENTER);
 
             MButton advancedSearchBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_ADVANCED_SEARCH),
-                    clickEvent -> moveToAdvancedSearchLayout()).withStyleName(WebUIConstants.BUTTON_LINK);
+                    clickEvent -> moveToAdvancedSearchLayout()).withStyleName(WebThemes.BUTTON_LINK);
             basicSearchBody.with(advancedSearchBtn).withAlign(advancedSearchBtn, Alignment.MIDDLE_CENTER);
 
             return basicSearchBody;
@@ -109,11 +107,6 @@ public class ProjectSearchPanel extends DefaultGenericSearchPanel<ProjectSearchC
             searchCriteria.setProjectName(StringSearchField.and(this.nameField.getValue().trim()));
             return searchCriteria;
         }
-
-        @Override
-        public ComponentContainer constructHeader() {
-            return ProjectSearchPanel.this.constructHeader();
-        }
     }
 
     private class ProjectAdvancedSearchLayout extends DynamicQueryParamLayout<ProjectSearchCriteria> {
@@ -121,11 +114,6 @@ public class ProjectSearchPanel extends DefaultGenericSearchPanel<ProjectSearchC
 
         private ProjectAdvancedSearchLayout() {
             super(ProjectSearchPanel.this, ProjectTypeConstants.PROJECT);
-        }
-
-        @Override
-        public ComponentContainer constructHeader() {
-            return ProjectSearchPanel.this.constructHeader();
         }
 
         @Override

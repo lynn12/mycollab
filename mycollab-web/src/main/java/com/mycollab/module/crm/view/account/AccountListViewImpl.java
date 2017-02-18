@@ -19,6 +19,7 @@ package com.mycollab.module.crm.view.account;
 import com.mycollab.module.crm.CrmTypeConstants;
 import com.mycollab.module.crm.domain.SimpleAccount;
 import com.mycollab.module.crm.domain.criteria.AccountSearchCriteria;
+import com.mycollab.module.crm.fielddef.AccountTableFieldDef;
 import com.mycollab.module.crm.ui.components.AbstractListItemComp;
 import com.mycollab.module.crm.ui.components.ComponentUtils;
 import com.mycollab.security.RolePermissionCollections;
@@ -46,12 +47,11 @@ public class AccountListViewImpl extends AbstractListItemComp<AccountSearchCrite
                 Arrays.asList(AccountTableFieldDef.accountname(), AccountTableFieldDef.city(),
                         AccountTableFieldDef.phoneoffice(), AccountTableFieldDef.email(),
                         AccountTableFieldDef.assignUser()));
-
     }
 
     @Override
     protected DefaultGenericSearchPanel<AccountSearchCriteria> createSearchPanel() {
-        return new AccountSearchPanel();
+        return new AccountSearchPanel(true);
     }
 
     @Override
@@ -79,12 +79,6 @@ public class AccountListViewImpl extends AbstractListItemComp<AccountSearchCrite
         MButton customizeViewBtn = ComponentUtils.createCustomizeViewButton()
                 .withListener(clickEvent -> UI.getCurrent().addWindow(new AccountListCustomizeWindow((AccountTableDisplay) tableItem)));
         this.addExtraButton(customizeViewBtn);
-
-        MButton importBtn = ComponentUtils.createImportEntitiesButton().withListener(clickEvent -> {
-            AccountImportWindow accountImportWindow = new AccountImportWindow();
-            UI.getCurrent().addWindow(accountImportWindow);
-        }).withVisible(UserUIContext.canWrite(RolePermissionCollections.CRM_ACCOUNT));
-        this.addExtraButton(importBtn);
     }
 
     @Override

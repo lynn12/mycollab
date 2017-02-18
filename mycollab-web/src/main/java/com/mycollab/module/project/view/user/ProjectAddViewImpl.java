@@ -32,7 +32,7 @@ import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.events.HasEditFormHandlers;
-import com.mycollab.vaadin.mvp.AbstractPageView;
+import com.mycollab.vaadin.mvp.AbstractVerticalPageView;
 import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.ui.*;
 import com.mycollab.vaadin.web.ui.AddViewLayout;
@@ -54,7 +54,7 @@ import static com.mycollab.vaadin.web.ui.utils.FormControlsGenerator.generateEdi
  * @since 1.0
  */
 @ViewComponent
-public class ProjectAddViewImpl extends AbstractPageView implements ProjectAddView {
+public class ProjectAddViewImpl extends AbstractVerticalPageView implements ProjectAddView {
 
     private Project project;
     private final AdvancedEditBeanForm<Project> editForm;
@@ -97,7 +97,7 @@ public class ProjectAddViewImpl extends AbstractPageView implements ProjectAddVi
         }
 
         @Override
-        public ComponentContainer getLayout() {
+        public AbstractComponent getLayout() {
             MHorizontalLayout header = new MHorizontalLayout().withFullWidth().withMargin(new MarginInfo(true, false, true, false));
             header.setDefaultComponentAlignment(Alignment.MIDDLE_LEFT);
             final AddViewLayout projectAddLayout = new AddViewLayout(header);
@@ -145,7 +145,7 @@ public class ProjectAddViewImpl extends AbstractPageView implements ProjectAddVi
         private GridFormLayoutHelper descriptionLayout;
 
         @Override
-        public ComponentContainer getLayout() {
+        public AbstractComponent getLayout() {
             final FormContainer layout = new FormContainer();
 
             informationLayout = GridFormLayoutHelper.defaultFormLayoutHelper(2, 3);

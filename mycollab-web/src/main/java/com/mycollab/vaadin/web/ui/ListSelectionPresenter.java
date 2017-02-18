@@ -16,17 +16,16 @@
  */
 package com.mycollab.vaadin.web.ui;
 
-import com.mycollab.db.arguments.SearchCriteria;
 import com.mycollab.core.arguments.ValuedBean;
+import com.mycollab.db.arguments.SearchCriteria;
 import com.mycollab.db.persistence.service.ISearchableService;
 import com.mycollab.vaadin.events.PageableHandler;
-import com.mycollab.vaadin.events.SearchHandler;
-import com.mycollab.vaadin.events.SelectableItemHandler;
 import com.mycollab.vaadin.events.SelectionOptionHandler;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @param <V>
@@ -49,7 +48,7 @@ public abstract class ListSelectionPresenter<V extends IListView<S, B>, S extend
     @Override
     protected void viewAttached() {
         if (view.getSearchHandlers() != null) {
-            view.getSearchHandlers().addSearchHandler(criteria -> doSearch(criteria));
+            view.getSearchHandlers().addSearchHandler(this::doSearch);
         }
 
         if (view.getPagedBeanTable() != null) {
@@ -103,18 +102,15 @@ public abstract class ListSelectionPresenter<V extends IListView<S, B>, S extend
         }
 
         if (view.getSelectableItemHandlers() != null) {
-            view.getSelectableItemHandlers().addSelectableItemHandler(new SelectableItemHandler<B>() {
-                @Override
-                public void onSelect(B item) {
-                    isSelectAll = false;
-                    item.setSelected(!item.isSelected());
-                    checkWhetherEnableTableActionControl();
-                }
+            view.getSelectableItemHandlers().addSelectableItemHandler(item -> {
+                isSelectAll = false;
+                item.setSelected(!item.isSelected());
+                checkWhetherEnableTableActionControl();
             });
         }
     }
 
-    protected void selectAllItemsInCurrentPage() {
+    private void selectAllItemsInCurrentPage() {
         Collection<B> currentDataList = view.getPagedBeanTable().getCurrentDataList();
         for (B item : currentDataList) {
             item.setSelected(true);
@@ -145,14 +141,10 @@ public abstract class ListSelectionPresenter<V extends IListView<S, B>, S extend
         }
     }
 
-    protected List<B> getSelectedItems() {
+    List<B> getSelectedItems() {
         List<B> items = new ArrayList<>();
         Collection<B> currentDataList = view.getPagedBeanTable().getCurrentDataList();
-        for (B item : currentDataList) {
-            if (item.isSelected()) {
-                items.add(item);
-            }
-        }
+        items.addAll(currentDataList.stream().filter(ValuedBean::isSelected).collect(Collectors.toList()));
         return items;
     }
 

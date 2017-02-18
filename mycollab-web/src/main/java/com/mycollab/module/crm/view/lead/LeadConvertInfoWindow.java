@@ -21,7 +21,7 @@ import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.module.crm.domain.Opportunity;
 import com.mycollab.module.crm.domain.SimpleLead;
-import com.mycollab.module.crm.events.LeadEvent;
+import com.mycollab.module.crm.event.LeadEvent;
 import com.mycollab.module.crm.i18n.LeadI18nEnum;
 import com.mycollab.module.crm.service.LeadService;
 import com.mycollab.module.crm.view.campaign.CampaignSelectionField;
@@ -29,7 +29,7 @@ import com.mycollab.module.crm.view.opportunity.OpportunitySalesStageComboBox;
 import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.*;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.mycollab.vaadin.web.ui.grid.GridFormLayoutHelper;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.MarginInfo;
@@ -87,10 +87,10 @@ public class LeadConvertInfoWindow extends MWindow {
             leadService.convertLead(lead, opportunity, UserUIContext.getUsername());
             LeadConvertInfoWindow.this.close();
             EventBusFactory.getInstance().post(new LeadEvent.GotoRead(LeadConvertInfoWindow.this, lead.getId()));
-        }).withStyleName(WebUIConstants.BUTTON_ACTION);
+        }).withStyleName(WebThemes.BUTTON_ACTION);
 
         MButton cancelButton = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CANCEL), clickEvent -> close())
-                .withStyleName(WebUIConstants.BUTTON_OPTION);
+                .withStyleName(WebThemes.BUTTON_OPTION);
 
         return new MHorizontalLayout(cancelButton, convertButton).alignAll(Alignment.MIDDLE_CENTER);
     }
@@ -145,7 +145,7 @@ public class LeadConvertInfoWindow extends MWindow {
                 private GridFormLayoutHelper informationLayout;
 
                 @Override
-                public ComponentContainer getLayout() {
+                public AbstractComponent getLayout() {
                     this.informationLayout = GridFormLayoutHelper.defaultFormLayoutHelper(2, 3);
                     return informationLayout.getLayout();
                 }

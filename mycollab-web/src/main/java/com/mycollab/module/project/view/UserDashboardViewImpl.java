@@ -33,7 +33,7 @@ import com.mycollab.security.RolePermissionCollections;
 import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
-import com.mycollab.vaadin.mvp.AbstractPageView;
+import com.mycollab.vaadin.mvp.AbstractVerticalPageView;
 import com.mycollab.vaadin.mvp.PresenterResolver;
 import com.mycollab.vaadin.mvp.ViewComponent;
 import com.mycollab.vaadin.mvp.ViewManager;
@@ -42,7 +42,7 @@ import com.mycollab.vaadin.ui.UIConstants;
 import com.mycollab.vaadin.ui.UserAvatarControlFactory;
 import com.mycollab.vaadin.web.ui.DefaultBeanPagedList;
 import com.mycollab.vaadin.web.ui.SearchTextField;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
@@ -60,7 +60,7 @@ import java.util.List;
  * @since 1.0
  */
 @ViewComponent
-public class UserDashboardViewImpl extends AbstractPageView implements UserDashboardView {
+public class UserDashboardViewImpl extends AbstractVerticalPageView implements UserDashboardView {
     private static final long serialVersionUID = 1L;
 
     private ProjectService prjService;
@@ -69,7 +69,7 @@ public class UserDashboardViewImpl extends AbstractPageView implements UserDashb
     private TabSheet tabSheet;
 
     public UserDashboardViewImpl() {
-        this.withMargin(false).withFullWidth();
+        this.withMargin(new MarginInfo(false, false, true, false)).withFullWidth();
 
         prjService = AppContextUtil.getSpringBean(ProjectService.class);
         prjKeys = prjService.getProjectKeysUserInvolved(UserUIContext.getUsername(), MyCollabUI.getAccountId());
@@ -81,8 +81,6 @@ public class UserDashboardViewImpl extends AbstractPageView implements UserDashb
         if (!SiteConfiguration.isCommunityEdition()) {
             tabSheet.addTab(buildCalendarComp(), UserUIContext.getMessage(ProjectCommonI18nEnum.VIEW_CALENDAR), FontAwesome.CALENDAR);
         }
-
-//        tabSheet.addTab(buildSettingComp(), "Settings", FontAwesome.COG);
 
         tabSheet.addSelectedTabChangeListener(selectedTabChangeEvent -> {
             CssLayout comp = (CssLayout) tabSheet.getSelectedTab();
@@ -187,9 +185,11 @@ public class UserDashboardViewImpl extends AbstractPageView implements UserDashb
         };
         headerContentTop.with(searchTextField).withAlign(searchTextField, Alignment.TOP_RIGHT);
         headerContent.with(headerContentTop);
-        MHorizontalLayout metaInfoLayout = new MHorizontalLayout().with(new ELabel(UserUIContext.getMessage
-                        (GenericI18Enum.FORM_EMAIL) + ": ").withStyleName(UIConstants.META_INFO),
-                ELabel.html(new A(String.format("mailto:%s", UserUIContext.getUsername())).appendText(UserUIContext.getUsername()).write()));
+        MHorizontalLayout metaInfoLayout = new MHorizontalLayout();
+        if (Boolean.TRUE.equals(MyCollabUI.getBillingAccount().getDisplayemailpublicly())) {
+            metaInfoLayout.with(new ELabel(UserUIContext.getMessage(GenericI18Enum.FORM_EMAIL) + ": ").withStyleName(UIConstants.META_INFO),
+                    ELabel.html(new A(String.format("mailto:%s", UserUIContext.getUsername())).appendText(UserUIContext.getUsername()).write()));
+        }
         metaInfoLayout.with(ELabel.html(UserUIContext.getMessage(UserI18nEnum.OPT_MEMBER_SINCE,
                 UserUIContext.formatPrettyTime(UserUIContext.getUser().getRegisteredtime()))));
         metaInfoLayout.with(ELabel.html(UserUIContext.getMessage(UserI18nEnum.OPT_MEMBER_LOGGED_IN,
@@ -212,7 +212,7 @@ public class UserDashboardViewImpl extends AbstractPageView implements UserDashb
         MHorizontalLayout headerComp = new MHorizontalLayout();
         ELabel headerLbl = ELabel.h2(String.format(headerTitle, value, 0));
         Button backDashboard = new Button("Back to workboard", clickEvent -> showDashboard());
-        backDashboard.setStyleName(WebUIConstants.BUTTON_ACTION);
+        backDashboard.setStyleName(WebThemes.BUTTON_ACTION);
         headerComp.with(headerLbl, backDashboard).alignAll(Alignment.MIDDLE_LEFT);
         layout.with(headerComp);
 
@@ -242,12 +242,12 @@ public class UserDashboardViewImpl extends AbstractPageView implements UserDashb
             content.with(new Label(UserUIContext.getMessage(ProjectI18nEnum.OPT_TO_ADD_PROJECT)));
 
             MButton skipBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.ACTION_SKIP), clickEvent -> close())
-                    .withStyleName(WebUIConstants.BUTTON_OPTION);
+                    .withStyleName(WebThemes.BUTTON_OPTION);
 
             MButton createNewBtn = new MButton(UserUIContext.getMessage(ProjectI18nEnum.NEW), clickEvent -> {
                 UI.getCurrent().addWindow(ViewManager.getCacheComponent(AbstractProjectAddWindow.class));
                 close();
-            }).withStyleName(WebUIConstants.BUTTON_ACTION);
+            }).withStyleName(WebThemes.BUTTON_ACTION);
 
             MHorizontalLayout btnControls = new MHorizontalLayout(skipBtn, createNewBtn);
             content.with(btnControls).withAlign(btnControls, Alignment.MIDDLE_RIGHT);

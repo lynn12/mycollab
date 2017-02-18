@@ -18,6 +18,7 @@ package com.mycollab.module.project.domain.criteria;
 
 import com.mycollab.common.i18n.GenericI18Enum;
 import com.mycollab.module.project.ProjectTypeConstants;
+import com.mycollab.module.project.i18n.MilestoneI18nEnum;
 import com.mycollab.module.project.i18n.ProjectCommonI18nEnum;
 import com.mycollab.module.project.i18n.TaskI18nEnum;
 import com.mycollab.db.arguments.*;
@@ -31,19 +32,19 @@ public class TaskSearchCriteria extends SearchCriteria {
     private static final long serialVersionUID = 1L;
 
     public static final StringParam p_taskname = CacheParamMapper.register(ProjectTypeConstants.TASK,
-            GenericI18Enum.FORM_NAME, new StringParam("taskname", "m_prj_task", "taskname"));
+            GenericI18Enum.FORM_NAME, new StringParam("taskname", "m_prj_task", "name"));
 
     public static final PropertyListParam<String> p_assignee = CacheParamMapper.register(ProjectTypeConstants.TASK,
             GenericI18Enum.FORM_ASSIGNEE, new PropertyListParam<String>("assignuser", "m_prj_task", "assignUser"));
 
     public static final PropertyListParam<String> p_createdUser = CacheParamMapper.register(ProjectTypeConstants.TASK,
-            ProjectCommonI18nEnum.ITEM_CREATED_PEOPLE, new PropertyListParam<String>("createduser", "m_prj_task", "logby"));
+            ProjectCommonI18nEnum.ITEM_CREATED_PEOPLE, new PropertyListParam<String>("createduser", "m_prj_task", "createdUser"));
 
-    public static final PropertyListParam<Integer> p_milestoneId = CacheParamMapper.register(ProjectTypeConstants.TASK, TaskI18nEnum.FORM_PHASE,
+    public static final PropertyListParam<Integer> p_milestoneId = CacheParamMapper.register(ProjectTypeConstants.TASK, MilestoneI18nEnum.SINGLE,
             new PropertyListParam<Integer>("milestone", "m_prj_task", "milestoneId"));
 
     public static final DateParam p_duedate = CacheParamMapper.register(ProjectTypeConstants.TASK, GenericI18Enum.FORM_DUE_DATE,
-            new DateParam("duedate", "m_prj_task", "deadline"));
+            new DateParam("duedate", "m_prj_task", "dueDate"));
 
     public static final DateParam p_lastupdatedtime = CacheParamMapper.register(ProjectTypeConstants.TASK, GenericI18Enum.FORM_LAST_UPDATED_TIME,
             new DateParam("lastupdatedtime", "m_prj_task", "lastUpdatedTime"));
@@ -68,7 +69,7 @@ public class TaskSearchCriteria extends SearchCriteria {
 
     private NumberSearchField projectId;
     private NumberSearchField parentTaskId;
-    private StringSearchField taskName;
+    private StringSearchField name;
     private DateSearchField dueDate;
     private NumberSearchField milestoneId;
     private StringSearchField assignUser;
@@ -84,12 +85,12 @@ public class TaskSearchCriteria extends SearchCriteria {
         this.parentTaskId = parentTaskId;
     }
 
-    public StringSearchField getTaskName() {
-        return taskName;
+    public StringSearchField getName() {
+        return name;
     }
 
-    public void setTaskName(StringSearchField taskName) {
-        this.taskName = taskName;
+    public void setName(StringSearchField name) {
+        this.name = name;
     }
 
     public SetSearchField<String> getStatuses() {

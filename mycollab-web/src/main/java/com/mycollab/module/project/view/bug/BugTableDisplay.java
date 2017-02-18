@@ -32,7 +32,7 @@ import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.ELabel;
 import com.mycollab.vaadin.web.ui.LabelLink;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.WebThemes;
 import com.mycollab.vaadin.web.ui.table.DefaultPagedBeanTable;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.Label;
@@ -43,18 +43,18 @@ import java.util.List;
  * @author MyCollab Ltd.
  * @since 1.0
  */
-public class BugTableDisplay extends DefaultPagedBeanTable<BugService, BugSearchCriteria, SimpleBug> {
+class BugTableDisplay extends DefaultPagedBeanTable<BugService, BugSearchCriteria, SimpleBug> {
     private static final long serialVersionUID = 1L;
 
-    public BugTableDisplay(List<TableViewField> displayColumns) {
+    BugTableDisplay(List<TableViewField> displayColumns) {
         this(null, displayColumns);
     }
 
-    public BugTableDisplay(TableViewField requiredColumn, List<TableViewField> displayColumns) {
+    BugTableDisplay(TableViewField requiredColumn, List<TableViewField> displayColumns) {
         this(null, requiredColumn, displayColumns);
     }
 
-    public BugTableDisplay(String viewId, TableViewField requiredColumn, List<TableViewField> displayColumns) {
+    BugTableDisplay(String viewId, TableViewField requiredColumn, List<TableViewField> displayColumns) {
         super(AppContextUtil.getSpringBean(BugService.class), SimpleBug.class, viewId, requiredColumn, displayColumns);
 
         this.addGeneratedColumn("assignuserFullName", (source, itemId, columnId) -> {
@@ -64,26 +64,26 @@ public class BugTableDisplay extends DefaultPagedBeanTable<BugService, BugSearch
 
         this.addGeneratedColumn("loguserFullName", (source, itemId, columnId) -> {
             SimpleBug bug = getBeanByIndex(itemId);
-            return new ProjectUserLink(bug.getLogby(), bug.getLoguserAvatarId(), bug.getLoguserFullName());
+            return new ProjectUserLink(bug.getCreateduser(), bug.getLoguserAvatarId(), bug.getLoguserFullName());
         });
 
-        this.addGeneratedColumn("summary", (source, itemId, columnId) -> {
+        this.addGeneratedColumn("name", (source, itemId, columnId) -> {
             SimpleBug bug = getBeanByIndex(itemId);
-            LabelLink b = new LabelLink(bug.getSummary(), ProjectLinkBuilder.generateBugPreviewFullLink(bug.getBugkey(),
+            LabelLink b = new LabelLink(bug.getName(), ProjectLinkBuilder.generateBugPreviewFullLink(bug.getBugkey(),
                     bug.getProjectShortName()));
 
             if (StringUtils.isNotBlank(bug.getPriority())) {
-                b.setIconLink(ProjectAssetsManager.getBugPriority(bug.getPriority()));
-                b.addStyleName("bug-" + bug.getPriority().toLowerCase());
+                b.setIconLink(ProjectAssetsManager.getPriority(bug.getPriority()));
+                b.addStyleName("priority-" + bug.getPriority().toLowerCase());
             }
 
             b.setDescription(ProjectTooltipGenerator.generateToolTipBug(UserUIContext.getUserLocale(), MyCollabUI.getDateFormat(),
                     bug, MyCollabUI.getSiteUrl(), UserUIContext.getUserTimeZone(), false));
 
             if (bug.isCompleted()) {
-                b.addStyleName(WebUIConstants.LINK_COMPLETED);
+                b.addStyleName(WebThemes.LINK_COMPLETED);
             } else if (bug.isOverdue()) {
-                b.addStyleName(WebUIConstants.LINK_OVERDUE);
+                b.addStyleName(WebThemes.LINK_OVERDUE);
             }
             return b;
         });

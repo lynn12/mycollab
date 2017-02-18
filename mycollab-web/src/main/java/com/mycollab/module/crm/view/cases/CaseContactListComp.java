@@ -35,10 +35,7 @@ import com.mycollab.spring.AppContextUtil;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.ELabel;
-import com.mycollab.vaadin.web.ui.ConfirmDialogExt;
-import com.mycollab.vaadin.web.ui.OptionPopupContent;
-import com.mycollab.vaadin.web.ui.SplitButton;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.*;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.*;
 import org.vaadin.viritin.button.MButton;
@@ -54,10 +51,11 @@ public class CaseContactListComp extends RelatedListComp2<ContactService, Contac
 
     public CaseContactListComp() {
         super(AppContextUtil.getSpringBean(ContactService.class), 20);
+        setMargin(true);
         this.setBlockDisplayHandler(new CaseContactBlockDisplay());
     }
 
-    public void displayContacts(CaseWithBLOBs cases) {
+    void displayContacts(CaseWithBLOBs cases) {
         this.cases = cases;
         loadContacts();
     }
@@ -81,7 +79,7 @@ public class CaseContactListComp extends RelatedListComp2<ContactService, Contac
 
         if (UserUIContext.canWrite(RolePermissionCollections.CRM_CONTACT)) {
             final SplitButton controlsBtn = new SplitButton();
-            controlsBtn.addStyleName(WebUIConstants.BUTTON_ACTION);
+            controlsBtn.addStyleName(WebThemes.BUTTON_ACTION);
             controlsBtn.setCaption(UserUIContext.getMessage(ContactI18nEnum.NEW));
             controlsBtn.setIcon(FontAwesome.PLUS);
             controlsBtn.addClickListener(event -> fireNewRelatedItem(""));
@@ -140,7 +138,7 @@ public class CaseContactListComp extends RelatedListComp2<ContactService, Contac
                                     CaseContactListComp.this.refresh();
                                 }
                             })
-            ).withIcon(FontAwesome.TRASH_O).withStyleName(WebUIConstants.BUTTON_ICON_ONLY);
+            ).withIcon(FontAwesome.TRASH_O).withStyleName(WebThemes.BUTTON_ICON_ONLY);
 
             blockContent.addComponent(btnDelete);
             blockContent.setComponentAlignment(btnDelete, Alignment.TOP_RIGHT);
@@ -153,7 +151,8 @@ public class CaseContactListComp extends RelatedListComp2<ContactService, Contac
             Label contactTitle = new Label(UserUIContext.getMessage(ContactI18nEnum.FORM_TITLE) + ": " + MoreObjects.firstNonNull(contact.getTitle(), ""));
             contactInfo.addComponent(contactTitle);
 
-            Label contactEmail = ELabel.html(UserUIContext.getMessage(GenericI18Enum.FORM_EMAIL) + ": " + new A("mailto:" + contact.getEmail()).appendText(contact.getEmail()));
+            Label contactEmail = ELabel.html(UserUIContext.getMessage(GenericI18Enum.FORM_EMAIL) + ": " + new A
+                    ("mailto:" + contact.getEmail()).appendText(MoreObjects.firstNonNull(contact.getEmail(), "")));
             contactInfo.addComponent(contactEmail);
 
             Label contactOfficePhone = new Label(UserUIContext.getMessage(ContactI18nEnum.FORM_OFFICE_PHONE) + ": " + MoreObjects.firstNonNull(contact.getOfficephone(), ""));

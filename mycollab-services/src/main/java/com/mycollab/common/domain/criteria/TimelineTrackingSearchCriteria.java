@@ -25,16 +25,17 @@ import com.mycollab.db.arguments.StringSearchField;
  * @since 5.2.2
  */
 public class TimelineTrackingSearchCriteria extends SearchCriteria {
-    private StringSearchField type;
+
+    private SetSearchField<String> types;
     private StringSearchField fieldgroup;
     private SetSearchField<Integer> extraTypeIds;
 
-    public StringSearchField getType() {
-        return type;
+    public SetSearchField<String> getTypes() {
+        return types;
     }
 
-    public void setType(StringSearchField type) {
-        this.type = type;
+    public void setTypes(SetSearchField<String> types) {
+        this.types = types;
     }
 
     public SetSearchField<Integer> getExtraTypeIds() {

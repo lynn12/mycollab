@@ -24,7 +24,7 @@ import com.mycollab.db.query.Param;
 import com.mycollab.eventmanager.EventBusFactory;
 import com.mycollab.module.crm.CrmTypeConstants;
 import com.mycollab.module.crm.domain.criteria.CampaignSearchCriteria;
-import com.mycollab.module.crm.events.CampaignEvent;
+import com.mycollab.module.crm.event.CampaignEvent;
 import com.mycollab.module.crm.i18n.CampaignI18nEnum;
 import com.mycollab.module.crm.ui.components.ComponentUtils;
 import com.mycollab.module.user.ui.components.ActiveUserListSelect;
@@ -32,9 +32,7 @@ import com.mycollab.security.RolePermissionCollections;
 import com.mycollab.vaadin.MyCollabUI;
 import com.mycollab.vaadin.UserUIContext;
 import com.mycollab.vaadin.ui.HeaderWithFontAwesome;
-import com.mycollab.vaadin.web.ui.DefaultGenericSearchPanel;
-import com.mycollab.vaadin.web.ui.DynamicQueryParamLayout;
-import com.mycollab.vaadin.web.ui.WebUIConstants;
+import com.mycollab.vaadin.web.ui.*;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.*;
@@ -50,6 +48,8 @@ import org.vaadin.viritin.layouts.MHorizontalLayout;
 public class CampaignSearchPanel extends DefaultGenericSearchPanel<CampaignSearchCriteria> {
     private static final long serialVersionUID = 1L;
 
+    private boolean canCreateCampaign;
+
     private static Param[] paramFields = new Param[]{
             CampaignSearchCriteria.p_campaignName,
             CampaignSearchCriteria.p_startDate,
@@ -59,6 +59,10 @@ public class CampaignSearchPanel extends DefaultGenericSearchPanel<CampaignSearc
             CampaignSearchCriteria.p_types, CampaignSearchCriteria.p_statuses,
             CampaignSearchCriteria.p_assignee};
 
+    public CampaignSearchPanel(boolean canCreateCampaign) {
+        this.canCreateCampaign = canCreateCampaign;
+    }
+
     @Override
     protected HeaderWithFontAwesome buildSearchTitle() {
         return ComponentUtils.header(CrmTypeConstants.CAMPAIGN, UserUIContext.getMessage(CampaignI18nEnum.LIST));
@@ -66,11 +70,10 @@ public class CampaignSearchPanel extends DefaultGenericSearchPanel<CampaignSearc
 
     @Override
     protected Component buildExtraControls() {
-        MButton newBtn = new MButton(UserUIContext.getMessage(CampaignI18nEnum.NEW),
+        return (canCreateCampaign) ? new MButton(UserUIContext.getMessage(CampaignI18nEnum.NEW),
                 clickEvent -> EventBusFactory.getInstance().post(new CampaignEvent.GotoAdd(this, null)))
-                .withIcon(FontAwesome.PLUS).withStyleName(WebUIConstants.BUTTON_ACTION)
-                .withVisible(UserUIContext.canWrite(RolePermissionCollections.CRM_CAMPAIGN));
-        return newBtn;
+                .withIcon(FontAwesome.PLUS).withStyleName(WebThemes.BUTTON_ACTION)
+                .withVisible(UserUIContext.canWrite(RolePermissionCollections.CRM_CAMPAIGN)) : null;
     }
 
     @Override
@@ -88,13 +91,8 @@ public class CampaignSearchPanel extends DefaultGenericSearchPanel<CampaignSearc
         private TextField nameField;
         private CheckBox myItemCheckbox;
 
-        public CampaignBasicSearchLayout() {
+        CampaignBasicSearchLayout() {
             super(CampaignSearchPanel.this);
-        }
-
-        @Override
-        public ComponentContainer constructHeader() {
-            return CampaignSearchPanel.this.constructHeader();
         }
 
         @Override
@@ -109,17 +107,17 @@ public class CampaignSearchPanel extends DefaultGenericSearchPanel<CampaignSearc
             basicSearchBody.with(myItemCheckbox).withAlign(myItemCheckbox, Alignment.MIDDLE_CENTER);
 
             MButton searchBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_SEARCH), clickEvent -> callSearchAction())
-                    .withIcon(FontAwesome.SEARCH).withStyleName(WebUIConstants.BUTTON_ACTION)
+                    .withIcon(FontAwesome.SEARCH).withStyleName(WebThemes.BUTTON_ACTION)
                     .withClickShortcut(ShortcutAction.KeyCode.ENTER);
 
             basicSearchBody.with(searchBtn).withAlign(searchBtn, Alignment.MIDDLE_LEFT);
 
             MButton cancelBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_CLEAR), clickEvent -> nameField.setValue(""))
-                    .withStyleName(WebUIConstants.BUTTON_OPTION);
+                    .withStyleName(WebThemes.BUTTON_OPTION);
             basicSearchBody.with(cancelBtn).withAlign(cancelBtn, Alignment.MIDDLE_CENTER);
 
             MButton advancedSearchBtn = new MButton(UserUIContext.getMessage(GenericI18Enum.BUTTON_ADVANCED_SEARCH),
-                    clickEvent -> moveToAdvancedSearchLayout()).withStyleName(WebUIConstants.BUTTON_LINK);
+                    clickEvent -> moveToAdvancedSearchLayout()).withStyleName(WebThemes.BUTTON_LINK);
 
             basicSearchBody.with(advancedSearchBtn).withAlign(advancedSearchBtn, Alignment.MIDDLE_CENTER);
             return basicSearchBody;
@@ -146,13 +144,8 @@ public class CampaignSearchPanel extends DefaultGenericSearchPanel<CampaignSearc
     private class CampaignAdvancedSearchLayout extends DynamicQueryParamLayout<CampaignSearchCriteria> {
         private static final long serialVersionUID = 1L;
 
-        public CampaignAdvancedSearchLayout() {
+        CampaignAdvancedSearchLayout() {
             super(CampaignSearchPanel.this, CrmTypeConstants.CAMPAIGN);
-        }
-
-        @Override
-        public ComponentContainer constructHeader() {
-            return CampaignSearchPanel.this.constructHeader();
         }
 
         @Override
